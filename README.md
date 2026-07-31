@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Zentt — new-web (Next.js)
 
-## Getting Started
+Frontend Next.js (App Router) del SaaS Zentt. Clon funcional de `react/web` (Vite), con landing basada en AcmeHero.
 
-First, run the development server:
+## Requisitos
+
+- Node.js 18+
+- Backend Django en `http://localhost:8000` (`django/1st-proyect`)
+
+## Arranque
 
 ```bash
+cd react/new-web
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+App en [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Variables en `.env.local`:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000/api
+NEXT_PUBLIC_MEDIA_URL=http://localhost:8000
+```
 
-## Learn More
+## Rutas
 
-To learn more about Next.js, take a look at the following resources:
+| Ruta | Descripción |
+|------|-------------|
+| `/` | Landing (AcmeHero / Zentt) |
+| `/login` | Login JWT |
+| `/register` | Registro de dueños |
+| `/dashboard` | Panel (Overview) |
+| `/dashboard/cabanas` | Listado de alojamientos |
+| `/dashboard/cabanas/crear` | Crear alojamiento |
+| `/dashboard/cabanas/editar/[slug]` | Editar alojamiento |
+| `/dashboard/mensajes` | Inbox |
+| `/dashboard/configuracion` | Perfil / negocio |
+| `/[slug]` | Sitio público del complejo |
+| `/[slug]/cabana/[cabanaSlug]` | Detalle público de alojamiento |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Scripts
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `npm run dev` — desarrollo
+- `npm run build` — build producción
+- `npm run start` — servir build
+- `npm run lint` — ESLint
 
-## Deploy on Vercel
+## Notas
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- El frontend Vite original (`react/web`) sigue intacto.
+- Auth: JWT en `localStorage` (`access_token` / `refresh_token`).
+- CORS del backend ya permite `http://localhost:3000`.
