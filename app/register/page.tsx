@@ -1,0 +1,228 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import axios from "axios";
+import api from "@/lib/api";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ZenttLogo } from "@/components/landing/ZenttLogo";
+import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { normalizeUsername, normalizeUsernameLive } from "@/lib/username";
+
+export default function RegisterPage() {
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: name === "username" ? normalizeUsernameLive(value) : value,
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    const username = normalizeUsername(formData.username);
+    if (!username) {
+      setError("Ingresá un nombre de usuario válido.");
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setError("Las contraseñas no coinciden. Verificá los datos.");
+      return;
+    }
+
+    if (formData.password.length < 8) {
+      setError("La contraseña debe tener al menos 8 caracteres.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      await api.post("/accounts/register/", {
+        username,
+        email: formData.email,
+        password: formData.password,
+      });
+
+      toast.success("Cuenta creada con éxito. Iniciá sesión para continuar.");
+      router.push("/login");
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err) && err.response?.data) {
+        const data = err.response.data as Record<string, string[] | string>;
+
+        if (data.username) setError(`Usuario: ${data.username[0]}`);
+        else if (data.email) setError(`Email: ${data.email[0]}`);
+        else if (data.password) setError(`Contraseña: ${data.password[0]}`);
+        else if (data.error) setError(String(data.error));
+        else setError("Error al crear la cuenta. Verificá los datos.");
+      } else {
+        setError(
+          "Error de conexión con el servidor. Intentá de nuevo más tarde."
+        );
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const inputClass = "field-auth";
+
+  return (
+    <div className="auth-shell flex min-h-screen">
+      <div className="hidden lg:flex lg:w-1/2 relative">
+        <img
+          src="/assets/cabin-hero.jpg"
+          alt="Bosque y alojamiento"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-900/80 to-slate-900/20" />
+        <div className="relative z-10 flex flex-col justify-end p-12">
+          <h2 className="font-heading text-4xl font-bold text-white mb-3">
+            Empezá a gestionar tu alojamiento como un profesional
+          </h2>
+          <p className="text-white/80 text-lg max-w-md">
+            Creá tu web, centralizá tus fotos, ajustá precios y recibí consultas
+            de huéspedes desde un solo lugar.
+          </p>
+        </div>
+      </div>
+
+      <div className="flex-1 flex items-center justify-center p-8 bg-white">
+        <div className="w-full max-w-md space-y-8">
+          <div className="text-center">
+            <Link
+              href="/"
+              aria-label="Zentt"
+              className="mb-6 inline-flex h-10 shrink-0 items-center justify-center leading-none"
+            >
+              <ZenttLogo className="h-10 w-auto aspect-[290/130]" />
+            </Link>
+            <h1 className="page-title text-2xl sm:text-3xl md:text-3xl">
+              Creá tu cuenta gratuita
+            </h1>
+            <p className="page-subtitle mt-2">
+              Ingresá tus datos para acceder a tu panel de control.
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="username" className="ui-label">
+                Nombre de usuario
+              </Label>
+              <Input
+                id="username"
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+                placeholder="ej: Alojamiento imperial"
+                autoComplete="username"
+                required
+                className={inputClass}
+              />
+              <p className="text-xs text-slate-400">
+                Se guardará en minúsculas; los espacios se convierten en
+                guiones.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="email" className="ui-label">
+                Correo electrónico
+              </Label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="tu@email.com"
+                required
+                className={inputClass}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="password" className="ui-label">
+                  Contraseña
+                </Label>
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="••••••••"
+                  required
+                  className={inputClass}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword" className="ui-label">
+                  Confirmar contraseña
+                </Label>
+                <Input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  placeholder="••••••••"
+                  required
+                  className={inputClass}
+                />
+              </div>
+            </div>
+
+            {error && (
+              <p className="rounded-lg bg-red-50 py-2 text-center text-sm font-bold text-red-500">
+                {error}
+              </p>
+            )}
+
+            <Button
+              type="submit"
+              className="w-full h-12 text-base font-bold bg-slate-900 hover:bg-slate-800"
+              disabled={loading}
+            >
+              {loading ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                "Crear cuenta"
+              )}
+            </Button>
+
+            <p className="pt-4 text-center text-sm font-medium text-slate-500">
+              ¿Ya tenés una cuenta?{" "}
+              <Link
+                href="/login"
+                className="font-bold text-slate-900 hover:underline"
+              >
+                Iniciá sesión aquí
+              </Link>
+            </p>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}

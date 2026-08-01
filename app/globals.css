@@ -2,20 +2,273 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* Brand: #F8FAFC / #0A2342 / #184E77 / #FFFFFF */
+    --background: 210 40% 98%;
+    --foreground: 213 74% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 213 74% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 213 74% 15%;
+
+    --primary: 209 68% 28%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 209 68% 28%;
+
+    --muted: 210 40% 96%;
+    --muted-foreground: 210 10% 45%;
+
+    --accent: 209 68% 28%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 210 20% 90%;
+    --input: 210 20% 90%;
+    --ring: 209 68% 28%;
+
+    --radius: 0.75rem;
+
+    --navy: 213 74% 15%;
+    --navy-foreground: 0 0% 100%;
+
+    --sidebar-background: 213 74% 12%;
+    --sidebar-foreground: 210 40% 96%;
+    --sidebar-primary: 209 68% 38%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 213 50% 18%;
+    --sidebar-accent-foreground: 210 40% 96%;
+    --sidebar-border: 213 40% 20%;
+    --sidebar-ring: 209 68% 38%;
+  }
+
+  .dark {
+    --background: 213 50% 8%;
+    --foreground: 210 40% 98%;
+    --card: 213 45% 12%;
+    --card-foreground: 210 40% 98%;
+    --popover: 213 45% 12%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 209 70% 45%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 213 30% 18%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 213 30% 18%;
+    --muted-foreground: 210 15% 65%;
+    --accent: 209 70% 45%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 213 30% 18%;
+    --input: 213 30% 18%;
+    --ring: 209 70% 45%;
+    --navy: 213 74% 12%;
+    --navy-foreground: 0 0% 100%;
+    --sidebar-background: 213 50% 6%;
+    --sidebar-foreground: 210 40% 96%;
+    --sidebar-primary: 209 70% 45%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 213 40% 14%;
+    --sidebar-accent-foreground: 210 40% 96%;
+    --sidebar-border: 213 30% 15%;
+    --sidebar-ring: 209 70% 45%;
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    @apply scroll-smooth;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+    font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-heading tracking-tight;
+  }
+
+  input,
+  textarea,
+  select,
+  button {
+    @apply font-body;
+  }
+
+  label {
+    @apply font-body;
+  }
 }
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90 transition-colors;
+  }
+
+  .btn-whatsapp {
+    @apply bg-[#25D366] text-white px-4 py-2 rounded-xl hover:bg-[#1ebe57] transition-colors;
+  }
+
+  /* Títulos de página (dashboard + auth) */
+  .page-title {
+    @apply font-heading text-2xl font-bold tracking-tight text-foreground sm:text-3xl md:text-4xl;
+  }
+
+  .page-title-sm {
+    @apply font-heading text-2xl font-bold tracking-tight text-foreground sm:text-3xl;
+  }
+
+  .page-eyebrow {
+    @apply font-body text-xs font-semibold uppercase tracking-[0.2em] text-primary;
+  }
+
+  .page-subtitle {
+    @apply font-body text-sm font-medium text-muted-foreground;
+  }
+
+  /* Display marketing — sitios públicos y landing */
+  .heading-display {
+    @apply font-heading tracking-tight;
+  }
+
+  .section-title {
+    @apply font-heading text-sm font-bold uppercase tracking-widest text-foreground;
+  }
+
+  /* Labels de UI densa — siempre Inter */
+  .ui-label {
+    @apply font-body text-sm font-medium text-foreground;
+  }
+
+  .ui-kicker {
+    @apply font-body text-[10px] font-semibold uppercase tracking-widest text-muted-foreground;
+  }
+
+  /* Campos de formulario — mismo look que autenticación (también sitios públicos) */
+  .field-auth {
+    @apply h-12 w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-800 placeholder:text-slate-400 outline-none transition-colors focus:border-slate-900 focus:ring-2 focus:ring-slate-900;
+  }
+
+  .field-auth-area {
+    @apply w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-3 text-sm font-medium text-slate-800 placeholder:text-slate-400 outline-none transition-colors focus:border-slate-900 focus:ring-2 focus:ring-slate-900 resize-none;
+  }
+
+  /* Autofill en auth: azul Zentt en lugar del gris/amarillo del browser */
+  .auth-shell input:-webkit-autofill,
+  .auth-shell input:-webkit-autofill:hover,
+  .auth-shell input:-webkit-autofill:focus,
+  .auth-shell input:-webkit-autofill:active {
+    -webkit-text-fill-color: hsl(var(--foreground)) !important;
+    caret-color: hsl(var(--foreground));
+    border-color: hsl(var(--primary) / 0.45) !important;
+    /* box-shadow inset pinta el fondo (Chrome ignora background-color en autofill) */
+    -webkit-box-shadow: 0 0 0 1000px hsl(var(--primary) / 0.1) inset !important;
+    box-shadow: 0 0 0 1000px hsl(var(--primary) / 0.1) inset !important;
+    transition: background-color 99999s ease-in-out 0s;
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-card/80 backdrop-blur-md border border-border/50;
+  }
+}
+
+/* react-day-picker tweaks — fill container width (esp. mobile) */
+.rdp-zentt {
+  --rdp-accent-color: hsl(var(--primary));
+  --rdp-accent-background-color: hsl(var(--primary) / 0.15);
+  --rdp-day-width: 100%;
+  --rdp-day-height: 2.75rem;
+  --rdp-day_button-width: 2.5rem;
+  --rdp-day_button-height: 2.5rem;
+  --rdp-day_button-border-radius: 0.5rem;
+  width: 100%;
+  max-width: 100%;
+  font-family: inherit;
+  font-size: 0.9375rem;
+}
+
+.rdp-zentt .rdp-months {
+  max-width: none;
+  width: 100%;
+}
+
+.rdp-zentt .rdp-month {
+  width: 100%;
+}
+
+.rdp-zentt .rdp-month_grid {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.rdp-zentt .rdp-weekday {
+  width: calc(100% / 7);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.rdp-zentt .rdp-day {
+  width: auto;
+  height: var(--rdp-day-height);
+  vertical-align: middle;
+}
+
+.rdp-zentt .rdp-day_button {
+  margin-inline: auto;
+  width: min(var(--rdp-day_button-width), 100%);
+  height: var(--rdp-day_button-height);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+@media (max-width: 767px) {
+  .rdp-zentt {
+    --rdp-day-height: 2.9rem;
+    --rdp-day_button-width: 100%;
+    --rdp-day_button-height: 2.7rem;
+    --rdp-day_button-border-radius: 0.55rem;
+    font-size: 1rem;
+  }
+
+  .rdp-zentt .rdp-weekday {
+    font-size: 0.72rem;
+  }
+
+  .rdp-zentt .rdp-day_button {
+    width: 100%;
+    max-width: 2.85rem;
+  }
+
+  .rdp-zentt .rdp-caption_label {
+    font-size: 1rem;
+  }
+}
+
+.rdp-zentt .rdp-disabled {
+  opacity: 0.35;
+  text-decoration: line-through;
+}
+
