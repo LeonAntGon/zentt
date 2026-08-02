@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import axios from "axios";
 import api from "@/lib/api";
 import { getMediaUrl } from "@/lib/media";
 import { useAuth } from "@/contexts/AuthContext";
@@ -23,6 +24,7 @@ import {
   Image as ImageIcon,
   DollarSign,
   Star,
+  Trash2,
   UploadCloud,
 } from "lucide-react";
 import { CabinAvailabilityCalendar } from "@/components/dashboard/CabinAvailabilityCalendar";
@@ -32,9 +34,18 @@ import {
   type ContactMethod,
 } from "@/components/dashboard/CabinContactMethodToggle";
 import { ContactConfigRequiredModal } from "@/components/dashboard/ContactConfigRequiredModal";
+import { ConfirmActionModal } from "@/components/dashboard/ConfirmActionModal";
 import { CabinVideoLinks } from "@/components/dashboard/CabinVideoLinks";
 import type { PrecioPorFecha } from "@/types/cabin";
 import { toast } from "sonner";
+
+type ImageConfirmState = {
+  title: string;
+  body: string;
+  confirmLabel: string;
+  variant: "danger" | "primary";
+  onConfirm: () => void;
+} | null;
 
 export default function EditCabanaPage() {
   const params = useParams<{ slug: string }>();
@@ -59,6 +70,7 @@ export default function EditCabanaPage() {
     open: boolean;
     method: ContactMethod;
   }>({ open: false, method: "WA" });
+  const [imageConfirm, setImageConfirm] = useState<ImageConfirmState>(null);
   const [saving, setSaving] = useState(false);
 
   const hasPhone = Boolean(user?.profile?.telefono?.trim());
@@ -145,16 +157,24 @@ export default function EditCabanaPage() {
       // Teléfono/email se heredan de Configuración; el canal es por alojamiento.
       await api.patch(`/cabanas/${slug}/`, {
         ...formData,
+        nombre: formData.nombre.trim(),
         metodo_contacto: metodoContacto,
         telefono_whatsapp: null,
         email_contacto: null,
         ical_url: formData.ical_url.trim() || null,
       });
       toast.success("Datos guardados con éxito");
-      router.push("/dashboard/cabanas");
+      router.replace("/dashboard/cabanas");
     } catch (error) {
       console.error("Error guardando", error);
-      toast.error("Hubo un error al guardar los cambios.");
+      if (axios.isAxiosError(error) && error.response?.data?.nombre) {
+        const msg = Array.isArray(error.response.data.nombre)
+          ? error.response.data.nombre[0]
+          : String(error.response.data.nombre);
+        toast.error(msg);
+      } else {
+        toast.error("Hubo un error al guardar los cambios.");
+      }
     } finally {
       setSaving(false);
     }
@@ -261,29 +281,50 @@ export default function EditCabanaPage() {
     }
   };
 
-  const handleMarcarPortada = async (imagenId: number) => {
+  const marcarPortada = async (imagenId: number) => {
     try {
       await api.post(`/cabanas/${slug}/marcar_portada/`, {
         imagen_id: imagenId,
       });
       const response = await api.get<Cabana>(`/cabanas/${slug}/`);
       setCabana(response.data);
+      toast.success("Portada actualizada");
     } catch {
       toast.error("Error al marcar portada.");
     }
   };
 
-  const handleEliminarImagen = async (imagenId: number) => {
-    if (!window.confirm("¿Seguro que deseas eliminar esta foto?")) return;
+  const eliminarImagen = async (imagenId: number) => {
     try {
       await api.delete(`/cabanas/${slug}/eliminar_imagen/`, {
         params: { imagen_id: imagenId },
       });
       const response = await api.get<Cabana>(`/cabanas/${slug}/`);
       setCabana(response.data);
+      toast.success("Imagen eliminada");
     } catch {
       toast.error("Error al eliminar la imagen.");
     }
+  };
+
+  const askMarcarPortada = (imagenId: number) => {
+    setImageConfirm({
+      title: "Usar como portada",
+      body: "Esta imagen pasará a ser la portada principal del alojamiento. ¿Confirmás el cambio?",
+      confirmLabel: "Hacer portada",
+      variant: "primary",
+      onConfirm: () => void marcarPortada(imagenId),
+    });
+  };
+
+  const askEliminarImagen = (imagenId: number) => {
+    setImageConfirm({
+      title: "Eliminar imagen",
+      body: "Esta foto se eliminará del alojamiento. Esta acción no se puede deshacer.",
+      confirmLabel: "Eliminar",
+      variant: "danger",
+      onConfirm: () => void eliminarImagen(imagenId),
+    });
   };
 
   const handlePrecioChange = (dia_semana: number, nuevoPrecio: string) => {
@@ -459,13 +500,16 @@ export default function EditCabanaPage() {
                     alt="Portada"
                     className="h-full w-full object-cover"
                   />
+                  <div className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-primary px-2 py-1 text-[10px] font-bold text-white shadow-sm">
+                    <Star size={12} className="fill-white" /> Portada
+                  </div>
                   <div className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 transition-opacity group-hover:opacity-100">
                     <button
                       type="button"
-                      onClick={() => handleEliminarImagen(portadaActiva.id)}
-                      className="rounded bg-red-500 px-3 py-1.5 text-xs font-bold text-white"
+                      onClick={() => askEliminarImagen(portadaActiva.id)}
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-red-500 px-3 py-1.5 text-xs font-bold text-white"
                     >
-                      Eliminar
+                      <Trash2 size={14} /> Eliminar
                     </button>
                   </div>
                 </div>
@@ -486,20 +530,24 @@ export default function EditCabanaPage() {
                     alt="Alojamiento"
                     className="h-full w-full object-cover"
                   />
-                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/60 opacity-0 transition-opacity group-hover:opacity-100">
+                  <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/55 opacity-0 transition-opacity group-hover:opacity-100">
                     <button
                       type="button"
-                      onClick={() => handleMarcarPortada(img.id)}
-                      className="rounded bg-white px-2 py-1 text-[10px] font-bold text-slate-900"
+                      onClick={() => askMarcarPortada(img.id)}
+                      title="Usar como portada"
+                      aria-label="Usar como portada"
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white text-slate-900 shadow-sm transition-colors hover:bg-primary hover:text-white"
                     >
-                      Portada
+                      <Star size={16} />
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleEliminarImagen(img.id)}
-                      className="rounded bg-red-500 px-2 py-1 text-[10px] font-bold text-white"
+                      onClick={() => askEliminarImagen(img.id)}
+                      title="Eliminar imagen"
+                      aria-label="Eliminar imagen"
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-red-500 text-white shadow-sm transition-colors hover:bg-red-600"
                     >
-                      Eliminar
+                      <Trash2 size={16} />
                     </button>
                   </div>
                 </div>
@@ -579,6 +627,15 @@ export default function EditCabanaPage() {
         open={contactModal.open}
         method={contactModal.method}
         onClose={() => setContactModal((prev) => ({ ...prev, open: false }))}
+      />
+      <ConfirmActionModal
+        open={Boolean(imageConfirm)}
+        title={imageConfirm?.title || ""}
+        body={imageConfirm?.body || ""}
+        confirmLabel={imageConfirm?.confirmLabel}
+        variant={imageConfirm?.variant}
+        onConfirm={() => imageConfirm?.onConfirm()}
+        onClose={() => setImageConfirm(null)}
       />
     </div>
   );

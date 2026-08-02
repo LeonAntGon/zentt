@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 import api from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { AmenityPicker } from "@/components/dashboard/AmenityPicker";
@@ -12,6 +13,7 @@ import {
   type ContactMethod,
 } from "@/components/dashboard/CabinContactMethodToggle";
 import { ContactConfigRequiredModal } from "@/components/dashboard/ContactConfigRequiredModal";
+import { ConfirmActionModal } from "@/components/dashboard/ConfirmActionModal";
 import { CabinVideoLinks } from "@/components/dashboard/CabinVideoLinks";
 import {
   cabanaEmptyMediaClass,
@@ -29,6 +31,7 @@ import {
   ArrowLeft,
   Image as ImageIcon,
   DollarSign,
+  Star,
   Trash2,
   UploadCloud,
   Loader2,
@@ -39,11 +42,20 @@ function isImageFile(file: File): boolean {
   return Boolean(file.type && file.type.startsWith("image/"));
 }
 
+type ImageConfirmState = {
+  title: string;
+  body: string;
+  confirmLabel: string;
+  variant: "danger" | "primary";
+  onConfirm: () => void;
+} | null;
+
 export default function CreateCabanaPage() {
   const router = useRouter();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [statusText, setStatusText] = useState("");
+  const [createdSlug, setCreatedSlug] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     nombre: "",
@@ -58,6 +70,7 @@ export default function CreateCabanaPage() {
     open: boolean;
     method: ContactMethod;
   }>({ open: false, method: "WA" });
+  const [imageConfirm, setImageConfirm] = useState<ImageConfirmState>(null);
 
   const [preciosPorFecha, setPreciosPorFecha] = useState<PrecioPorFecha[]>([]);
   const [videoUrls, setVideoUrls] = useState<string[]>([]);
@@ -130,7 +143,48 @@ export default function CreateCabanaPage() {
 
   const removeImage = (index: number) => {
     setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
-    setPreviews((prev) => prev.filter((_, i) => i !== index));
+    setPreviews((prev) => {
+      const url = prev[index];
+      if (url?.startsWith("blob:")) URL.revokeObjectURL(url);
+      return prev.filter((_, i) => i !== index);
+    });
+  };
+
+  const setAsCover = (index: number) => {
+    if (index === 0) return;
+    setSelectedFiles((prev) => {
+      const next = [...prev];
+      const [file] = next.splice(index, 1);
+      next.unshift(file);
+      return next;
+    });
+    setPreviews((prev) => {
+      const next = [...prev];
+      const [url] = next.splice(index, 1);
+      next.unshift(url);
+      return next;
+    });
+    toast.success("Portada actualizada");
+  };
+
+  const askRemoveImage = (index: number) => {
+    setImageConfirm({
+      title: "Eliminar imagen",
+      body: "Esta foto se quitará de la galería. Podés volver a subirla después si lo necesitás.",
+      confirmLabel: "Eliminar",
+      variant: "danger",
+      onConfirm: () => removeImage(index),
+    });
+  };
+
+  const askSetAsCover = (index: number) => {
+    setImageConfirm({
+      title: "Usar como portada",
+      body: "Esta imagen será la portada principal del alojamiento al publicar.",
+      confirmLabel: "Hacer portada",
+      variant: "primary",
+      onConfirm: () => setAsCover(index),
+    });
   };
 
   const handlePrecioChange = (dia_semana: number, nuevoPrecio: string) => {
@@ -144,6 +198,8 @@ export default function CreateCabanaPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (loading) return;
+
     if (metodoContacto === "WA" && !hasPhone) {
       openContactModal("WA");
       return;
@@ -156,22 +212,27 @@ export default function CreateCabanaPage() {
     setLoading(true);
     setStatusText("Creando alojamiento...");
 
+    let slug = createdSlug;
+
     try {
-      // Teléfono/email se heredan de Configuración; el canal se elige por alojamiento.
       const icalUrl = formData.ical_url.trim();
-      const payload = {
-        nombre: formData.nombre,
-        descripcion: formData.descripcion,
-        precio: formData.precio,
-        capacidad: formData.capacidad,
-        amenities: formData.amenities,
-        ical_url: icalUrl || null,
-        metodo_contacto: metodoContacto,
-        telefono_whatsapp: null,
-        email_contacto: null,
-      };
-      const response = await api.post("/cabanas/", payload);
-      const slug = response.data.slug;
+
+      if (!slug) {
+        const payload = {
+          nombre: formData.nombre.trim(),
+          descripcion: formData.descripcion,
+          precio: formData.precio,
+          capacidad: formData.capacidad,
+          amenities: formData.amenities,
+          ical_url: icalUrl || null,
+          metodo_contacto: metodoContacto,
+          telefono_whatsapp: null,
+          email_contacto: null,
+        };
+        const response = await api.post("/cabanas/", payload);
+        slug = response.data.slug as string;
+        setCreatedSlug(slug);
+      }
 
       if (icalUrl) {
         setStatusText("Sincronizando calendario Airbnb...");
@@ -227,9 +288,27 @@ export default function CreateCabanaPage() {
 
       setStatusText("¡Publicación exitosa!");
       toast.success("Alojamiento creado correctamente con fotos y precios.");
-      router.push("/dashboard/cabanas");
+      router.replace("/dashboard/cabanas");
     } catch (error) {
       console.error("Error en la creación completa", error);
+
+      if (axios.isAxiosError(error) && error.response?.data?.nombre) {
+        const msg = Array.isArray(error.response.data.nombre)
+          ? error.response.data.nombre[0]
+          : String(error.response.data.nombre);
+        toast.error(msg);
+        setLoading(false);
+        return;
+      }
+
+      if (slug) {
+        toast.error(
+          "El alojamiento se creó, pero falló un paso. Completá fotos u otros datos desde Editar."
+        );
+        router.replace(`/dashboard/cabanas/editar/${slug}`);
+        return;
+      }
+
       toast.error("Hubo un error al procesar la solicitud.");
       setLoading(false);
     }
@@ -378,18 +457,43 @@ export default function CreateCabanaPage() {
                       className="h-full w-full object-cover"
                       alt={`Vista previa ${index + 1}`}
                     />
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
-                      <button
-                        type="button"
-                        onClick={() => removeImage(index)}
-                        className="rounded-full bg-red-500 p-1.5 text-white hover:bg-red-600"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                    {index === 0 && (
-                      <div className="absolute bottom-0 left-0 right-0 bg-primary py-1 text-center text-[10px] font-bold text-white">
-                        SERÁ PORTADA
+                    {index === 0 ? (
+                      <>
+                        <div className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-primary px-2 py-1 text-[10px] font-bold text-white shadow-sm">
+                          <Star size={12} className="fill-white" /> Portada
+                        </div>
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/45 opacity-0 transition-opacity group-hover:opacity-100">
+                          <button
+                            type="button"
+                            onClick={() => askRemoveImage(index)}
+                            title="Eliminar imagen"
+                            aria-label="Eliminar imagen"
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-red-500 text-white shadow-sm hover:bg-red-600"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/55 opacity-0 transition-opacity group-hover:opacity-100">
+                        <button
+                          type="button"
+                          onClick={() => askSetAsCover(index)}
+                          title="Usar como portada"
+                          aria-label="Usar como portada"
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-white text-slate-900 shadow-sm transition-colors hover:bg-primary hover:text-white"
+                        >
+                          <Star size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => askRemoveImage(index)}
+                          title="Eliminar imagen"
+                          aria-label="Eliminar imagen"
+                          className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-red-500 text-white shadow-sm hover:bg-red-600"
+                        >
+                          <Trash2 size={16} />
+                        </button>
                       </div>
                     )}
                   </div>
@@ -401,7 +505,8 @@ export default function CreateCabanaPage() {
                       Subí fotos de tu alojamiento
                     </p>
                     <p className="mt-1 text-xs text-slate-400">
-                      La primera imagen será la portada
+                      La primera imagen será la portada. En el resto podés
+                      cambiarla con el ícono de estrella.
                     </p>
                   </div>
                 )}
@@ -475,6 +580,15 @@ export default function CreateCabanaPage() {
         open={contactModal.open}
         method={contactModal.method}
         onClose={() => setContactModal((prev) => ({ ...prev, open: false }))}
+      />
+      <ConfirmActionModal
+        open={Boolean(imageConfirm)}
+        title={imageConfirm?.title || ""}
+        body={imageConfirm?.body || ""}
+        confirmLabel={imageConfirm?.confirmLabel}
+        variant={imageConfirm?.variant}
+        onConfirm={() => imageConfirm?.onConfirm()}
+        onClose={() => setImageConfirm(null)}
       />
     </div>
   );
