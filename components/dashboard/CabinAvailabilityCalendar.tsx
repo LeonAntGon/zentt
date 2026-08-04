@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import { type DayButtonProps } from "react-day-picker";
 import api from "@/lib/api";
 import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
 import {
   effectiveNightPrice,
   formatMoneyARS,
@@ -24,6 +26,53 @@ const SOURCE_LABEL: Record<PriceSource, string> = {
   semana: "precio del día de semana",
   fecha: "precio especial de esta fecha",
 };
+
+function compactMoneyARS(value: number) {
+  if (!Number.isFinite(value)) return "—";
+  const formatCompact = (amount: number) =>
+    new Intl.NumberFormat("es-AR", {
+      maximumFractionDigits: 1,
+    }).format(amount);
+
+  if (value >= 1_000_000) return `$${formatCompact(value / 1_000_000)}M`;
+  if (value >= 1_000) return `$${formatCompact(value / 1_000)}k`;
+  return `$${value}`;
+}
+
+type PriceBadgeDayButtonProps = DayButtonProps & {
+  getPrice?: (date: Date) => { precio: number; source: PriceSource } | null;
+};
+
+function PriceBadgeDayButton({
+  day,
+  modifiers,
+  getPrice,
+  ...buttonProps
+}: PriceBadgeDayButtonProps) {
+  const ref = React.useRef<HTMLButtonElement>(null);
+  React.useEffect(() => {
+    if (modifiers.focused) ref.current?.focus();
+  }, [modifiers.focused]);
+
+  const priceInfo = getPrice?.(day.date);
+
+  return (
+    <button
+      ref={ref}
+      {...buttonProps}
+      className={cn(buttonProps.className, "relative")}
+    >
+      <span className="relative flex h-full w-full flex-col items-center justify-center leading-none">
+        <span>{buttonProps.children}</span>
+        {priceInfo && priceInfo.source !== "base" && (
+          <span className="mt-0.5 max-w-full truncate rounded bg-amber-400 px-1 text-[9px] font-black text-slate-900">
+            {compactMoneyARS(priceInfo.precio)}
+          </span>
+        )}
+      </span>
+    </button>
+  );
+}
 
 type Props = {
   /** Required in api mode. */
@@ -49,8 +98,10 @@ export function CabinAvailabilityCalendar({
   onLocalChange,
 }: Props) {
   const isLocal = mode === "local";
-  const weekPrices =
-    preciosEspeciales ?? cabana?.precios_especiales ?? [];
+  const weekPrices = useMemo(
+    () => preciosEspeciales ?? cabana?.precios_especiales ?? [],
+    [preciosEspeciales, cabana?.precios_especiales]
+  );
 
   const [month, setMonth] = useState(startOfMonth(new Date()));
   const [ocupadas, setOcupadas] = useState<FechaOcupada[]>([]);
@@ -138,6 +189,18 @@ export function CabinAvailabilityCalendar({
   const effective = selected
     ? effectiveNightPrice(selected, precioBase, weekPrices, overrides)
     : null;
+
+  const getPriceForDay = useMemo(() => {
+    return (date: Date) =>
+      effectiveNightPrice(date, precioBase, weekPrices, overrides);
+  }, [precioBase, weekPrices, overrides]);
+
+  const PriceDayButton = useMemo(() => {
+    const Inner = (props: DayButtonProps) => (
+      <PriceBadgeDayButton {...props} getPrice={getPriceForDay} />
+    );
+    return Inner;
+  }, [getPriceForDay]);
 
   const handleSelect = (date: Date | undefined) => {
     setSelected(date);
@@ -301,6 +364,7 @@ export function CabinAvailabilityCalendar({
             onSelect={handleSelect}
             modifiers={modifiers}
             modifiersClassNames={modifiersClassNames}
+            components={{ DayButton: PriceDayButton }}
           />
           <div className="mt-3 flex flex-wrap gap-4 text-[11px] text-slate-500">
             {!isLocal && (
@@ -312,6 +376,10 @@ export function CabinAvailabilityCalendar({
             <span className="flex items-center gap-1.5">
               <span className="h-3 w-3 rounded bg-emerald-100 ring-1 ring-emerald-200" />{" "}
               Precio especial
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="h-3 w-3 rounded bg-amber-400" /> Tarifa distinta
+              al base
             </span>
           </div>
         </div>

@@ -118,7 +118,7 @@ export function ManualReservationDialog({
             <select
               value={cabanaId ?? ""}
               onChange={(e) => setCabanaId(Number(e.target.value) || null)}
-              className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-800 shadow-sm focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-100"
+              className="field-auth"
             >
               {cabanas.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -137,7 +137,7 @@ export function ManualReservationDialog({
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
               placeholder="María García"
-              className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm font-medium text-slate-800 placeholder-slate-300 shadow-sm focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-100"
+              className="field-auth"
             />
           </div>
 
@@ -151,7 +151,7 @@ export function ManualReservationDialog({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="huésped@mail.com"
-                className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm font-medium text-slate-800 placeholder-slate-300 shadow-sm focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-100"
+                className="field-auth"
               />
             </div>
             <div>
@@ -163,7 +163,7 @@ export function ManualReservationDialog({
                 value={telefono}
                 onChange={(e) => setTelefono(e.target.value)}
                 placeholder="+54 381 555-1234"
-                className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm font-medium text-slate-800 placeholder-slate-300 shadow-sm focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-100"
+                className="field-auth"
               />
             </div>
           </div>
@@ -178,7 +178,7 @@ export function ManualReservationDialog({
                 value={checkIn}
                 min={minimalDate}
                 onChange={(e) => setCheckIn(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm font-medium text-slate-800 shadow-sm focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-100"
+                className="field-auth"
               />
             </div>
             <div>
@@ -190,7 +190,7 @@ export function ManualReservationDialog({
                 value={checkOut}
                 min={checkIn || minimalDate}
                 onChange={(e) => setCheckOut(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm font-medium text-slate-800 shadow-sm focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-100"
+                className="field-auth"
               />
             </div>
           </div>

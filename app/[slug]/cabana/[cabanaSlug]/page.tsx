@@ -25,6 +25,7 @@ import {
   CalendarDays,
   Menu,
   X,
+  AlertCircle,
 } from "lucide-react";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { UserIcon } from "@/components/icons/UserIcon";
@@ -123,6 +124,14 @@ export default function CabinDetailPublicPage() {
       ? nightsCountInclusive(range.from, lastNight)
       : 0;
 
+  const rangeHasConflict = useMemo(() => {
+    if (!range?.from) return false;
+    const to = range.to ?? range.from;
+    if (to < range.from) return false;
+    const days = eachDayOfInterval({ start: range.from, end: to });
+    return days.some((d) => isDisabled(d));
+  }, [range, isDisabled]);
+
   const requireDates = () => {
     if (!range?.from) {
       toast.error("Elegí las noches en el calendario.");
@@ -131,6 +140,10 @@ export default function CabinDetailPublicPage() {
     const to = range.to ?? range.from;
     if (nightsCountInclusive(range.from, to) < 1) {
       toast.error("Elegí al menos una noche.");
+      return false;
+    }
+    if (rangeHasConflict) {
+      toast.error("Alojamiento no disponible en esas fechas.");
       return false;
     }
     return true;
@@ -409,6 +422,19 @@ export default function CabinDetailPublicPage() {
                     <span className="h-2 w-2 rounded-sm bg-primary" /> Selección
                   </span>
                 </div>
+
+                {rangeHasConflict && (
+                  <div className="mt-3 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-sm font-medium text-red-700">
+                    <AlertCircle
+                      size={16}
+                      className="mt-0.5 shrink-0 text-red-500"
+                    />
+                    <span>
+                      Alojamiento no disponible en esas fechas. Elegí otras
+                      noches.
+                    </span>
+                  </div>
+                )}
               </div>
 
               {noches > 0 && (
@@ -479,7 +505,7 @@ export default function CabinDetailPublicPage() {
 
                 <button
                   type="submit"
-                  disabled={sending}
+                  disabled={sending || rangeHasConflict}
                   className={`flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 text-[11px] font-bold uppercase tracking-widest transition-colors ${
                     isWhatsApp
                       ? "btn-whatsapp shadow-lg shadow-[#25D366]/25"

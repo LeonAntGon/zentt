@@ -22,7 +22,6 @@ import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { UserIcon } from "@/components/icons/UserIcon";
 import { TikTokIcon } from "@/components/icons/TikTokIcon";
 import { YouTubeIcon } from "@/components/icons/YouTubeIcon";
-import { unionAmenities } from "@/lib/amenities";
 
 interface PublicWebsiteData {
   nombre_negocio: string | null;
@@ -163,9 +162,6 @@ export default function FreeTemplatePage() {
   const logoUrl = getMediaUrl(siteData.foto_perfil);
   const nombreParaMostrar =
     siteData.nombre_negocio || `${siteData.first_name}'s Place`;
-  const siteAmenities = unionAmenities(
-    siteData.cabanas.map((c) => c.amenities)
-  );
 
   const ig = (siteData.instagram_user || "").trim().replace(/^@+/, "");
   const tt = (siteData.tiktok_user || "").trim().replace(/^@+/, "");
@@ -346,26 +342,6 @@ export default function FreeTemplatePage() {
           </div>
         </div>
       </section>
-
-      {siteAmenities.length > 0 && (
-        <section className="mx-auto max-w-7xl px-6 py-16 sm:py-20 md:py-24">
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4">
-            {siteAmenities.map((a) => (
-              <div
-                key={a.id}
-                className="flex flex-col items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50 p-5 transition-transform hover:-translate-y-0.5 sm:gap-4 sm:p-6"
-              >
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white shadow-sm ring-1 ring-slate-100 sm:h-14 sm:w-14">
-                  <a.icon className="h-5 w-5 text-slate-700 sm:h-6 sm:w-6" />
-                </div>
-                <span className="text-center text-[10px] font-semibold uppercase tracking-widest text-slate-500 sm:text-xs">
-                  {a.label}
-                </span>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
 
       <section
         id="cabanas"

@@ -22,6 +22,7 @@ import {
   CalendarDays,
   Menu,
   BarChart3,
+  Globe,
 } from "lucide-react";
 
 type NavItem = {
@@ -69,6 +70,12 @@ const NAV_SECTIONS: NavSection[] = [
         href: "/dashboard/reportes",
         label: "Reportes",
         icon: BarChart3,
+        exact: true,
+      },
+      {
+        href: "/dashboard/rendimiento-web",
+        label: "Rendimiento web",
+        icon: Globe,
         exact: true,
       },
     ],
