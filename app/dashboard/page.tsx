@@ -333,6 +333,9 @@ export default function OverviewPage() {
         <h1 className="page-title">
           {nombreNegocio || `¡Hola, ${user?.first_name}!`}
         </h1>
+        <p className="page-subtitle mt-1">
+          Respondé consultas, mirá ocupación y compartí tu link.
+        </p>
       </header>
 
       <OnboardingStepper

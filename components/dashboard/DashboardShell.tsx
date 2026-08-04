@@ -142,10 +142,13 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   );
 
   const navLinks = (onNavigate?: () => void) => (
-    <nav className="flex-1 space-y-5 overflow-y-auto p-4">
+    <nav
+      aria-label="Navegación del panel"
+      className="flex-1 space-y-5 overflow-y-auto px-3 py-4"
+    >
       {NAV_SECTIONS.map((section) => (
         <div key={section.title}>
-          <p className="mb-2 px-4 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
+          <p className="mb-2 px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
             {section.title}
           </p>
           <div className="space-y-1">
@@ -157,10 +160,10 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                   key={item.href}
                   href={item.href}
                   onClick={onNavigate}
-                  className={`flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
-                    active
-                      ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
-                      : "text-primary/80 hover:bg-primary/5 hover:text-primary"
+                    className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition-all ${
+                      active
+                        ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
+                        : "text-primary/90 hover:bg-primary/5 hover:text-primary"
                   }`}
                 >
                   <Icon size={18} /> {item.label}
@@ -174,7 +177,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   );
 
   const footerBlock = (onNavigate?: () => void) => (
-    <div className="space-y-3 border-t border-border p-4">
+    <div className="space-y-3 border-t border-border px-4 py-3">
       <Link
         href="/dashboard/perfil"
         onClick={onNavigate}
@@ -212,8 +215,13 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen overflow-hidden bg-background font-body text-foreground">
-      <aside className="hidden w-64 flex-col border-r border-border bg-card md:flex">
-        <div className="border-b border-border bg-muted/40 p-5">{brandBlock}</div>
+      <aside
+        aria-label="Panel Zentt"
+        className="hidden w-52 shrink-0 flex-col border-r border-slate-200 bg-white md:flex"
+      >
+        <div className="border-b border-slate-200 bg-slate-50/70 p-4">
+          {brandBlock}
+        </div>
         {navLinks()}
         {footerBlock()}
       </aside>

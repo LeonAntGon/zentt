@@ -74,11 +74,11 @@ export function MasterCalendar({
 
   const modifiersClassNames = {
     confirmed:
-      "!bg-emerald-100 !text-emerald-900 font-semibold rounded-lg hover:!bg-emerald-200",
+      "calendar-confirmed-day !bg-emerald-100 !text-emerald-900 font-semibold rounded-lg hover:!bg-emerald-200",
     pending:
-      "!bg-amber-100 !text-amber-900 font-semibold rounded-lg hover:!bg-amber-200",
+      "calendar-pending-day !bg-amber-100 !text-amber-900 font-semibold rounded-lg hover:!bg-amber-200",
     blocked:
-      "bg-[repeating-linear-gradient(-45deg,#f1f5f9,#f1f5f9_3px,#e2e8f0_3px,#e2e8f0_6px)] !text-slate-500 rounded-lg",
+      "calendar-blocked-day bg-[repeating-linear-gradient(-45deg,#f1f5f9,#f1f5f9_3px,#e2e8f0_3px,#e2e8f0_6px)] !text-slate-500 rounded-lg",
   };
 
   const monthLabel = month.toLocaleDateString("es-AR", {

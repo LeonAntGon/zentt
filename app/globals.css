@@ -242,6 +242,34 @@
   height: var(--rdp-day_button-height);
   font-size: 0.9rem;
   font-weight: 500;
+  color: hsl(var(--foreground));
+}
+
+/* Keep day numbers readable while preserving each calendar state color. */
+.rdp-zentt .rdp-range_start .rdp-day_button,
+.rdp-zentt .rdp-range_end .rdp-day_button,
+.rdp-zentt .rdp-day[aria-selected="true"] .rdp-day_button {
+  color: var(--rdp-range_start-color);
+}
+
+.rdp-zentt .calendar-confirmed-day .rdp-day_button {
+  color: #065f46;
+}
+
+.rdp-zentt .calendar-pending-day .rdp-day_button {
+  color: #92400e;
+}
+
+.rdp-zentt .calendar-blocked-day .rdp-day_button {
+  color: #64748b;
+}
+
+.rdp-zentt .calendar-occupied-day .rdp-day_button {
+  color: #991b1b;
+}
+
+.rdp-zentt .calendar-override-day .rdp-day_button {
+  color: #166534;
 }
 
 @media (max-width: 767px) {
@@ -271,4 +299,3 @@
   opacity: 0.35;
   text-decoration: line-through;
 }
-

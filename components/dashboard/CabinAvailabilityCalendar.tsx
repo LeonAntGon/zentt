@@ -182,8 +182,10 @@ export function CabinAvailabilityCalendar({
   };
 
   const modifiersClassNames = {
-    occupied: "!bg-red-100 !text-red-800 rounded-md font-semibold",
-    override: "!bg-emerald-100 !text-emerald-800 rounded-md font-semibold",
+    occupied:
+      "calendar-occupied-day !bg-red-100 !text-red-800 rounded-md font-semibold",
+    override:
+      "calendar-override-day !bg-emerald-100 !text-emerald-800 rounded-md font-semibold",
   };
 
   const effective = selected
