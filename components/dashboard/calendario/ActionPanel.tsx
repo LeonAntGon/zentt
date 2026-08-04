@@ -10,6 +10,7 @@ import {
   Loader2,
   MessageSquare,
   XCircle,
+  Ban,
   Inbox,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -23,6 +24,7 @@ type ActionPanelProps = {
   busyId: number | null;
   onConfirmReserva: (id: number) => void;
   onRejectReserva: (id: number) => void;
+  onCancelReserva: (id: number) => void;
   onConfirmConsulta: (msg: Mensaje) => void;
   onRejectConsulta: (id: number) => void;
 };
@@ -65,6 +67,7 @@ export function ActionPanel({
   busyId,
   onConfirmReserva,
   onRejectReserva,
+  onCancelReserva,
   onConfirmConsulta,
   onRejectConsulta,
 }: ActionPanelProps) {
@@ -294,6 +297,24 @@ export function ActionPanel({
                     >
                       <XCircle size={12} />
                       Rechazar
+                    </button>
+                  </div>
+                )}
+
+                {isConfirmed && (
+                  <div className="mt-3 flex gap-2">
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() => onCancelReserva(r.id)}
+                      className="inline-flex flex-1 items-center justify-center gap-1 rounded-lg border border-red-200 bg-white px-2.5 py-2 text-[11px] font-bold text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+                    >
+                      {busy ? (
+                        <Loader2 size={12} className="animate-spin" />
+                      ) : (
+                        <Ban size={12} />
+                      )}
+                      Cancelar
                     </button>
                   </div>
                 )}

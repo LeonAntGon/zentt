@@ -62,14 +62,11 @@ export function MasterCalendar({
   const dualMonth = useDualMonth();
 
   const modifiers = {
-    confirmed: (date: Date) =>
-      !aggregateView && confirmedDates.has(toISODate(date)),
+    confirmed: (date: Date) => confirmedDates.has(toISODate(date)),
     pending: (date: Date) =>
-      !aggregateView &&
       pendingDates.has(toISODate(date)) &&
       !confirmedDates.has(toISODate(date)),
     blocked: (date: Date) =>
-      !aggregateView &&
       blockedDates.has(toISODate(date)) &&
       !confirmedDates.has(toISODate(date)) &&
       !pendingDates.has(toISODate(date)),
@@ -168,22 +165,24 @@ export function MasterCalendar({
             )}
           />
 
+          <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 border-t border-slate-100 pt-4 text-xs text-slate-500">
+          <span className="inline-flex items-center gap-1.5">
+            <span className="h-3 w-3 rounded bg-emerald-100 ring-1 ring-emerald-200" />
+            Confirmada
+          </span>
           {!aggregateView && (
-            <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 border-t border-slate-100 pt-4 text-xs text-slate-500">
-            <span className="inline-flex items-center gap-1.5">
-              <span className="h-3 w-3 rounded bg-emerald-100 ring-1 ring-emerald-200" />
-              Confirmada
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <span className="h-3 w-3 rounded bg-amber-100 ring-1 ring-amber-200" />
-              Pendiente
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <span className="h-3 w-3 rounded bg-[repeating-linear-gradient(-45deg,#f1f5f9,#f1f5f9_2px,#e2e8f0_2px,#e2e8f0_4px)] ring-1 ring-slate-200" />
-              Bloqueada / iCal
-            </span>
-            </div>
+            <>
+          <span className="inline-flex items-center gap-1.5">
+            <span className="h-3 w-3 rounded bg-amber-100 ring-1 ring-amber-200" />
+            Pendiente
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <span className="h-3 w-3 rounded bg-[repeating-linear-gradient(-45deg,#f1f5f9,#f1f5f9_2px,#e2e8f0_2px,#e2e8f0_4px)] ring-1 ring-slate-200" />
+            Bloqueada / iCal
+          </span>
+            </>
           )}
+          </div>
         </div>
 
         {/* Month summary */}

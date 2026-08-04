@@ -10,11 +10,12 @@ import {
   startOfMonth,
   endOfMonth,
 } from "date-fns";
-import { CalendarDays, Loader2, Trash2 } from "lucide-react";
+import { CalendarDays, Loader2, PlusCircle, Trash2, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { PropertySelector } from "@/components/dashboard/calendario/PropertySelector";
 import { MasterCalendar } from "@/components/dashboard/calendario/MasterCalendar";
 import { ActionPanel } from "@/components/dashboard/calendario/ActionPanel";
+import { ManualReservationDialog } from "@/components/dashboard/calendario/ManualReservationDialog";
 
 function nightsInMonth(checkIn: string, checkOut: string, month: Date) {
   const start = parseISO(checkIn);
@@ -49,6 +50,8 @@ export default function CalendarioPage() {
   const [busyId, setBusyId] = useState<number | null>(null);
   const [deleteConsultaId, setDeleteConsultaId] = useState<number | null>(null);
   const [syncingIcal, setSyncingIcal] = useState(false);
+  const [showManualDialog, setShowManualDialog] = useState(false);
+  const [cancelTarget, setCancelTarget] = useState<number | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -90,8 +93,8 @@ export default function CalendarioPage() {
 
   const confirmedDates = useMemo(() => {
     const set = new Set<string>();
-    if (selectedCabanaId === "all") return set;
-    for (const r of filteredReservas) {
+    const source = selectedCabanaId === "all" ? reservas : filteredReservas;
+    for (const r of source) {
       if (r.estado !== "confirmada") continue;
       const start = parseISO(r.check_in);
       const end = parseISO(r.check_out);
@@ -104,7 +107,7 @@ export default function CalendarioPage() {
       }
     }
     return set;
-  }, [filteredReservas, selectedCabanaId]);
+  }, [reservas, filteredReservas, selectedCabanaId]);
 
   const blockedDates = useMemo(() => {
     const set = new Set<string>();
@@ -291,6 +294,30 @@ export default function CalendarioPage() {
     }
   };
 
+  const handleCancelReserva = async (id: number) => {
+    setBusyId(id);
+    try {
+      const { data } = await api.post<Reserva>(
+        `/booking/gestion-reservas/${id}/cancelar/`
+      );
+      setReservas((prev) =>
+        prev.map((r) => (r.id === id ? { ...r, ...data } : r))
+      );
+      setCancelTarget(null);
+      toast.success("Reserva cancelada. Fechas liberadas.");
+    } catch (err: unknown) {
+      const detail =
+        err &&
+        typeof err === "object" &&
+        "response" in err &&
+        (err as { response?: { data?: { detail?: string } } }).response?.data
+          ?.detail;
+      toast.error(typeof detail === "string" ? detail : "No se pudo cancelar.");
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   const handleConfirmConsulta = async (msg: Mensaje) => {
     if (!msg.fecha_desde || !msg.fecha_hasta) {
       toast.error("Esta consulta no tiene fechas.");
@@ -390,16 +417,26 @@ export default function CalendarioPage() {
   return (
     <div className="min-h-full bg-slate-50">
       <div className="mx-auto max-w-7xl p-6 md:p-8">
-        <header className="mb-6">
-          <p className="mb-1 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-            <CalendarDays size={14} /> Disponibilidad
-          </p>
-          <h1 className="font-heading text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">
-            Calendario
-          </h1>
-          <p className="mt-1 text-sm text-slate-500">
-            Vista de alta densidad: confirmadas, pendientes y bloqueos iCal.
-          </p>
+        <header className="mb-6 flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className="mb-1 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+              <CalendarDays size={14} /> Disponibilidad
+            </p>
+            <h1 className="font-heading text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">
+              Calendario
+            </h1>
+            <p className="mt-1 text-sm text-slate-500">
+              Vista de alta densidad: confirmadas, pendientes y bloqueos iCal.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowManualDialog(true)}
+            className="btn-whatsapp inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-slate-200 transition-all hover:bg-slate-800 active:scale-95"
+          >
+            <PlusCircle size={16} />
+            Nueva reserva
+          </button>
         </header>
 
         <div className="mb-6">
@@ -439,12 +476,63 @@ export default function CalendarioPage() {
               busyId={busyId}
               onConfirmReserva={handleConfirm}
               onRejectReserva={handleReject}
+              onCancelReserva={setCancelTarget}
               onConfirmConsulta={handleConfirmConsulta}
               onRejectConsulta={(id) => setDeleteConsultaId(id)}
             />
           </div>
         </div>
       </div>
+
+      <ManualReservationDialog
+        cabanas={cabanas}
+        preselectedCabanaId={selectedCabanaId}
+        preselectedDay={selectedDay ? toISODate(selectedDay) : null}
+        open={showManualDialog}
+        onClose={() => setShowManualDialog(false)}
+        onCreated={(reserva) => {
+          setReservas((prev) => [reserva, ...prev]);
+          setShowManualDialog(false);
+        }}
+      />
+
+      {cancelTarget !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 text-center shadow-xl">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-amber-100">
+              <XCircle size={32} className="text-amber-600" />
+            </div>
+            <h3 className="mb-2 text-xl font-bold text-slate-900">
+              Cancelar reserva
+            </h3>
+            <p className="mb-6 text-slate-500">
+              ¿Seguro que querés cancelar esta reserva? Las fechas quedarán
+              liberadas.
+            </p>
+            <div className="flex justify-center gap-3">
+              <button
+                type="button"
+                disabled={busyId === cancelTarget}
+                onClick={() => setCancelTarget(null)}
+                className="flex-1 rounded-xl bg-slate-100 px-4 py-2.5 font-bold text-slate-700 transition-colors hover:bg-slate-200 disabled:opacity-60"
+              >
+                Volver
+              </button>
+              <button
+                type="button"
+                disabled={busyId === cancelTarget}
+                onClick={() => handleCancelReserva(cancelTarget!)}
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 font-bold text-white shadow-lg shadow-red-200 transition-colors hover:bg-red-700 disabled:opacity-60"
+              >
+                {busyId === cancelTarget ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : null}
+                Sí, cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {deleteConsultaId !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -471,7 +559,7 @@ export default function CalendarioPage() {
               <button
                 type="button"
                 disabled={busyId === deleteConsultaId}
-                onClick={() => handleDeleteConsulta(deleteConsultaId)}
+                onClick={() => handleDeleteConsulta(deleteConsultaId!)}
                 className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 font-bold text-white shadow-lg shadow-red-200 transition-colors hover:bg-red-700 disabled:opacity-60"
               >
                 {busyId === deleteConsultaId ? (
