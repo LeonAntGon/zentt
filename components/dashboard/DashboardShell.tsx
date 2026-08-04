@@ -53,7 +53,7 @@ const NAV_SECTIONS: NavSection[] = [
         icon: Home,
         prefix: "/dashboard/cabanas",
       },
-      { href: "/dashboard/mensajes", label: "Buzón", icon: Mail, exact: true },
+      { href: "/dashboard/buzon", label: "Buzón", icon: Mail, exact: true },
       {
         href: "/dashboard/calendario",
         label: "Calendario",

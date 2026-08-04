@@ -1,5 +1,6 @@
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { AirbnbIcon } from "@/components/icons/AirbnbIcon";
+import { Globe } from "lucide-react";
 
 export type MessageOrigen = "WEB" | "WA" | "AIRBNB";
 
@@ -11,10 +12,36 @@ export function normalizeOrigen(value?: string | null): MessageOrigen {
 /** Badge / icono de canal: WEB (texto), WhatsApp o Airbnb. */
 export function MessageChannelBadge({
   origen,
+  variant = "icon",
 }: {
   origen?: string | null;
+  variant?: "icon" | "pill";
 }) {
   const channel = normalizeOrigen(origen);
+
+  if (variant === "pill") {
+    if (channel === "WA") {
+      return (
+        <span className="inline-flex items-center gap-1 rounded-md bg-[#25D366]/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#128C4B]">
+          <WhatsAppIcon className="h-3 w-3" title="WhatsApp" /> WhatsApp
+        </span>
+      );
+    }
+
+    if (channel === "AIRBNB") {
+      return (
+        <span className="inline-flex items-center gap-1 rounded-md bg-[#FF385C]/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#D92D4B]">
+          <AirbnbIcon className="h-3 w-3" title="Airbnb" /> Airbnb
+        </span>
+      );
+    }
+
+    return (
+      <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
+        <Globe size={11} /> Web
+      </span>
+    );
+  }
 
   if (channel === "WA") {
     return (

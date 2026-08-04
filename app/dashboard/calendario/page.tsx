@@ -90,6 +90,7 @@ export default function CalendarioPage() {
 
   const confirmedDates = useMemo(() => {
     const set = new Set<string>();
+    if (selectedCabanaId === "all") return set;
     for (const r of filteredReservas) {
       if (r.estado !== "confirmada") continue;
       const start = parseISO(r.check_in);
@@ -103,14 +104,13 @@ export default function CalendarioPage() {
       }
     }
     return set;
-  }, [filteredReservas]);
+  }, [filteredReservas, selectedCabanaId]);
 
   const blockedDates = useMemo(() => {
     const set = new Set<string>();
+    if (selectedCabanaId === "all") return set;
     const list =
-      selectedCabanaId === "all"
-        ? cabanas
-        : cabanas.filter((c) => c.id === selectedCabanaId);
+      cabanas.filter((c) => c.id === selectedCabanaId);
     for (const c of list) {
       for (const b of c.bloqueos_externos || []) {
         const start = parseISO(b.inicio);
@@ -141,6 +141,7 @@ export default function CalendarioPage() {
 
   const pendingDates = useMemo(() => {
     const set = new Set<string>();
+    if (selectedCabanaId === "all") return set;
     for (const r of filteredReservas) {
       if (r.estado !== "pendiente") continue;
       const start = parseISO(r.check_in);
@@ -166,7 +167,7 @@ export default function CalendarioPage() {
       }
     }
     return set;
-  }, [filteredReservas, filteredMensajes]);
+  }, [filteredReservas, filteredMensajes, selectedCabanaId]);
 
   const cabinCount =
     selectedCabanaId === "all"
@@ -193,14 +194,46 @@ export default function CalendarioPage() {
     let blockedNights = 0;
     const monthStart = startOfMonth(month);
     const monthEnd = endOfMonth(month);
-    for (
-      let d = new Date(monthStart);
-      d <= monthEnd;
-      d.setDate(d.getDate() + 1)
-    ) {
-      const key = toISODate(d);
-      if (blockedDates.has(key) && !confirmedDates.has(key)) {
-        blockedNights += 1;
+    const cabinsInScope =
+      selectedCabanaId === "all"
+        ? cabanas
+        : cabanas.filter((c) => c.id === selectedCabanaId);
+
+    // Count blocked nights per cabin. A date occupied in cabin A must not
+    // consume the capacity of cabin B.
+    for (const cabana of cabinsInScope) {
+      const confirmedForCabana = new Set<string>();
+      const blockedForCabana = new Set<string>();
+      for (const reserva of reservas) {
+        if (reserva.cabana !== cabana.id) continue;
+        const start = parseISO(reserva.check_in);
+        const end = parseISO(reserva.check_out);
+        if (end <= start) continue;
+        for (const day of eachDayOfInterval({
+          start,
+          end: new Date(end.getTime() - 86400000),
+        })) {
+          const key = toISODate(day);
+          if (reserva.estado === "confirmada") confirmedForCabana.add(key);
+          if (reserva.estado === "finalizada") blockedForCabana.add(key);
+        }
+      }
+      for (const bloqueo of cabana.bloqueos_externos || []) {
+        const start = parseISO(bloqueo.inicio);
+        const end = parseISO(bloqueo.fin);
+        if (end <= start) continue;
+        for (const day of eachDayOfInterval({
+          start,
+          end: new Date(end.getTime() - 86400000),
+        })) {
+          blockedForCabana.add(toISODate(day));
+        }
+      }
+      for (let d = new Date(monthStart); d <= monthEnd; d.setDate(d.getDate() + 1)) {
+        const key = toISODate(d);
+        if (blockedForCabana.has(key) && !confirmedForCabana.has(key)) {
+          blockedNights += 1;
+        }
       }
     }
 
@@ -213,8 +246,9 @@ export default function CalendarioPage() {
   }, [
     month,
     filteredReservas,
-    blockedDates,
-    confirmedDates,
+    cabanas,
+    reservas,
+    selectedCabanaId,
     cabinCount,
   ]);
 
@@ -389,6 +423,7 @@ export default function CalendarioPage() {
               confirmedDates={confirmedDates}
               pendingDates={pendingDates}
               blockedDates={blockedDates}
+              aggregateView={selectedCabanaId === "all"}
               monthSummary={monthSummary}
               showSyncIcal={selectedCabanaId !== "all"}
               syncingIcal={syncingIcal}

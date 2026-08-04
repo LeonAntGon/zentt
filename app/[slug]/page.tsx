@@ -106,9 +106,8 @@ export default function FreeTemplatePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await api.post("/contacto/", {
+      await api.post(`/public/${slug}/contacto/`, {
         ...form,
-        username: siteData?.username || slug,
         origen: "WEB",
       });
       toast.success("¡Mensaje enviado con éxito!");

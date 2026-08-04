@@ -313,7 +313,7 @@ export default function OverviewPage() {
       hint: "Requieren respuesta",
       value: String(stats.consultasSinLeer),
       icon: Mail,
-      href: "/dashboard/mensajes",
+      href: "/dashboard/buzon",
     },
     {
       label: "Ocupación del mes",
@@ -439,7 +439,7 @@ export default function OverviewPage() {
               Consultas por responder
             </h2>
             <Link
-              href="/dashboard/mensajes"
+              href="/dashboard/buzon"
               className="flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
             >
               Abrir buzón <ArrowRight size={14} />
@@ -521,7 +521,7 @@ export default function OverviewPage() {
                           </a>
                         )}
                         <Link
-                          href="/dashboard/mensajes"
+                          href="/dashboard/buzon"
                           className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
                         >
                           <Reply size={14} />

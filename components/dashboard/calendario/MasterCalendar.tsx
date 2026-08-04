@@ -26,6 +26,7 @@ type MasterCalendarProps = {
   confirmedDates: Set<string>;
   pendingDates: Set<string>;
   blockedDates: Set<string>;
+  aggregateView?: boolean;
   monthSummary: MonthSummary;
   showSyncIcal?: boolean;
   syncingIcal?: boolean;
@@ -52,6 +53,7 @@ export function MasterCalendar({
   confirmedDates,
   pendingDates,
   blockedDates,
+  aggregateView = false,
   monthSummary,
   showSyncIcal = false,
   syncingIcal = false,
@@ -60,11 +62,14 @@ export function MasterCalendar({
   const dualMonth = useDualMonth();
 
   const modifiers = {
-    confirmed: (date: Date) => confirmedDates.has(toISODate(date)),
+    confirmed: (date: Date) =>
+      !aggregateView && confirmedDates.has(toISODate(date)),
     pending: (date: Date) =>
+      !aggregateView &&
       pendingDates.has(toISODate(date)) &&
       !confirmedDates.has(toISODate(date)),
     blocked: (date: Date) =>
+      !aggregateView &&
       blockedDates.has(toISODate(date)) &&
       !confirmedDates.has(toISODate(date)) &&
       !pendingDates.has(toISODate(date)),
@@ -113,7 +118,9 @@ export function MasterCalendar({
             Calendario maestro
           </h2>
           <p className="mt-0.5 text-xs text-slate-400">
-            Seleccioná un día para ver la actividad
+            {aggregateView
+              ? "Seleccioná un alojamiento para ver sus fechas exactas"
+              : "Seleccioná un día para ver la actividad"}
             {dualMonth ? " · Vista dual" : ""}
           </p>
         </div>
@@ -161,7 +168,8 @@ export function MasterCalendar({
             )}
           />
 
-          <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 border-t border-slate-100 pt-4 text-xs text-slate-500">
+          {!aggregateView && (
+            <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 border-t border-slate-100 pt-4 text-xs text-slate-500">
             <span className="inline-flex items-center gap-1.5">
               <span className="h-3 w-3 rounded bg-emerald-100 ring-1 ring-emerald-200" />
               Confirmada
@@ -174,7 +182,8 @@ export function MasterCalendar({
               <span className="h-3 w-3 rounded bg-[repeating-linear-gradient(-45deg,#f1f5f9,#f1f5f9_2px,#e2e8f0_2px,#e2e8f0_4px)] ring-1 ring-slate-200" />
               Bloqueada / iCal
             </span>
-          </div>
+            </div>
+          )}
         </div>
 
         {/* Month summary */}

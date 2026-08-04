@@ -70,6 +70,8 @@ export interface Mensaje {
   fecha_desde?: string | null;
   fecha_hasta?: string | null;
   total_estimado?: string | number | null;
+  reserva?: number | null;
+  reserva_estado?: "pendiente" | "confirmada" | "cancelada" | "finalizada" | null;
 }
 
 export interface Reserva {

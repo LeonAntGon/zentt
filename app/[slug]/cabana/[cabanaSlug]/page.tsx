@@ -148,8 +148,7 @@ export default function CabinDetailPublicPage() {
 
     try {
       setSending(true);
-      await api.post(`/mensajes/`, {
-        cabana: cabana.id,
+      await api.post(`/public/${slug}/cabana/${cabanaSlug}/mensajes/`, {
         nombre_turista: formData.nombre_turista,
         email_turista: formData.email_turista,
         telefono_turista: formData.telefono_turista,
