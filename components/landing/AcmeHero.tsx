@@ -6,7 +6,7 @@ import { motion } from "motion/react";
 
 export function AcmeHero() {
   return (
-    <div className="bg-background pt-16">
+    <div className="bg-white pt-16">
       <main className="relative container max-w-5xl mx-auto px-4">
         <section className="w-full py-12 md:py-20 lg:py-28">
           <motion.div
@@ -90,7 +90,7 @@ export function AcmeHero() {
                     className="w-full h-full object-center dark:hidden block rounded-3xl"
                   />
                 </div>
-                <div className="absolute inset-x-0 bottom-0 h-[50%] bg-gradient-to-t from-background to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 h-[50%] bg-gradient-to-t from-white to-transparent" />
               </div>
             </motion.div>
           </motion.div>

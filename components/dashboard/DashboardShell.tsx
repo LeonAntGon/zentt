@@ -131,7 +131,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       <div className="flex min-w-0 flex-1 flex-col">
         <h2
           title={nombreNegocio || "Mi Complejo"}
-          className="min-w-0 whitespace-normal break-words text-xs font-black uppercase leading-tight tracking-tight text-foreground"
+          className="min-w-0 whitespace-normal break-words text-xs font-black uppercase leading-tight tracking-tight text-slate-900"
         >
           {nombreNegocio || "Mi Complejo"}
         </h2>
@@ -185,8 +185,8 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       <Link
         href="/dashboard/perfil"
         onClick={onNavigate}
-        className={`flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-muted/60 ${
-          isActivePrefix("/dashboard/perfil") ? "bg-muted/60" : ""
+        className={`group flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-transparent ${
+          isActivePrefix("/dashboard/perfil") ? "text-primary" : ""
         }`}
       >
         <UserAvatar
@@ -198,10 +198,10 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           brandTone
         />
         <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-          <span className="truncate text-xs font-bold text-foreground">
+          <span className="truncate text-xs font-bold text-slate-900 group-hover:text-primary">
             {user?.username || user?.first_name}
           </span>
-          <span className="truncate text-[10px] text-muted-foreground">
+          <span className="truncate text-[10px] text-slate-500">
             {user?.email}
           </span>
         </div>
@@ -255,7 +255,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             <Menu size={20} />
           </button>
           <div className="flex min-w-0 flex-col overflow-hidden">
-            <span className="truncate text-sm font-black uppercase tracking-tight">
+            <span className="truncate text-sm font-black uppercase tracking-tight text-slate-900">
               {nombreNegocio || "Mi Complejo"}
             </span>
             <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">

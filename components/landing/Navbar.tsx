@@ -16,7 +16,7 @@ export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border/50">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-lg border-b border-border/50">
       <div className="container mx-auto flex items-center justify-between h-16 px-4 lg:px-8">
         <Link
           href="/"
@@ -57,7 +57,7 @@ export function Navbar() {
       </div>
 
       {mobileOpen && (
-        <div className="md:hidden bg-background border-b border-border px-4 pb-4 space-y-2">
+        <div className="md:hidden bg-white border-b border-border px-4 pb-4 space-y-2">
           {navLinks.map((link) => (
             <a
               key={`m-${link.label}`}

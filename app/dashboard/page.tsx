@@ -326,7 +326,7 @@ export default function OverviewPage() {
   return (
     <div className="mx-auto max-w-7xl animate-in bg-slate-50 p-6 fade-in duration-700 md:p-10">
       <header className="mb-6">
-        <h1 className="page-title-sm flex items-center gap-2">
+        <h1 className="page-title-sm flex items-center gap-2 !text-slate-900">
           <LayoutDashboard className="text-primary" size={22} />
           Panel de Control
         </h1>

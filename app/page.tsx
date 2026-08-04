@@ -7,7 +7,7 @@ import Footer from "@/components/landing/Footer";
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-background font-body">
+    <div className="min-h-screen bg-white font-body text-slate-900">
       <Navbar />
       <AcmeHero />
       {/* <IntegrationsMarquee /> */}
