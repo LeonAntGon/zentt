@@ -14,7 +14,7 @@ import {
   Copy,
   CheckCircle2,
   Loader2,
-  Sparkles,
+  LayoutDashboard,
   CalendarDays,
   Clock,
   Percent,
@@ -176,7 +176,6 @@ export default function OverviewPage() {
   const [copied, setCopied] = useState(false);
 
   const slug = user?.profile?.slug;
-  const nombreNegocio = user?.profile?.nombre_negocio;
 
   const publicUrl = useMemo(() => {
     if (typeof window === "undefined") return "";
@@ -327,15 +326,10 @@ export default function OverviewPage() {
   return (
     <div className="mx-auto max-w-7xl animate-in bg-slate-50 p-6 fade-in duration-700 md:p-10">
       <header className="mb-6">
-        <p className="page-eyebrow mb-2 flex items-center gap-2">
-          <Sparkles size={14} /> Panel de Control
-        </p>
-        <h1 className="page-title">
-          {nombreNegocio || `¡Hola, ${user?.first_name}!`}
+        <h1 className="page-title-sm flex items-center gap-2">
+          <LayoutDashboard className="text-primary" size={22} />
+          Panel de Control
         </h1>
-        <p className="page-subtitle mt-1">
-          Respondé consultas, mirá ocupación y compartí tu link.
-        </p>
       </header>
 
       <OnboardingStepper

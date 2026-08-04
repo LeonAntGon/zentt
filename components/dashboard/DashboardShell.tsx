@@ -126,9 +126,13 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         fotoPerfil={fotoPerfil}
         nombreNegocio={nombreNegocio}
         size="sm"
+        className="h-8 w-8 shrink-0 rounded-lg text-[10px]"
       />
       <div className="flex min-w-0 flex-1 flex-col">
-        <h2 className="break-words text-sm font-black uppercase leading-snug tracking-tight text-foreground">
+        <h2
+          title={nombreNegocio || "Mi Complejo"}
+          className="min-w-0 whitespace-normal break-words text-xs font-black uppercase leading-tight tracking-tight text-foreground"
+        >
           {nombreNegocio || "Mi Complejo"}
         </h2>
         <div className="mt-1 flex items-center gap-1.5" aria-label="Panel Zentt">
@@ -160,10 +164,10 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                   key={item.href}
                   href={item.href}
                   onClick={onNavigate}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition-all ${
-                      active
-                        ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
-                        : "text-primary/90 hover:bg-primary/5 hover:text-primary"
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition-all ${
+                    active
+                      ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
+                      : "text-primary hover:bg-primary hover:text-primary-foreground"
                   }`}
                 >
                   <Icon size={18} /> {item.label}
