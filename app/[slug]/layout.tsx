@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
 
 export default function PublicSiteLayout({
   children,
@@ -13,6 +14,7 @@ export default function PublicSiteLayout({
           "var(--font-public), ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif",
       }}
     >
+      <GoogleAnalytics />
       {children}
     </div>
   );
