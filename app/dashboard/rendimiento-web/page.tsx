@@ -4,16 +4,21 @@ import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import {
   Activity,
+  CalendarDays,
+  ChevronDown,
   Eye,
   Globe,
+  Home,
   Loader2,
   RefreshCw,
+  CircleHelp,
   Users,
 } from "lucide-react";
 import {
+  Area,
+  AreaChart,
   CartesianGrid,
-  Line,
-  LineChart,
+  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
@@ -23,11 +28,6 @@ import { toast } from "sonner";
 import api from "@/lib/api";
 import type { Cabana } from "@/types/cabin";
 import {
-  ChartContainer,
-  ChartTooltipContent,
-  type ChartConfig,
-} from "@/components/ui/chart";
-import {
   Card,
   CardContent,
   CardDescription,
@@ -35,7 +35,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-type Granularity = "day" | "month" | "year";
+type Granularity = "day" | "week" | "month";
 
 type AnalyticsPoint = {
   period: string;
@@ -70,11 +70,6 @@ type AnalyticsReport = {
   updated_at: string;
 };
 
-const chartConfig = {
-  sessions: { label: "Sesiones", color: "#0A2342" },
-  page_views: { label: "Vistas de página", color: "#4D8FBA" },
-} satisfies ChartConfig;
-
 const numberFormatter = new Intl.NumberFormat("es-AR");
 
 function formatNumber(value: number | undefined) {
@@ -88,6 +83,10 @@ function formatPeriod(period: string, granularity: Granularity) {
       day: "2-digit",
       month: "short",
     }).format(new Date(year, month - 1, day));
+  }
+  if (granularity === "week") {
+    const [year, week] = period.split("-W");
+    return `Sem ${week}, ${year}`;
   }
   if (granularity === "month") {
     const [year, month] = period.split("-").map(Number);
@@ -108,12 +107,19 @@ function getDateRange(granularity: Granularity) {
     start.setDate(start.getDate() - 29);
   } else if (granularity === "month") {
     start.setMonth(start.getMonth() - 11, 1);
+  } else if (granularity === "week") {
+    const day = start.getDay() || 7;
+    start.setDate(start.getDate() - day + 1);
+    start.setDate(start.getDate() - 77);
   } else {
-    start.setFullYear(start.getFullYear() - 4, 0, 1);
+    start.setMonth(start.getMonth() - 11, 1);
   }
 
   return { from: start.toISOString().slice(0, 10), to };
 }
+
+const CHART_BLUE = "hsl(209 68% 28%)";
+const CHART_TEAL = "hsl(199 48% 52%)";
 
 export default function RendimientoWebPage() {
   const [cabanas, setCabanas] = useState<Cabana[]>([]);
@@ -224,31 +230,53 @@ export default function RendimientoWebPage() {
             </p>
           </div>
 
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <select
-              value={granularity}
-              onChange={(event) => setGranularity(event.target.value as Granularity)}
-              className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 outline-none focus:border-primary"
-              aria-label="Agrupar estadísticas por"
-            >
-              <option value="day">Por día · últimos 30 días</option>
-              <option value="month">Por mes · últimos 12 meses</option>
-              <option value="year">Por año · últimos 5 años</option>
-            </select>
-            <select
-              value={selectedCabana}
-              onChange={(event) => setSelectedCabana(event.target.value)}
-              className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 outline-none focus:border-primary"
-              aria-label="Filtrar por alojamiento"
-              disabled={cabanasLoading}
-            >
-              <option value="all">Todos los alojamientos</option>
-              {cabanas.map((cabana) => (
-                <option key={cabana.id} value={cabana.id}>
-                  {cabana.nombre}
-                </option>
-              ))}
-            </select>
+          <div className="flex w-full flex-col gap-2 sm:flex-row lg:w-auto">
+            <div className="relative w-full sm:min-w-[190px]">
+              <Home
+                size={15}
+                className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-slate-400"
+              />
+              <select
+                value={selectedCabana}
+                onChange={(event) => setSelectedCabana(event.target.value)}
+                className="h-10 w-full cursor-pointer appearance-none rounded-xl border border-slate-200 bg-slate-50 py-2 pl-9 pr-8 text-sm font-semibold text-slate-800 shadow-sm outline-none transition-colors hover:border-slate-300 hover:bg-white focus:border-primary/40 focus:bg-white focus:ring-2 focus:ring-primary/15"
+                aria-label="Filtrar por alojamiento"
+                disabled={cabanasLoading}
+              >
+                <option value="all">Todos los alojamientos</option>
+                {cabanas.map((cabana) => (
+                  <option key={cabana.id} value={cabana.id}>
+                    {cabana.nombre}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown
+                size={14}
+                className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+              />
+            </div>
+            <div className="relative w-full sm:min-w-[210px]">
+              <CalendarDays
+                size={15}
+                className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-slate-400"
+              />
+              <select
+                value={granularity}
+                onChange={(event) =>
+                  setGranularity(event.target.value as Granularity)
+                }
+                className="h-10 w-full cursor-pointer appearance-none rounded-xl border border-slate-200 bg-slate-50 py-2 pl-9 pr-8 text-sm font-semibold text-slate-800 shadow-sm outline-none transition-colors hover:border-slate-300 hover:bg-white focus:border-primary/40 focus:bg-white focus:ring-2 focus:ring-primary/15"
+                aria-label="Agrupar estadísticas por"
+              >
+                <option value="day">Por día · últimos 30 días</option>
+                <option value="week">Por semana · últimas 12 semanas</option>
+                <option value="month">Por mes · últimos 12 meses</option>
+              </select>
+              <ChevronDown
+                size={14}
+                className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+              />
+            </div>
           </div>
         </header>
 
@@ -264,6 +292,19 @@ export default function RendimientoWebPage() {
                   <span className="flex items-center gap-1.5 text-sm text-slate-500">
                     <Icon size={14} className="shrink-0" />
                     {kpi.label}
+                    {(kpi.label === "Sesiones" || kpi.label === "Usuarios activos") && (
+                      <span
+                        title={
+                          kpi.label === "Sesiones"
+                            ? "Una visita es una sesión. Durante una misma visita se pueden ver varias páginas."
+                            : "Un usuario activo es una persona o dispositivo detectado aproximadamente por GA4. Puede generar varias visitas."
+                        }
+                        aria-label={`Más información sobre ${kpi.label}`}
+                        className="inline-flex cursor-help text-slate-400"
+                      >
+                        <CircleHelp size={13} />
+                      </span>
+                    )}
                   </span>
                   <p className="font-heading text-2xl font-bold tracking-tight text-slate-900">
                     {reportLoading ? "—" : kpi.value}
@@ -314,39 +355,91 @@ export default function RendimientoWebPage() {
                 </p>
               </div>
             ) : (
-              <ChartContainer config={chartConfig} className="min-h-[280px] w-full">
-                <LineChart data={chartData} margin={{ left: 0, right: 8, top: 12 }}>
-                  <CartesianGrid vertical={false} strokeDasharray="4 4" />
-                  <XAxis
-                    dataKey="label"
-                    axisLine={false}
-                    tickLine={false}
-                    tickMargin={10}
-                    minTickGap={24}
-                  />
-                  <YAxis
-                    axisLine={false}
-                    tickLine={false}
-                    tickMargin={8}
-                    allowDecimals={false}
-                  />
-                  <Tooltip content={<ChartTooltipContent />} />
-                  <Line
-                    dataKey="sessions"
-                    type="monotone"
-                    stroke="var(--color-sessions)"
-                    strokeWidth={2.5}
-                    dot={false}
-                  />
-                  <Line
-                    dataKey="page_views"
-                    type="monotone"
-                    stroke="var(--color-page_views)"
-                    strokeWidth={2}
-                    dot={false}
-                  />
-                </LineChart>
-              </ChartContainer>
+              <div className="h-56 w-full sm:h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart
+                    data={chartData}
+                    margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
+                  >
+                    <defs>
+                      <linearGradient
+                        id="rendimientoSessionsGradient"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop offset="0%" stopColor={CHART_BLUE} stopOpacity={0.35} />
+                        <stop offset="85%" stopColor={CHART_BLUE} stopOpacity={0.04} />
+                        <stop offset="100%" stopColor="#ffffff" stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient
+                        id="rendimientoUsersGradient"
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop offset="0%" stopColor={CHART_TEAL} stopOpacity={0.2} />
+                        <stop offset="85%" stopColor={CHART_TEAL} stopOpacity={0.03} />
+                        <stop offset="100%" stopColor="#ffffff" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      vertical={false}
+                      stroke="#f1f5f9"
+                    />
+                    <XAxis
+                      dataKey="label"
+                      axisLine={false}
+                      tickLine={false}
+                      minTickGap={28}
+                      tick={{ fill: "#94a3b8", fontSize: 11, fontWeight: 500 }}
+                      dy={6}
+                    />
+                    <YAxis
+                      axisLine={false}
+                      tickLine={false}
+                      width={42}
+                      allowDecimals={false}
+                      tick={{ fill: "#94a3b8", fontSize: 10 }}
+                    />
+                    <Tooltip
+                      cursor={{ stroke: "#e2e8f0", strokeWidth: 1 }}
+                      contentStyle={{
+                        borderRadius: 12,
+                        border: "1px solid #e2e8f0",
+                        boxShadow: "0 4px 12px rgba(15,23,42,0.06)",
+                        fontSize: 12,
+                      }}
+                      labelFormatter={(label) => String(label)}
+                      formatter={(value, name) => [
+                        formatNumber(Number(value ?? 0)),
+                        name === "sessions" ? "Visitas" : "Usuarios activos",
+                      ]}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="sessions"
+                      name="sessions"
+                      stroke={CHART_BLUE}
+                      strokeWidth={2.5}
+                      fill="url(#rendimientoSessionsGradient)"
+                      activeDot={{ r: 5, strokeWidth: 2, stroke: "#fff" }}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="active_users"
+                      name="active_users"
+                      stroke={CHART_TEAL}
+                      strokeWidth={2}
+                      fill="url(#rendimientoUsersGradient)"
+                      activeDot={{ r: 4, strokeWidth: 2, stroke: "#fff" }}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
             )}
           </CardContent>
         </Card>
@@ -378,8 +471,30 @@ export default function RendimientoWebPage() {
                     <tr>
                       <th className="px-5 py-3 font-semibold">Alojamiento</th>
                       <th className="px-5 py-3 font-semibold">Vistas</th>
-                      <th className="px-5 py-3 font-semibold">Usuarios activos</th>
-                      <th className="px-5 py-3 text-right font-semibold">Sesiones</th>
+                      <th className="px-5 py-3 font-semibold">
+                        <span className="inline-flex items-center gap-1">
+                          Usuarios activos
+                          <span
+                            title="Un usuario activo es una persona o dispositivo detectado aproximadamente por GA4. Puede generar varias visitas."
+                            aria-label="Más información sobre usuarios activos"
+                            className="inline-flex cursor-help text-slate-400"
+                          >
+                            <CircleHelp size={13} />
+                          </span>
+                        </span>
+                      </th>
+                      <th className="px-5 py-3 text-right font-semibold">
+                        <span className="inline-flex items-center gap-1">
+                          Visitas
+                          <span
+                            title="Una visita es una sesión. Durante una misma visita se pueden ver varias páginas."
+                            aria-label="Más información sobre visitas"
+                            className="inline-flex cursor-help text-slate-400"
+                          >
+                            <CircleHelp size={13} />
+                          </span>
+                        </span>
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
