@@ -34,7 +34,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-type Granularity = "day" | "week" | "month";
+type Granularity = "day" | "month" | "year";
 
 type AnalyticsPoint = {
   period: string;
@@ -77,26 +77,46 @@ function formatNumber(value: number | undefined) {
   return value === undefined ? "—" : numberFormatter.format(value);
 }
 
-function formatPeriod(period: string, granularity: Granularity) {
+function parsePeriodParts(period: string): number[] | null {
+  const parts = period.split("-").map(Number);
+  return parts.every((part) => Number.isFinite(part)) ? parts : null;
+}
+
+/** Eje X: días con su número, meses abreviados, años con su número. */
+function formatAxisLabel(period: string, granularity: Granularity) {
+  if (granularity === "year") return period;
+  const parts = parsePeriodParts(period);
+  if (!parts) return period;
+  const [year, month, day] = parts;
   if (granularity === "day") {
-    const [year, month, day] = period.split("-").map(Number);
-    return new Intl.DateTimeFormat("es-AR", {
-      day: "2-digit",
-      month: "short",
-    }).format(new Date(year, month - 1, day));
+    if (!year || !month || !day) return period;
+    return String(day);
   }
-  if (granularity === "week") {
-    const [year, week] = period.split("-W");
-    return `Sem ${week}, ${year}`;
-  }
-  if (granularity === "month") {
-    const [year, month] = period.split("-").map(Number);
+  if (!year || !month) return period;
+  return new Intl.DateTimeFormat("es-AR", { month: "short" }).format(
+    new Date(year, month - 1, 1)
+  );
+}
+
+/** Tooltip: fecha completa para dar contexto al punto del gráfico. */
+function formatTooltipLabel(period: string, granularity: Granularity) {
+  if (granularity === "year") return `Año ${period}`;
+  const parts = parsePeriodParts(period);
+  if (!parts) return period;
+  const [year, month, day] = parts;
+  if (granularity === "day") {
+    if (!year || !month || !day) return period;
     return new Intl.DateTimeFormat("es-AR", {
+      day: "numeric",
       month: "short",
       year: "numeric",
-    }).format(new Date(year, month - 1, 1));
+    }).format(new Date(year, month - 1, day));
   }
-  return period;
+  if (!year || !month) return period;
+  return new Intl.DateTimeFormat("es-AR", {
+    month: "long",
+    year: "numeric",
+  }).format(new Date(year, month - 1, 1));
 }
 
 function getDateRange(granularity: Granularity) {
@@ -108,19 +128,42 @@ function getDateRange(granularity: Granularity) {
     start.setDate(start.getDate() - 29);
   } else if (granularity === "month") {
     start.setMonth(start.getMonth() - 11, 1);
-  } else if (granularity === "week") {
-    const day = start.getDay() || 7;
-    start.setDate(start.getDate() - day + 1);
-    start.setDate(start.getDate() - 77);
   } else {
-    start.setMonth(start.getMonth() - 11, 1);
+    start.setFullYear(start.getFullYear() - 2, 0, 1);
   }
 
   return { from: start.toISOString().slice(0, 10), to };
 }
 
+/** Ticks redondos del eje Y: 0 y cuatro benchmarks hasta un máximo "lindo". */
+function getBenchmarkTicks(maxValue: number): { ticks: number[]; max: number } {
+  if (maxValue <= 0) return { ticks: [0, 1], max: 1 };
+  const magnitude = Math.pow(10, Math.floor(Math.log10(maxValue)));
+  const normalized = maxValue / magnitude;
+  const stepOption = [1, 2, 2.5, 5, 10].find((step) => normalized <= step) ?? 10;
+  const niceMax = stepOption * magnitude;
+  const step = Math.max(1, Math.ceil(niceMax / 4));
+  const max = step * 4;
+  return { ticks: [0, step, step * 2, step * 3, max], max };
+}
+
 const CHART_BLUE = "hsl(209 68% 28%)";
 const CHART_TEAL = "hsl(199 48% 52%)";
+
+/** Tooltip "?" con estilo propio: tarjeta blanca, texto claro, al hacer hover. */
+function InfoTip({ label, text }: { label: string; text: string }) {
+  return (
+    <span
+      className="group relative inline-flex shrink-0 cursor-help text-slate-400 hover:text-slate-600"
+      aria-label={label}
+    >
+      <CircleHelp size={13} />
+      <span className="pointer-events-none absolute bottom-full left-1/2 z-30 mb-2 w-60 -translate-x-1/2 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-left text-[11px] font-normal normal-case leading-relaxed tracking-normal text-slate-600 opacity-0 shadow-lg transition-opacity duration-150 group-hover:opacity-100">
+        {text}
+      </span>
+    </span>
+  );
+}
 
 export default function RendimientoWebPage() {
   const [cabanas, setCabanas] = useState<Cabana[]>([]);
@@ -192,10 +235,22 @@ export default function RendimientoWebPage() {
     () =>
       report?.series.map((item) => ({
         ...item,
-        label: formatPeriod(item.period, granularity),
+        label: formatAxisLabel(item.period, granularity),
+        fullLabel: formatTooltipLabel(item.period, granularity),
       })) || [],
     [granularity, report]
   );
+
+  const yAxisConfig = useMemo(() => {
+    const maxValue = chartData.reduce((acc, item) => {
+      const visible = [
+        hiddenSeries.sessions ? 0 : item.sessions,
+        hiddenSeries.active_users ? 0 : item.active_users,
+      ];
+      return Math.max(acc, ...visible);
+    }, 0);
+    return getBenchmarkTicks(maxValue);
+  }, [chartData, hiddenSeries]);
 
   const summary = report?.summary;
   const toggleSeries = (series: SeriesKey) => {
@@ -207,22 +262,25 @@ export default function RendimientoWebPage() {
 
   const kpis = [
     {
-      label: "Sesiones",
+      label: "Visitas",
       value: formatNumber(summary?.sessions),
       icon: Users,
-      hint: "Visitas generales a tu web",
+      hint: "Total de veces que entraron a tu web en el período",
+      tip: "Cada vez que alguien entra a tu web cuenta como una visita. Si la misma persona entra 3 veces en días distintos, son 3 visitas.",
     },
     {
       label: "Usuarios",
       value: formatNumber(summary?.active_users),
       icon: Activity,
-      hint: "Usuarios aproximados detectados por GA4",
+      hint: "Personas distintas que visitaron tu web",
+      tip: "Cantidad estimada de personas distintas que entraron a tu web. Google las detecta de forma aproximada y anónima; una misma persona puede generar varias visitas.",
     },
     {
       label: "Vistas de página",
       value: formatNumber(summary?.page_views),
       icon: Eye,
-      hint: "Páginas públicas visitadas",
+      hint: "Páginas abiertas en total",
+      tip: "Cuántas páginas se abrieron en total (inicio, cada alojamiento, contacto, etc.). Una sola visita puede incluir varias páginas vistas.",
     },
   ];
 
@@ -282,19 +340,7 @@ export default function RendimientoWebPage() {
                   <span className="flex items-center gap-1.5 text-sm text-slate-500">
                     <Icon size={14} className="shrink-0" />
                     {kpi.label}
-                    {(kpi.label === "Sesiones" || kpi.label === "Usuarios") && (
-                      <span
-                        title={
-                          kpi.label === "Sesiones"
-                            ? "Una visita es una sesión. Durante una misma visita se pueden ver varias páginas."
-                            : "Un usuario es una persona o dispositivo detectado aproximadamente por GA4. Puede generar varias visitas."
-                        }
-                        aria-label={`Más información sobre ${kpi.label}`}
-                        className="inline-flex cursor-help text-slate-400"
-                      >
-                        <CircleHelp size={13} />
-                      </span>
-                    )}
+                    <InfoTip label={`Más información sobre ${kpi.label}`} text={kpi.tip} />
                   </span>
                   <p className="font-heading text-2xl font-bold tracking-tight text-slate-900">
                     {reportLoading ? "—" : kpi.value}
@@ -311,13 +357,10 @@ export default function RendimientoWebPage() {
             <div className="min-w-0">
               <CardTitle className="flex items-center gap-1.5 text-sm">
                 Cómo evolucionan tus visitas
-                <span
-                  title="Las visitas son sesiones. Los usuarios son personas o dispositivos aproximados detectados por GA4."
-                  aria-label="Diferencia entre visitas y usuarios"
-                  className="inline-flex cursor-help text-slate-400"
-                >
-                  <CircleHelp size={13} />
-                </span>
+                <InfoTip
+                  label="Diferencia entre visitas y usuarios"
+                  text="Visitas: cuántas veces entraron a tu web. Usuarios: cuántas personas distintas entraron. Si 10 personas entran 2 veces cada una, verás 20 visitas y 10 usuarios."
+                />
               </CardTitle>
               <CardDescription className="mt-1">
                 Tocá la leyenda para mostrar u ocultar cada línea.
@@ -347,8 +390,8 @@ export default function RendimientoWebPage() {
               <div className="flex rounded-lg border border-slate-200 bg-slate-50 p-0.5">
                 {([
                   ["day", "Por día"],
-                  ["week", "Por semana"],
                   ["month", "Por mes"],
+                  ["year", "Por año"],
                 ] as const).map(([value, label]) => (
                   <button
                     key={value}
@@ -441,6 +484,8 @@ export default function RendimientoWebPage() {
                       tickLine={false}
                       width={42}
                       allowDecimals={false}
+                      domain={[0, yAxisConfig.max]}
+                      ticks={yAxisConfig.ticks}
                       tick={{ fill: "#94a3b8", fontSize: 10 }}
                     />
                     <Tooltip
@@ -451,7 +496,12 @@ export default function RendimientoWebPage() {
                         boxShadow: "0 4px 12px rgba(15,23,42,0.06)",
                         fontSize: 12,
                       }}
-                      labelFormatter={(label) => String(label)}
+                      labelFormatter={(_label, payload) =>
+                        String(
+                          (payload?.[0]?.payload as { fullLabel?: string } | undefined)
+                            ?.fullLabel ?? _label
+                        )
+                      }
                       formatter={(value, name) => [
                         formatNumber(Number(value ?? 0)),
                         name === "sessions" ? "Visitas" : "Usuarios",
@@ -488,9 +538,16 @@ export default function RendimientoWebPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Rendimiento por alojamiento</CardTitle>
+            <CardTitle className="flex items-center gap-1.5">
+              Rendimiento por alojamiento
+              <InfoTip
+                label="Cómo se miden estos datos"
+                text="Contamos cuántas personas abrieron la página pública de cada alojamiento dentro del período elegido (por día, mes o año). Sirve para saber cuál genera más interés."
+              />
+            </CardTitle>
             <CardDescription>
-              Vistas de página y usuarios en la página pública de cada alojamiento
+              Cuántas personas visitaron la página pública de cada alojamiento en
+              el período seleccionado.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -512,29 +569,31 @@ export default function RendimientoWebPage() {
                   <thead className="bg-slate-50/80 text-[11px] uppercase tracking-wider text-slate-400">
                     <tr>
                       <th className="px-5 py-3 font-semibold">Alojamiento</th>
-                      <th className="px-5 py-3 font-semibold">Vistas</th>
+                      <th className="px-5 py-3 font-semibold">
+                        <span className="inline-flex items-center gap-1">
+                          Vistas
+                          <InfoTip
+                            label="Qué son las vistas"
+                            text="Cuántas veces se abrió la página de este alojamiento. Incluye visitas repetidas de una misma persona."
+                          />
+                        </span>
+                      </th>
                       <th className="px-5 py-3 font-semibold">
                         <span className="inline-flex items-center gap-1">
                           Usuarios
-                          <span
-                            title="Un usuario es una persona o dispositivo detectado aproximadamente por GA4. Puede generar varias visitas."
-                            aria-label="Más información sobre usuarios"
-                            className="inline-flex cursor-help text-slate-400"
-                          >
-                            <CircleHelp size={13} />
-                          </span>
+                          <InfoTip
+                            label="Qué son los usuarios"
+                            text="Personas distintas que vieron la página de este alojamiento, estimadas de forma anónima por Google Analytics."
+                          />
                         </span>
                       </th>
                       <th className="px-5 py-3 text-right font-semibold">
-                        <span className="inline-flex items-center gap-1">
+                        <span className="inline-flex items-center justify-end gap-1">
                           Visitas
-                          <span
-                            title="Una visita es una sesión. Durante una misma visita se pueden ver varias páginas."
-                            aria-label="Más información sobre visitas"
-                            className="inline-flex cursor-help text-slate-400"
-                          >
-                            <CircleHelp size={13} />
-                          </span>
+                          <InfoTip
+                            label="Qué son las visitas"
+                            text="Veces que alguien entró a la página de este alojamiento. Si la misma persona vuelve otro día, cuenta como una nueva visita."
+                          />
                         </span>
                       </th>
                     </tr>
