@@ -4,7 +4,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import {
   Activity,
-  CalendarDays,
   ChevronDown,
   Eye,
   Globe,
@@ -70,6 +69,8 @@ type AnalyticsReport = {
   updated_at: string;
 };
 
+type SeriesKey = "sessions" | "active_users";
+
 const numberFormatter = new Intl.NumberFormat("es-AR");
 
 function formatNumber(value: number | undefined) {
@@ -129,6 +130,10 @@ export default function RendimientoWebPage() {
   const [report, setReport] = useState<AnalyticsReport | null>(null);
   const [reportLoading, setReportLoading] = useState(true);
   const [reportError, setReportError] = useState<string | null>(null);
+  const [hiddenSeries, setHiddenSeries] = useState<Record<SeriesKey, boolean>>({
+    sessions: false,
+    active_users: false,
+  });
 
   useEffect(() => {
     const loadCabanas = async () => {
@@ -193,6 +198,13 @@ export default function RendimientoWebPage() {
   );
 
   const summary = report?.summary;
+  const toggleSeries = (series: SeriesKey) => {
+    setHiddenSeries((current) => ({
+      ...current,
+      [series]: !current[series],
+    }));
+  };
+
   const kpis = [
     {
       label: "Sesiones",
@@ -201,10 +213,10 @@ export default function RendimientoWebPage() {
       hint: "Visitas generales a tu web",
     },
     {
-      label: "Usuarios activos",
+      label: "Usuarios",
       value: formatNumber(summary?.active_users),
       icon: Activity,
-      hint: "Usuarios únicos aproximados",
+      hint: "Usuarios aproximados detectados por GA4",
     },
     {
       label: "Vistas de página",
@@ -255,28 +267,6 @@ export default function RendimientoWebPage() {
                 className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
               />
             </div>
-            <div className="relative w-full sm:min-w-[210px]">
-              <CalendarDays
-                size={15}
-                className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-slate-400"
-              />
-              <select
-                value={granularity}
-                onChange={(event) =>
-                  setGranularity(event.target.value as Granularity)
-                }
-                className="h-10 w-full cursor-pointer appearance-none rounded-xl border border-slate-200 bg-slate-50 py-2 pl-9 pr-8 text-sm font-semibold text-slate-800 shadow-sm outline-none transition-colors hover:border-slate-300 hover:bg-white focus:border-primary/40 focus:bg-white focus:ring-2 focus:ring-primary/15"
-                aria-label="Agrupar estadísticas por"
-              >
-                <option value="day">Por día · últimos 30 días</option>
-                <option value="week">Por semana · últimas 12 semanas</option>
-                <option value="month">Por mes · últimos 12 meses</option>
-              </select>
-              <ChevronDown
-                size={14}
-                className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
-              />
-            </div>
           </div>
         </header>
 
@@ -292,12 +282,12 @@ export default function RendimientoWebPage() {
                   <span className="flex items-center gap-1.5 text-sm text-slate-500">
                     <Icon size={14} className="shrink-0" />
                     {kpi.label}
-                    {(kpi.label === "Sesiones" || kpi.label === "Usuarios activos") && (
+                    {(kpi.label === "Sesiones" || kpi.label === "Usuarios") && (
                       <span
                         title={
                           kpi.label === "Sesiones"
                             ? "Una visita es una sesión. Durante una misma visita se pueden ver varias páginas."
-                            : "Un usuario activo es una persona o dispositivo detectado aproximadamente por GA4. Puede generar varias visitas."
+                            : "Un usuario es una persona o dispositivo detectado aproximadamente por GA4. Puede generar varias visitas."
                         }
                         aria-label={`Más información sobre ${kpi.label}`}
                         className="inline-flex cursor-help text-slate-400"
@@ -317,18 +307,66 @@ export default function RendimientoWebPage() {
         </div>
 
         <Card className="mb-4">
-          <CardHeader className="gap-1 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <CardTitle>Evolución de visitas</CardTitle>
-              <CardDescription>
-                Sesiones y vistas de página del período seleccionado
+          <CardHeader className="gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0">
+              <CardTitle className="flex items-center gap-1.5 text-sm">
+                Cómo evolucionan tus visitas
+                <span
+                  title="Las visitas son sesiones. Los usuarios son personas o dispositivos aproximados detectados por GA4."
+                  aria-label="Diferencia entre visitas y usuarios"
+                  className="inline-flex cursor-help text-slate-400"
+                >
+                  <CircleHelp size={13} />
+                </span>
+              </CardTitle>
+              <CardDescription className="mt-1">
+                Tocá la leyenda para mostrar u ocultar cada línea.
               </CardDescription>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  aria-pressed={!hiddenSeries.sessions}
+                  onClick={() => toggleSeries("sessions")}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold transition-opacity ${hiddenSeries.sessions ? "opacity-45" : ""} bg-blue-50 text-blue-700`}
+                >
+                  <span className="h-1.5 w-1.5 rounded-full bg-blue-600" />
+                  Visitas
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={!hiddenSeries.active_users}
+                  onClick={() => toggleSeries("active_users")}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold transition-opacity ${hiddenSeries.active_users ? "opacity-45" : ""} bg-emerald-50 text-emerald-700`}
+                >
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" />
+                  Usuarios
+                </button>
+              </div>
             </div>
-            {report?.updated_at && (
-              <span className="flex items-center gap-1.5 text-[11px] text-slate-400">
-                <RefreshCw size={12} /> Datos actualizados
-              </span>
-            )}
+            <div className="flex shrink-0 items-start gap-2">
+              <div className="flex rounded-lg border border-slate-200 bg-slate-50 p-0.5">
+                {([
+                  ["day", "Por día"],
+                  ["week", "Por semana"],
+                  ["month", "Por mes"],
+                ] as const).map(([value, label]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setGranularity(value)}
+                    aria-pressed={granularity === value}
+                    className={`rounded-md px-2.5 py-1.5 text-[10px] font-medium transition-colors sm:px-3 ${granularity === value ? "bg-white font-semibold text-slate-900 shadow-sm ring-1 ring-slate-900" : "text-slate-500 hover:text-slate-800"}`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              {report?.updated_at && (
+                <span className="hidden items-center gap-1.5 pt-2 text-[11px] text-slate-400 xl:flex">
+                  <RefreshCw size={12} /> Actualizado
+                </span>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             {reportLoading ? (
@@ -416,27 +454,31 @@ export default function RendimientoWebPage() {
                       labelFormatter={(label) => String(label)}
                       formatter={(value, name) => [
                         formatNumber(Number(value ?? 0)),
-                        name === "sessions" ? "Visitas" : "Usuarios activos",
+                        name === "sessions" ? "Visitas" : "Usuarios",
                       ]}
                     />
-                    <Area
-                      type="monotone"
-                      dataKey="sessions"
-                      name="sessions"
-                      stroke={CHART_BLUE}
-                      strokeWidth={2.5}
-                      fill="url(#rendimientoSessionsGradient)"
-                      activeDot={{ r: 5, strokeWidth: 2, stroke: "#fff" }}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="active_users"
-                      name="active_users"
-                      stroke={CHART_TEAL}
-                      strokeWidth={2}
-                      fill="url(#rendimientoUsersGradient)"
-                      activeDot={{ r: 4, strokeWidth: 2, stroke: "#fff" }}
-                    />
+                    {!hiddenSeries.sessions && (
+                      <Area
+                        type="monotone"
+                        dataKey="sessions"
+                        name="sessions"
+                        stroke={CHART_BLUE}
+                        strokeWidth={2.5}
+                        fill="url(#rendimientoSessionsGradient)"
+                        activeDot={{ r: 5, strokeWidth: 2, stroke: "#fff" }}
+                      />
+                    )}
+                    {!hiddenSeries.active_users && (
+                      <Area
+                        type="monotone"
+                        dataKey="active_users"
+                        name="active_users"
+                        stroke="#159570"
+                        strokeWidth={2}
+                        fill="url(#rendimientoUsersGradient)"
+                        activeDot={{ r: 4, strokeWidth: 2, stroke: "#fff" }}
+                      />
+                    )}
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
@@ -448,7 +490,7 @@ export default function RendimientoWebPage() {
           <CardHeader>
             <CardTitle>Rendimiento por alojamiento</CardTitle>
             <CardDescription>
-              Vistas de página y usuarios activos en la página pública de cada alojamiento
+              Vistas de página y usuarios en la página pública de cada alojamiento
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -473,10 +515,10 @@ export default function RendimientoWebPage() {
                       <th className="px-5 py-3 font-semibold">Vistas</th>
                       <th className="px-5 py-3 font-semibold">
                         <span className="inline-flex items-center gap-1">
-                          Usuarios activos
+                          Usuarios
                           <span
-                            title="Un usuario activo es una persona o dispositivo detectado aproximadamente por GA4. Puede generar varias visitas."
-                            aria-label="Más información sobre usuarios activos"
+                            title="Un usuario es una persona o dispositivo detectado aproximadamente por GA4. Puede generar varias visitas."
+                            aria-label="Más información sobre usuarios"
                             className="inline-flex cursor-help text-slate-400"
                           >
                             <CircleHelp size={13} />

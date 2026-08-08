@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ZenttLogo } from "@/components/landing/ZenttLogo";
-import { Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { normalizeUsername, normalizeUsernameLive } from "@/lib/username";
 
@@ -22,6 +22,8 @@ export default function RegisterPage() {
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -52,6 +54,16 @@ export default function RegisterPage() {
       return;
     }
 
+    if (!/[A-Z]/.test(formData.password)) {
+      setError("La contraseña debe tener al menos una letra mayúscula.");
+      return;
+    }
+
+    if (!/[0-9]/.test(formData.password)) {
+      setError("La contraseña debe tener al menos un número.");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -61,8 +73,14 @@ export default function RegisterPage() {
         password: formData.password,
       });
 
-      toast.success("Cuenta creada con éxito. Iniciá sesión para continuar.");
-      router.push("/login");
+      toast.success("Cuenta creada con éxito", {
+        description: "Tu cuenta ya está lista. Iniciá sesión para continuar.",
+        duration: 10000,
+        action: {
+          label: "Iniciar sesión",
+          onClick: () => router.push("/login"),
+        },
+      });
     } catch (err: unknown) {
       if (axios.isAxiosError(err) && err.response?.data) {
         const data = err.response.data as Record<string, string[] | string>;
@@ -70,7 +88,11 @@ export default function RegisterPage() {
         if (data.username) setError(`Usuario: ${data.username[0]}`);
         else if (data.email) setError(`Email: ${data.email[0]}`);
         else if (data.password) setError(`Contraseña: ${data.password[0]}`);
+        else if (data.detail) setError(String(data.detail));
         else if (data.error) setError(String(data.error));
+        else if (data.non_field_errors) {
+          setError(String(data.non_field_errors[0] || data.non_field_errors));
+        }
         else setError("Error al crear la cuenta. Verificá los datos.");
       } else {
         setError(
@@ -159,37 +181,63 @@ export default function RegisterPage() {
               />
             </div>
 
+            <p className="-mt-3 text-xs text-slate-400">
+              Usá al menos 8 caracteres, una mayúscula y un número.
+            </p>
+
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="password" className="ui-label">
                   Contraseña
                 </Label>
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="••••••••"
-                  required
-                  className={inputClass}
-                />
+                <div className="relative">
+                  <Input
+                    id="password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder="••••••••"
+                    autoComplete="new-password"
+                    required
+                    className={`${inputClass} pr-11`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((visible) => !visible)}
+                    aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword" className="ui-label">
                   Confirmar contraseña
                 </Label>
-                <Input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  placeholder="••••••••"
-                  required
-                  className={inputClass}
-                />
+                <div className="relative">
+                  <Input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    placeholder="••••••••"
+                    autoComplete="new-password"
+                    required
+                    className={`${inputClass} pr-11`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword((visible) => !visible)}
+                    aria-label={showConfirmPassword ? "Ocultar confirmación" : "Mostrar confirmación"}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
+                  >
+                    {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </div>
             </div>
 
