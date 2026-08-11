@@ -135,7 +135,6 @@ export const termsSections: LegalSection[] = [
     title: "8. Propiedad intelectual",
     paragraphs: [
       "El código, diseño, marca, arquitectura, bases de datos y componentes propios de Zentt pertenecen a Leonardo Antonio González o a sus licenciantes y están protegidos por las normas de propiedad intelectual aplicables.",
-      "El usuario no puede copiar, revender, descompilar, realizar ingeniería inversa ni utilizar la Plataforma para construir un servicio sustancialmente similar sin autorización escrita.",
     ],
   },
   {
