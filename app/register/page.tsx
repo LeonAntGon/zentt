@@ -173,18 +173,7 @@ export default function RegisterPage() {
                 required
                 className={inputClass}
               />
-              <p className="text-xs text-slate-400">
-                Podés escribir el nombre como quieras; al crear la cuenta se
-                guardará en minúsculas y los espacios se convertirán en guiones.
-              </p>
              </div>
-
-             <label className="flex items-start gap-3 text-sm text-slate-600">
-               <input type="checkbox" checked={acceptLegal} onChange={(event) => setAcceptLegal(event.target.checked)} required className="mt-1 h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900" />
-               <span>
-                 Acepto los <Link href="/terms" target="_blank" className="font-semibold text-slate-900 underline">Términos y Condiciones</Link> y la <Link href="/privacy" target="_blank" className="font-semibold text-slate-900 underline">Política de Privacidad</Link> de Zentt.
-               </span>
-             </label>
 
             <div className="space-y-2">
               <Label htmlFor="email" className="ui-label">
@@ -278,9 +267,16 @@ export default function RegisterPage() {
               ) : (
                 "Crear cuenta"
               )}
-            </Button>
+             </Button>
 
-            <p className="pt-4 text-center text-sm font-medium text-slate-500">
+             <label className="flex items-start gap-3 text-sm text-slate-600">
+               <input type="checkbox" checked={acceptLegal} onChange={(event) => setAcceptLegal(event.target.checked)} required className="mt-1 h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900" />
+               <span>
+                 Acepto los <Link href="/terms" target="_blank" className="font-semibold text-slate-900 underline">Términos y Condiciones</Link> y la <Link href="/privacy" target="_blank" className="font-semibold text-slate-900 underline">Política de Privacidad</Link> de Zentt.
+               </span>
+             </label>
+
+             <p className="pt-4 text-center text-sm font-medium text-slate-500">
               ¿Ya tenés una cuenta?{" "}
               <Link
                 href="/login"
