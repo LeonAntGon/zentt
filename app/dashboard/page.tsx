@@ -34,6 +34,7 @@ import {
 } from "@/components/dashboard/MessageChannelBadge";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import type { MessageOrigen } from "@/types/cabin";
+import { TrialBanner } from "@/components/dashboard/TrialBanner";
 
 interface Mensaje {
   id: number;
@@ -331,6 +332,8 @@ export default function OverviewPage() {
           Panel de Control
         </h1>
       </header>
+
+      <TrialBanner dateJoined={user?.date_joined} plan={user?.profile?.plan} />
 
       <OnboardingStepper
         cabanas={cabanas}

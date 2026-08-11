@@ -9,8 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ZenttLogo } from "@/components/landing/ZenttLogo";
-import { CheckCircle2, Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { normalizeUsername } from "@/lib/username";
+import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -23,8 +25,8 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [registered, setRegistered] = useState(false);
   const router = useRouter();
+  const { login } = useAuth();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -70,7 +72,9 @@ export default function RegisterPage() {
         password: formData.password,
       });
 
-      setRegistered(true);
+      await login(username, formData.password);
+      toast.success("Cuenta creada. Bienvenido a Zentt.");
+      router.replace("/dashboard");
     } catch (err: unknown) {
       if (axios.isAxiosError(err) && err.response?.data) {
         const data = err.response.data as Record<string, string[] | string>;
@@ -262,25 +266,6 @@ export default function RegisterPage() {
         </div>
       </div>
 
-      {registered && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4">
-          <div className="w-full max-w-sm rounded-2xl bg-white p-8 text-center shadow-2xl">
-            <CheckCircle2 className="mx-auto mb-4 h-14 w-14 text-emerald-500" />
-            <h2 className="font-heading text-2xl font-bold text-slate-900">
-              Se ha registrado con éxito
-            </h2>
-            <p className="mt-2 text-sm text-slate-600">
-              Tu cuenta ya está lista. Iniciá sesión para continuar.
-            </p>
-            <Button
-              onClick={() => router.push("/login")}
-              className="mt-6 w-full h-12 text-base font-bold bg-slate-900 hover:bg-slate-800"
-            >
-              Iniciar sesión
-            </Button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
