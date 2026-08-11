@@ -20,6 +20,7 @@ const config: Config = {
         sans: ["var(--font-body)", "system-ui", "sans-serif"],
         heading: ["var(--font-heading)", "system-ui", "sans-serif"],
         body: ["var(--font-body)", "system-ui", "sans-serif"],
+        public: ["var(--font-public)", "system-ui", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",

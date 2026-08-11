@@ -117,6 +117,14 @@
   label {
     @apply font-body;
   }
+
+  /* Los sitios públicos mantienen Plus Jakarta Sans también en controles. */
+  .public-site input,
+  .public-site textarea,
+  .public-site select,
+  .public-site button {
+    @apply font-public;
+  }
 }
 
 @layer components {

@@ -16,6 +16,8 @@ import { useAuth } from "@/contexts/AuthContext";
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
     username: "",
     email: "",
     password: "",
@@ -25,6 +27,7 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [acceptLegal, setAcceptLegal] = useState(false);
   const router = useRouter();
   const { login } = useAuth();
 
@@ -67,9 +70,12 @@ export default function RegisterPage() {
 
     try {
       await api.post("/accounts/register/", {
+        first_name: formData.firstName,
+        last_name: formData.lastName,
         username,
         email: formData.email,
         password: formData.password,
+        accept_legal: acceptLegal,
       });
 
       await login(username, formData.password);
@@ -80,6 +86,9 @@ export default function RegisterPage() {
         const data = err.response.data as Record<string, string[] | string>;
 
         if (data.username) setError(`Usuario: ${data.username[0]}`);
+        else if (data.first_name) setError(`Nombre: ${data.first_name[0]}`);
+        else if (data.last_name) setError(`Apellido: ${data.last_name[0]}`);
+        else if (data.accept_legal) setError(String(data.accept_legal[0] || data.accept_legal));
         else if (data.email) setError(`Email: ${data.email[0]}`);
         else if (data.password) setError(`Contraseña: ${data.password[0]}`);
         else if (data.detail) setError(String(data.detail));
@@ -138,8 +147,19 @@ export default function RegisterPage() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
+           <form onSubmit={handleSubmit} className="space-y-6">
+             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+               <div className="space-y-2">
+                 <Label htmlFor="firstName" className="ui-label">Nombre</Label>
+                 <Input id="firstName" name="firstName" value={formData.firstName} onChange={handleChange} placeholder="Tu nombre" autoComplete="given-name" required className={inputClass} />
+               </div>
+               <div className="space-y-2">
+                 <Label htmlFor="lastName" className="ui-label">Apellido</Label>
+                 <Input id="lastName" name="lastName" value={formData.lastName} onChange={handleChange} placeholder="Tu apellido" autoComplete="family-name" required className={inputClass} />
+               </div>
+             </div>
+
+             <div className="space-y-2">
               <Label htmlFor="username" className="ui-label">
                 Nombre de usuario
               </Label>
@@ -157,7 +177,14 @@ export default function RegisterPage() {
                 Podés escribir el nombre como quieras; al crear la cuenta se
                 guardará en minúsculas y los espacios se convertirán en guiones.
               </p>
-            </div>
+             </div>
+
+             <label className="flex items-start gap-3 text-sm text-slate-600">
+               <input type="checkbox" checked={acceptLegal} onChange={(event) => setAcceptLegal(event.target.checked)} required className="mt-1 h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900" />
+               <span>
+                 Acepto los <Link href="/terms" target="_blank" className="font-semibold text-slate-900 underline">Términos y Condiciones</Link> y la <Link href="/privacy" target="_blank" className="font-semibold text-slate-900 underline">Política de Privacidad</Link> de Zentt.
+               </span>
+             </label>
 
             <div className="space-y-2">
               <Label htmlFor="email" className="ui-label">

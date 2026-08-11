@@ -8,11 +8,7 @@ export default function PublicSiteLayout({
 }) {
   return (
     <div
-      className="public-site min-h-screen bg-white text-slate-900 antialiased"
-      style={{
-        fontFamily:
-          "var(--font-public), ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif",
-      }}
+      className="public-site min-h-screen bg-white font-public text-slate-900 antialiased"
     >
       <GoogleAnalytics />
       {children}

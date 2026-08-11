@@ -14,7 +14,7 @@ const Footer = () => (
           Términos
         </Link>
         <a
-          href="mailto:hola@zentt.com"
+          href="mailto:leonarddevweb@gmail.com"
           className="hover:text-foreground transition-colors"
         >
           Contacto
