@@ -11,11 +11,6 @@ import { Label } from "@/components/ui/label";
 import { FormStickySaveBar } from "@/components/dashboard/FormStickySaveBar";
 import { UnsavedChangesGuard } from "@/components/dashboard/UnsavedChangesGuard";
 import {
-  getUsernameError,
-  normalizeUsername,
-  normalizeUsernameLive,
-} from "@/lib/username";
-import {
   KeyRound,
   Loader2,
   Mail,
@@ -24,34 +19,6 @@ import {
   User,
 } from "lucide-react";
 import { toast } from "sonner";
-
-function GoogleIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      className={className}
-      aria-hidden
-    >
-      <path
-        fill="#4285F4"
-        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1Z"
-      />
-      <path
-        fill="#34A853"
-        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23Z"
-      />
-      <path
-        fill="#FBBC05"
-        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18A10.96 10.96 0 0 0 1 12c0 1.77.42 3.45 1.18 4.93l3.66-2.84Z"
-      />
-      <path
-        fill="#EA4335"
-        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53Z"
-      />
-    </svg>
-  );
-}
 
 export default function PerfilPage() {
   const { user, checkCurrentUser } = useAuth();
@@ -62,10 +29,8 @@ export default function PerfilPage() {
     first_name: "",
     last_name: "",
     email: "",
-    username: "",
   });
   const [emailError, setEmailError] = useState("");
-  const [usernameError, setUsernameError] = useState("");
   const [hydrated, setHydrated] = useState(false);
 
   const [passwordData, setPasswordData] = useState({
@@ -80,10 +45,8 @@ export default function PerfilPage() {
         first_name: user.first_name || "",
         last_name: user.last_name || "",
         email: user.email || "",
-        username: user.username || "",
       });
       setEmailError("");
-      setUsernameError("");
       setHydrated(true);
     }
   }, [user]);
@@ -97,30 +60,15 @@ export default function PerfilPage() {
     hydrated &&
     (formData.first_name !== (user?.first_name || "") ||
       formData.last_name !== (user?.last_name || "") ||
-      formData.email.trim() !== (user?.email || "") ||
-      normalizeUsername(formData.username) !==
-        normalizeUsername(user?.username || ""));
+      formData.email.trim() !== (user?.email || ""));
 
   const persist = async (): Promise<boolean> => {
     setEmailError("");
-    setUsernameError("");
     const email = formData.email.trim();
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setEmailError("Ingresá un email válido.");
       toast.error("Ingresá un email válido.");
       return false;
-    }
-
-    const nextUsername = normalizeUsername(formData.username);
-    const usernameChanged =
-      nextUsername !== normalizeUsername(user?.username || "");
-    if (usernameChanged) {
-      const usernameErr = getUsernameError(formData.username);
-      if (usernameErr) {
-        setUsernameError(usernameErr);
-        toast.error(usernameErr);
-        return false;
-      }
     }
 
     setSavingProfile(true);
@@ -129,9 +77,6 @@ export default function PerfilPage() {
       data.append("first_name", formData.first_name);
       data.append("last_name", formData.last_name);
       data.append("email", email);
-      if (usernameChanged) {
-        data.append("username", nextUsername);
-      }
       await api.patch("/accounts/me/", data, {
         headers: { "Content-Type": "multipart/form-data" },
       });
@@ -143,25 +88,17 @@ export default function PerfilPage() {
         response?: {
           data?: {
             email?: string[] | string;
-            username?: string[] | string;
           };
         };
       };
       const emailErr = err.response?.data?.email;
-      const usernameErr = err.response?.data?.username;
       const emailMsg = Array.isArray(emailErr)
         ? emailErr[0]
         : typeof emailErr === "string"
           ? emailErr
           : null;
-      const usernameMsg = Array.isArray(usernameErr)
-        ? usernameErr[0]
-        : typeof usernameErr === "string"
-          ? usernameErr
-          : null;
       if (emailMsg) setEmailError(emailMsg);
-      if (usernameMsg) setUsernameError(usernameMsg);
-      toast.error(emailMsg || usernameMsg || "No se pudo guardar el perfil");
+      toast.error(emailMsg || "No se pudo guardar el perfil");
       return false;
     } finally {
       setSavingProfile(false);
@@ -239,7 +176,7 @@ export default function PerfilPage() {
             </div>
             <div className="inline-flex items-center gap-2 rounded-full border border-slate-100 bg-slate-50 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-slate-500">
               <Shield size={14} className="text-emerald-500" />
-              @{formData.username || user?.username}
+              @{user?.username}
             </div>
           </div>
         </div>
@@ -287,34 +224,23 @@ export default function PerfilPage() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="username" className="ml-1 font-bold text-slate-700">
+          <Label className="ml-1 font-bold text-slate-700">
             Nombre de usuario
           </Label>
-          <Input
-            id="username"
-            autoComplete="username"
-            className={`h-14 rounded-2xl border-none bg-slate-50 font-medium ${
-              usernameError ? "ring-2 ring-red-300" : ""
-            }`}
-            value={formData.username}
-            onChange={(e) => {
-              setUsernameError("");
-              setFormData({
-                ...formData,
-                username: normalizeUsernameLive(e.target.value),
-              });
-            }}
-          />
-          {usernameError ? (
-            <p className="ml-1 text-xs font-medium text-red-500">
-              {usernameError}
-            </p>
-          ) : (
-            <p className="ml-1 text-[10px] font-medium text-slate-400">
-              También es la URL de tu sitio: zentt.app/
-              {normalizeUsername(formData.username) || "tu-usuario"}
-            </p>
-          )}
+          <div className="flex h-14 items-center rounded-2xl bg-slate-50 px-4">
+            <span className="font-medium text-slate-600">
+              @{user?.username}
+            </span>
+          </div>
+          <p className="ml-1 text-[10px] font-medium text-slate-400">
+            También es la URL de tu sitio.{" "}
+            <Link
+              href="/dashboard/configuracion"
+              className="text-primary hover:underline"
+            >
+              Editalo en Configuración
+            </Link>
+          </p>
         </div>
 
         <div className="space-y-2">
@@ -438,28 +364,6 @@ export default function PerfilPage() {
           Actualizar contraseña
         </Button>
       </form>
-
-      <div className="rounded-[2rem] border border-slate-100 bg-slate-50 p-6 md:p-8">
-        <h3 className="mb-2 text-sm font-black uppercase tracking-widest text-slate-900">
-          Iniciar sesión con Google
-        </h3>
-        <p className="mb-6 max-w-xl text-sm font-medium text-slate-500">
-          Pronto podrás vincular Google para acceder más rápido y usar tu foto
-          automáticamente.
-        </p>
-        <Button
-          type="button"
-          variant="outline"
-          disabled
-          className="h-12 cursor-not-allowed gap-3 rounded-xl bg-white font-bold opacity-80"
-        >
-          <GoogleIcon className="h-5 w-5" />
-          Continuar con Google
-          <span className="ml-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
-            Próximamente
-          </span>
-        </Button>
-      </div>
 
       <div className="mt-8 flex justify-end">
         <Button
