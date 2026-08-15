@@ -23,7 +23,8 @@ interface UserProfile {
   instagram_user?: string | null;
   tiktok_user?: string | null;
   youtube_user?: string | null;
-  plan?: "gratis" | "premium";
+  plan?: "gratis" | "pro" | "complejo";
+  plan_expires_at?: string | null;
 }
 
 export interface User {

@@ -41,6 +41,7 @@ import {
   UploadCloud,
 } from "lucide-react";
 import { toast } from "sonner";
+import { UpgradeBanner } from "@/components/dashboard/UpgradeBanner";
 
 function isImageFile(file: File): boolean {
   return Boolean(file.type && file.type.startsWith("image/"));
@@ -84,6 +85,11 @@ export default function CreateCabanaPage() {
   const [videoUrls, setVideoUrls] = useState<string[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
+  const [upgradeRequired, setUpgradeRequired] = useState<{
+    show: boolean;
+    message: string;
+    plan: string;
+  }>({ show: false, message: "", plan: "gratis" });
 
   const hasPhone = Boolean(user?.profile?.telefono?.trim());
   const hasEmail = Boolean(
@@ -397,6 +403,21 @@ export default function CreateCabanaPage() {
     } catch (error) {
       console.error("Error en la creación completa", error);
 
+      // Handle plan limit exceeded (403 with upgrade_required)
+      if (
+        axios.isAxiosError(error) &&
+        error.response?.status === 403 &&
+        error.response.data?.upgrade_required
+      ) {
+        setUpgradeRequired({
+          show: true,
+          message: error.response.data.detail || "Alcanzaste el límite de tu plan.",
+          plan: error.response.data.current_plan || "gratis",
+        });
+        setLoading(false);
+        return;
+      }
+
       if (axios.isAxiosError(error) && error.response?.data?.nombre) {
         const msg = Array.isArray(error.response.data.nombre)
           ? error.response.data.nombre[0]
@@ -439,6 +460,15 @@ export default function CreateCabanaPage() {
           Completá los datos principales; podés seguir editando después.
         </p>
       </div>
+
+      {upgradeRequired.show && (
+        <UpgradeBanner
+          title="Límite de alojamientos alcanzado"
+          description={upgradeRequired.message}
+          planRequired="pro"
+          className="mb-6"
+        />
+      )}
 
       <div className="lg:grid lg:grid-cols-[224px_minmax(0,1fr)] lg:gap-8">
         <FormSectionNav sections={sections} />

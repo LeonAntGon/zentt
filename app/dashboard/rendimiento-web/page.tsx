@@ -33,6 +33,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { UpgradeBanner } from "@/components/dashboard/UpgradeBanner";
 
 type Granularity = "day" | "month" | "year";
 
@@ -52,7 +53,7 @@ type AnalyticsCabana = {
   page_views: number;
 };
 
-type AnalyticsReport = {
+type AnalyticsReportFull = {
   status: "connected";
   summary: {
     sessions: number;
@@ -68,6 +69,24 @@ type AnalyticsReport = {
   };
   updated_at: string;
 };
+
+type AnalyticsReportLimited = {
+  status: "limited";
+  plan_required: string;
+  summary: {
+    sessions: number;
+    active_users: number;
+    page_views: number;
+  };
+  range: {
+    from: string;
+    to: string;
+    granularity: Granularity;
+  };
+  updated_at: string;
+};
+
+type AnalyticsReport = AnalyticsReportFull | AnalyticsReportLimited;
 
 type SeriesKey = "sessions" | "active_users";
 
@@ -231,13 +250,15 @@ export default function RendimientoWebPage() {
     };
   }, [granularity, selectedCabana]);
 
+  const isLimited = report?.status === "limited";
+
   const chartData = useMemo(
     () =>
-      report?.series.map((item) => ({
+      (report?.status === "connected" ? report.series : []).map((item) => ({
         ...item,
         label: formatAxisLabel(item.period, granularity),
         fullLabel: formatTooltipLabel(item.period, granularity),
-      })) || [],
+      })),
     [granularity, report]
   );
 
@@ -296,37 +317,51 @@ export default function RendimientoWebPage() {
               Rendimiento de tu página
             </h1>
             <p className="mt-0.5 text-sm text-slate-500">
-              Visitas reales de tu sitio y de cada alojamiento
+              {isLimited
+                ? "Resumen de visitas de los últimos 7 días"
+                : "Visitas reales de tu sitio y de cada alojamiento"}
             </p>
           </div>
 
-          <div className="flex w-full flex-col gap-2 sm:flex-row lg:w-auto">
-            <div className="relative w-full sm:min-w-[190px]">
-              <Home
-                size={15}
-                className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-slate-400"
-              />
-              <select
-                value={selectedCabana}
-                onChange={(event) => setSelectedCabana(event.target.value)}
-                className="h-10 w-full cursor-pointer appearance-none rounded-xl border border-slate-200 bg-slate-50 py-2 pl-9 pr-8 text-sm font-semibold text-slate-800 shadow-sm outline-none transition-colors hover:border-slate-300 hover:bg-white focus:border-primary/40 focus:bg-white focus:ring-2 focus:ring-primary/15"
-                aria-label="Filtrar por alojamiento"
-                disabled={cabanasLoading}
-              >
-                <option value="all">Todos los alojamientos</option>
-                {cabanas.map((cabana) => (
-                  <option key={cabana.id} value={cabana.id}>
-                    {cabana.nombre}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown
-                size={14}
-                className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
-              />
+          {!isLimited && (
+            <div className="flex w-full flex-col gap-2 sm:flex-row lg:w-auto">
+              <div className="relative w-full sm:min-w-[190px]">
+                <Home
+                  size={15}
+                  className="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-slate-400"
+                />
+                <select
+                  value={selectedCabana}
+                  onChange={(event) => setSelectedCabana(event.target.value)}
+                  className="h-10 w-full cursor-pointer appearance-none rounded-xl border border-slate-200 bg-slate-50 py-2 pl-9 pr-8 text-sm font-semibold text-slate-800 shadow-sm outline-none transition-colors hover:border-slate-300 hover:bg-white focus:border-primary/40 focus:bg-white focus:ring-2 focus:ring-primary/15"
+                  aria-label="Filtrar por alojamiento"
+                  disabled={cabanasLoading}
+                >
+                  <option value="all">Todos los alojamientos</option>
+                  {cabanas.map((cabana) => (
+                    <option key={cabana.id} value={cabana.id}>
+                      {cabana.nombre}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown
+                  size={14}
+                  className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+                />
+              </div>
             </div>
-          </div>
+          )}
         </header>
+
+        {isLimited && (
+          <UpgradeBanner
+            feature="analytics detalladas"
+            planRequired="pro"
+            title="Desbloquea analytics completas"
+            description="Con el plan Pro podés ver gráficos de evolución, filtrar por alojamiento, elegir períodos personalizados y ver el rendimiento de cada alojamiento."
+            className="mb-5"
+          />
+        )}
 
         <div className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {kpis.map((kpi) => {
@@ -352,191 +387,193 @@ export default function RendimientoWebPage() {
           })}
         </div>
 
-        <Card className="mb-4">
-          <CardHeader className="gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div className="min-w-0">
-              <CardTitle className="flex items-center gap-1.5 text-sm">
-                Cómo evolucionan tus visitas
-                <InfoTip
-                  label="Diferencia entre visitas y usuarios"
-                  text="Visitas: cuántas veces entraron a tu web. Usuarios: cuántas personas distintas entraron. Si 10 personas entran 2 veces cada una, verás 20 visitas y 10 usuarios."
-                />
-              </CardTitle>
-              <CardDescription className="mt-1">
-                Tocá la leyenda para mostrar u ocultar cada línea.
-              </CardDescription>
-              <div className="mt-3 flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  aria-pressed={!hiddenSeries.sessions}
-                  onClick={() => toggleSeries("sessions")}
-                  className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold transition-opacity ${hiddenSeries.sessions ? "opacity-45" : ""} bg-blue-50 text-blue-700`}
-                >
-                  <span className="h-1.5 w-1.5 rounded-full bg-blue-600" />
-                  Visitas
-                </button>
-                <button
-                  type="button"
-                  aria-pressed={!hiddenSeries.active_users}
-                  onClick={() => toggleSeries("active_users")}
-                  className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold transition-opacity ${hiddenSeries.active_users ? "opacity-45" : ""} bg-emerald-50 text-emerald-700`}
-                >
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" />
-                  Usuarios
-                </button>
-              </div>
-            </div>
-            <div className="flex shrink-0 items-start gap-2">
-              <div className="flex rounded-lg border border-slate-200 bg-slate-50 p-0.5">
-                {([
-                  ["day", "Por día"],
-                  ["month", "Por mes"],
-                  ["year", "Por año"],
-                ] as const).map(([value, label]) => (
+        {!isLimited && (
+          <Card className="mb-4">
+            <CardHeader className="gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0">
+                <CardTitle className="flex items-center gap-1.5 text-sm">
+                  Cómo evolucionan tus visitas
+                  <InfoTip
+                    label="Diferencia entre visitas y usuarios"
+                    text="Visitas: cuántas veces entraron a tu web. Usuarios: cuántas personas distintas entraron. Si 10 personas entran 2 veces cada una, verás 20 visitas y 10 usuarios."
+                  />
+                </CardTitle>
+                <CardDescription className="mt-1">
+                  Tocá la leyenda para mostrar u ocultar cada línea.
+                </CardDescription>
+                <div className="mt-3 flex flex-wrap gap-2">
                   <button
-                    key={value}
                     type="button"
-                    onClick={() => setGranularity(value)}
-                    aria-pressed={granularity === value}
-                    className={`rounded-md px-2.5 py-1.5 text-[10px] font-medium transition-colors sm:px-3 ${granularity === value ? "bg-white font-semibold text-slate-900 shadow-sm ring-1 ring-slate-900" : "text-slate-500 hover:text-slate-800"}`}
+                    aria-pressed={!hiddenSeries.sessions}
+                    onClick={() => toggleSeries("sessions")}
+                    className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold transition-opacity ${hiddenSeries.sessions ? "opacity-45" : ""} bg-blue-50 text-blue-700`}
                   >
-                    {label}
+                    <span className="h-1.5 w-1.5 rounded-full bg-blue-600" />
+                    Visitas
                   </button>
-                ))}
-              </div>
-              {report?.updated_at && (
-                <span className="hidden items-center gap-1.5 pt-2 text-[11px] text-slate-400 xl:flex">
-                  <RefreshCw size={12} /> Actualizado
-                </span>
-              )}
-            </div>
-          </CardHeader>
-          <CardContent>
-            {reportLoading ? (
-              <div className="flex min-h-[280px] items-center justify-center rounded-xl bg-slate-50">
-                <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
-              </div>
-            ) : reportError ? (
-              <div className="flex min-h-[280px] items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 px-6 text-center">
-                <div className="max-w-md">
-                  <Globe className="mx-auto mb-3 h-8 w-8 text-slate-300" />
-                  <p className="text-sm font-semibold text-slate-700">
-                    Analytics todavía no está disponible
-                  </p>
-                  <p className="mt-1 text-xs leading-relaxed text-slate-400">
-                    {reportError} Cuando haya datos, aparecerán aquí sin mostrar
-                    métricas inventadas.
-                  </p>
+                  <button
+                    type="button"
+                    aria-pressed={!hiddenSeries.active_users}
+                    onClick={() => toggleSeries("active_users")}
+                    className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold transition-opacity ${hiddenSeries.active_users ? "opacity-45" : ""} bg-emerald-50 text-emerald-700`}
+                  >
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" />
+                    Usuarios
+                  </button>
                 </div>
               </div>
-            ) : chartData.length === 0 ? (
-              <div className="flex min-h-[280px] items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 px-6 text-center">
-                <p className="text-sm text-slate-500">
-                  No hay visitas registradas en este período.
-                </p>
+              <div className="flex shrink-0 items-start gap-2">
+                <div className="flex rounded-lg border border-slate-200 bg-slate-50 p-0.5">
+                  {([
+                    ["day", "Por día"],
+                    ["month", "Por mes"],
+                    ["year", "Por año"],
+                  ] as const).map(([value, label]) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => setGranularity(value)}
+                      aria-pressed={granularity === value}
+                      className={`rounded-md px-2.5 py-1.5 text-[10px] font-medium transition-colors sm:px-3 ${granularity === value ? "bg-white font-semibold text-slate-900 shadow-sm ring-1 ring-slate-900" : "text-slate-500 hover:text-slate-800"}`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                {report?.updated_at && (
+                  <span className="hidden items-center gap-1.5 pt-2 text-[11px] text-slate-400 xl:flex">
+                    <RefreshCw size={12} /> Actualizado
+                  </span>
+                )}
               </div>
-            ) : (
-              <div className="h-56 w-full sm:h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart
-                    data={chartData}
-                    margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
-                  >
-                    <defs>
-                      <linearGradient
-                        id="rendimientoSessionsGradient"
-                        x1="0"
-                        y1="0"
-                        x2="0"
-                        y2="1"
-                      >
-                        <stop offset="0%" stopColor={CHART_BLUE} stopOpacity={0.35} />
-                        <stop offset="85%" stopColor={CHART_BLUE} stopOpacity={0.04} />
-                        <stop offset="100%" stopColor="#ffffff" stopOpacity={0} />
-                      </linearGradient>
-                      <linearGradient
-                        id="rendimientoUsersGradient"
-                        x1="0"
-                        y1="0"
-                        x2="0"
-                        y2="1"
-                      >
-                        <stop offset="0%" stopColor={CHART_TEAL} stopOpacity={0.2} />
-                        <stop offset="85%" stopColor={CHART_TEAL} stopOpacity={0.03} />
-                        <stop offset="100%" stopColor="#ffffff" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      vertical={false}
-                      stroke="#f1f5f9"
-                    />
-                    <XAxis
-                      dataKey="label"
-                      axisLine={false}
-                      tickLine={false}
-                      minTickGap={28}
-                      tick={{ fill: "#94a3b8", fontSize: 11, fontWeight: 500 }}
-                      dy={6}
-                    />
-                    <YAxis
-                      axisLine={false}
-                      tickLine={false}
-                      width={42}
-                      allowDecimals={false}
-                      domain={[0, yAxisConfig.max]}
-                      ticks={yAxisConfig.ticks}
-                      tick={{ fill: "#94a3b8", fontSize: 10 }}
-                    />
-                    <Tooltip
-                      cursor={{ stroke: "#e2e8f0", strokeWidth: 1 }}
-                      contentStyle={{
-                        borderRadius: 12,
-                        border: "1px solid #e2e8f0",
-                        boxShadow: "0 4px 12px rgba(15,23,42,0.06)",
-                        fontSize: 12,
-                      }}
-                      labelFormatter={(_label, payload) =>
-                        String(
-                          (payload?.[0]?.payload as { fullLabel?: string } | undefined)
-                            ?.fullLabel ?? _label
-                        )
-                      }
-                      formatter={(value, name) => [
-                        formatNumber(Number(value ?? 0)),
-                        name === "sessions" ? "Visitas" : "Usuarios",
-                      ]}
-                    />
-                    {!hiddenSeries.sessions && (
-                      <Area
-                        type="monotone"
-                        dataKey="sessions"
-                        name="sessions"
-                        stroke={CHART_BLUE}
-                        strokeWidth={2.5}
-                        fill="url(#rendimientoSessionsGradient)"
-                        activeDot={{ r: 5, strokeWidth: 2, stroke: "#fff" }}
+            </CardHeader>
+            <CardContent>
+              {reportLoading ? (
+                <div className="flex min-h-[280px] items-center justify-center rounded-xl bg-slate-50">
+                  <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
+                </div>
+              ) : reportError ? (
+                <div className="flex min-h-[280px] items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 px-6 text-center">
+                  <div className="max-w-md">
+                    <Globe className="mx-auto mb-3 h-8 w-8 text-slate-300" />
+                    <p className="text-sm font-semibold text-slate-700">
+                      Analytics todavía no está disponible
+                    </p>
+                    <p className="mt-1 text-xs leading-relaxed text-slate-400">
+                      {reportError} Cuando haya datos, aparecerán aquí sin mostrar
+                      métricas inventadas.
+                    </p>
+                  </div>
+                </div>
+              ) : chartData.length === 0 ? (
+                <div className="flex min-h-[280px] items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 px-6 text-center">
+                  <p className="text-sm text-slate-500">
+                    No hay visitas registradas en este período.
+                  </p>
+                </div>
+              ) : (
+                <div className="h-56 w-full sm:h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart
+                      data={chartData}
+                      margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
+                    >
+                      <defs>
+                        <linearGradient
+                          id="rendimientoSessionsGradient"
+                          x1="0"
+                          y1="0"
+                          x2="0"
+                          y2="1"
+                        >
+                          <stop offset="0%" stopColor={CHART_BLUE} stopOpacity={0.35} />
+                          <stop offset="85%" stopColor={CHART_BLUE} stopOpacity={0.04} />
+                          <stop offset="100%" stopColor="#ffffff" stopOpacity={0} />
+                        </linearGradient>
+                        <linearGradient
+                          id="rendimientoUsersGradient"
+                          x1="0"
+                          y1="0"
+                          x2="0"
+                          y2="1"
+                        >
+                          <stop offset="0%" stopColor={CHART_TEAL} stopOpacity={0.2} />
+                          <stop offset="85%" stopColor={CHART_TEAL} stopOpacity={0.03} />
+                          <stop offset="100%" stopColor="#ffffff" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        vertical={false}
+                        stroke="#f1f5f9"
                       />
-                    )}
-                    {!hiddenSeries.active_users && (
-                      <Area
-                        type="monotone"
-                        dataKey="active_users"
-                        name="active_users"
-                        stroke="#159570"
-                        strokeWidth={2}
-                        fill="url(#rendimientoUsersGradient)"
-                        activeDot={{ r: 4, strokeWidth: 2, stroke: "#fff" }}
+                      <XAxis
+                        dataKey="label"
+                        axisLine={false}
+                        tickLine={false}
+                        minTickGap={28}
+                        tick={{ fill: "#94a3b8", fontSize: 11, fontWeight: 500 }}
+                        dy={6}
                       />
-                    )}
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                      <YAxis
+                        axisLine={false}
+                        tickLine={false}
+                        width={42}
+                        allowDecimals={false}
+                        domain={[0, yAxisConfig.max]}
+                        ticks={yAxisConfig.ticks}
+                        tick={{ fill: "#94a3b8", fontSize: 10 }}
+                      />
+                      <Tooltip
+                        cursor={{ stroke: "#e2e8f0", strokeWidth: 1 }}
+                        contentStyle={{
+                          borderRadius: 12,
+                          border: "1px solid #e2e8f0",
+                          boxShadow: "0 4px 12px rgba(15,23,42,0.06)",
+                          fontSize: 12,
+                        }}
+                        labelFormatter={(_label, payload) =>
+                          String(
+                            (payload?.[0]?.payload as { fullLabel?: string } | undefined)
+                              ?.fullLabel ?? _label
+                          )
+                        }
+                        formatter={(value, name) => [
+                          formatNumber(Number(value ?? 0)),
+                          name === "sessions" ? "Visitas" : "Usuarios",
+                        ]}
+                      />
+                      {!hiddenSeries.sessions && (
+                        <Area
+                          type="monotone"
+                          dataKey="sessions"
+                          name="sessions"
+                          stroke={CHART_BLUE}
+                          strokeWidth={2.5}
+                          fill="url(#rendimientoSessionsGradient)"
+                          activeDot={{ r: 5, strokeWidth: 2, stroke: "#fff" }}
+                        />
+                      )}
+                      {!hiddenSeries.active_users && (
+                        <Area
+                          type="monotone"
+                          dataKey="active_users"
+                          name="active_users"
+                          stroke="#159570"
+                          strokeWidth={2}
+                          fill="url(#rendimientoUsersGradient)"
+                          activeDot={{ r: 4, strokeWidth: 2, stroke: "#fff" }}
+                        />
+                      )}
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
-        <Card>
+        {!isLimited && <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-1.5">
               Rendimiento por alojamiento
@@ -599,7 +636,7 @@ export default function RendimientoWebPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {(report?.by_cabana || []).map((cabana) => (
+                    {(report?.status === "connected" ? report.by_cabana : []).map((cabana) => (
                       <tr
                         key={cabana.id}
                         className="border-t border-slate-50 text-slate-700"
@@ -620,7 +657,7 @@ export default function RendimientoWebPage() {
                     ))}
                   </tbody>
                 </table>
-                {report?.by_cabana.length === 0 && (
+                {report?.status === "connected" && report.by_cabana.length === 0 && (
                   <p className="py-8 text-center text-sm text-slate-400">
                     No hay datos para este alojamiento en el período seleccionado.
                   </p>
@@ -631,7 +668,7 @@ export default function RendimientoWebPage() {
               Las métricas son agregadas y no identifican personalmente a quienes visitan tu web.
             </p>
           </CardContent>
-        </Card>
+        </Card>}
       </div>
     </div>
   );

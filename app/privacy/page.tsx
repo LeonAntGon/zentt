@@ -5,7 +5,7 @@ export default function PrivacyPage() {
   return (
     <LegalDocumentLayout
       title="Política de Privacidad"
-      updatedAt="11 de agosto de 2026"
+      updatedAt="15 de agosto de 2026"
       intro="Esta Política explica cómo Zentt recopila, utiliza, almacena y protege la información personal y comercial de sus usuarios y de los terceros que interactúan con sus sitios públicos."
       sections={privacySections}
     />

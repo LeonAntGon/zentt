@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ZenttLogo } from "@/components/landing/ZenttLogo";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import { normalizeUsername } from "@/lib/username";
+import { normalizeUsername, normalizeUsernameLive } from "@/lib/username";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -33,7 +33,10 @@ export default function RegisterPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData({
+      ...formData,
+      [name]: name === "username" ? normalizeUsernameLive(value) : value,
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -168,11 +171,17 @@ export default function RegisterPage() {
                 name="username"
                 value={formData.username}
                 onChange={handleChange}
-                placeholder="ej: Alojamiento imperial"
+                placeholder="ej: alojamientos-del-sol"
                 autoComplete="username"
                 required
                 className={inputClass}
               />
+              <p className="text-xs text-slate-400">
+                Esta será la URL de tu sitio:{" "}
+                <span className="font-medium text-slate-600">
+                  zentt.app/{normalizeUsername(formData.username) || "tu-usuario"}
+                </span>
+              </p>
              </div>
 
             <div className="space-y-2">

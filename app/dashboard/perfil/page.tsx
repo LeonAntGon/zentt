@@ -8,11 +8,17 @@ import { UserAvatar } from "@/components/dashboard/UserAvatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { FormStickySaveBar } from "@/components/dashboard/FormStickySaveBar";
+import { UnsavedChangesGuard } from "@/components/dashboard/UnsavedChangesGuard";
+import {
+  getUsernameError,
+  normalizeUsername,
+  normalizeUsernameLive,
+} from "@/lib/username";
 import {
   KeyRound,
   Loader2,
   Mail,
-  Save,
   Settings,
   Shield,
   User,
@@ -56,8 +62,11 @@ export default function PerfilPage() {
     first_name: "",
     last_name: "",
     email: "",
+    username: "",
   });
   const [emailError, setEmailError] = useState("");
+  const [usernameError, setUsernameError] = useState("");
+  const [hydrated, setHydrated] = useState(false);
 
   const [passwordData, setPasswordData] = useState({
     current_password: "",
@@ -71,8 +80,11 @@ export default function PerfilPage() {
         first_name: user.first_name || "",
         last_name: user.last_name || "",
         email: user.email || "",
+        username: user.username || "",
       });
       setEmailError("");
+      setUsernameError("");
+      setHydrated(true);
     }
   }, [user]);
 
@@ -81,14 +93,34 @@ export default function PerfilPage() {
     user?.username ||
     "Usuario";
 
-  const handleSaveProfile = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const isDirty =
+    hydrated &&
+    (formData.first_name !== (user?.first_name || "") ||
+      formData.last_name !== (user?.last_name || "") ||
+      formData.email.trim() !== (user?.email || "") ||
+      normalizeUsername(formData.username) !==
+        normalizeUsername(user?.username || ""));
+
+  const persist = async (): Promise<boolean> => {
     setEmailError("");
+    setUsernameError("");
     const email = formData.email.trim();
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setEmailError("Ingresá un email válido.");
       toast.error("Ingresá un email válido.");
-      return;
+      return false;
+    }
+
+    const nextUsername = normalizeUsername(formData.username);
+    const usernameChanged =
+      nextUsername !== normalizeUsername(user?.username || "");
+    if (usernameChanged) {
+      const usernameErr = getUsernameError(formData.username);
+      if (usernameErr) {
+        setUsernameError(usernameErr);
+        toast.error(usernameErr);
+        return false;
+      }
     }
 
     setSavingProfile(true);
@@ -97,26 +129,48 @@ export default function PerfilPage() {
       data.append("first_name", formData.first_name);
       data.append("last_name", formData.last_name);
       data.append("email", email);
+      if (usernameChanged) {
+        data.append("username", nextUsername);
+      }
       await api.patch("/accounts/me/", data, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       await checkCurrentUser();
       toast.success("Perfil actualizado");
+      return true;
     } catch (error) {
       const err = error as {
-        response?: { data?: { email?: string[] | string } };
+        response?: {
+          data?: {
+            email?: string[] | string;
+            username?: string[] | string;
+          };
+        };
       };
       const emailErr = err.response?.data?.email;
-      const msg = Array.isArray(emailErr)
+      const usernameErr = err.response?.data?.username;
+      const emailMsg = Array.isArray(emailErr)
         ? emailErr[0]
         : typeof emailErr === "string"
           ? emailErr
-          : "No se pudo guardar el perfil";
-      if (emailErr) setEmailError(msg);
-      toast.error(msg);
+          : null;
+      const usernameMsg = Array.isArray(usernameErr)
+        ? usernameErr[0]
+        : typeof usernameErr === "string"
+          ? usernameErr
+          : null;
+      if (emailMsg) setEmailError(emailMsg);
+      if (usernameMsg) setUsernameError(usernameMsg);
+      toast.error(emailMsg || usernameMsg || "No se pudo guardar el perfil");
+      return false;
     } finally {
       setSavingProfile(false);
     }
+  };
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await persist();
   };
 
   const handleChangePassword = async (e: React.FormEvent) => {
@@ -153,7 +207,7 @@ export default function PerfilPage() {
   };
 
   return (
-    <div className="mx-auto max-w-4xl animate-in fade-in p-6 duration-500 md:p-10">
+    <div className="mx-auto max-w-4xl animate-in fade-in p-6 pb-28 duration-500 md:p-10">
       <header className="mb-10">
         <p className="page-eyebrow mb-2 flex items-center gap-2">
           <User size={14} /> Cuenta
@@ -185,13 +239,14 @@ export default function PerfilPage() {
             </div>
             <div className="inline-flex items-center gap-2 rounded-full border border-slate-100 bg-slate-50 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-slate-500">
               <Shield size={14} className="text-emerald-500" />
-              @{user?.username}
+              @{formData.username || user?.username}
             </div>
           </div>
         </div>
       </div>
 
       <form
+        id="perfil-cuenta-form"
         onSubmit={handleSaveProfile}
         className="mb-8 space-y-6 rounded-[2rem] border border-slate-100 bg-white p-6 shadow-sm md:p-8"
       >
@@ -232,6 +287,37 @@ export default function PerfilPage() {
         </div>
 
         <div className="space-y-2">
+          <Label htmlFor="username" className="ml-1 font-bold text-slate-700">
+            Nombre de usuario
+          </Label>
+          <Input
+            id="username"
+            autoComplete="username"
+            className={`h-14 rounded-2xl border-none bg-slate-50 font-medium ${
+              usernameError ? "ring-2 ring-red-300" : ""
+            }`}
+            value={formData.username}
+            onChange={(e) => {
+              setUsernameError("");
+              setFormData({
+                ...formData,
+                username: normalizeUsernameLive(e.target.value),
+              });
+            }}
+          />
+          {usernameError ? (
+            <p className="ml-1 text-xs font-medium text-red-500">
+              {usernameError}
+            </p>
+          ) : (
+            <p className="ml-1 text-[10px] font-medium text-slate-400">
+              También es la URL de tu sitio: zentt.app/
+              {normalizeUsername(formData.username) || "tu-usuario"}
+            </p>
+          )}
+        </div>
+
+        <div className="space-y-2">
           <Label htmlFor="email" className="ml-1 font-bold text-slate-700">
             Email de inicio de sesión
           </Label>
@@ -256,19 +342,6 @@ export default function PerfilPage() {
             </p>
           )}
         </div>
-
-        <Button
-          type="submit"
-          disabled={savingProfile}
-          className="h-14 w-full rounded-2xl bg-primary font-bold uppercase tracking-widest text-white hover:bg-primary/90"
-        >
-          {savingProfile ? (
-            <Loader2 className="mr-2 animate-spin" />
-          ) : (
-            <Save className="mr-2" size={18} />
-          )}
-          Guardar datos personales
-        </Button>
       </form>
 
       <form
@@ -400,6 +473,18 @@ export default function PerfilPage() {
           </Link>
         </Button>
       </div>
+
+      <FormStickySaveBar
+        form="perfil-cuenta-form"
+        loading={savingProfile}
+        submitLabel="Guardar cambios"
+        loadingLabel="Guardando..."
+      />
+      <UnsavedChangesGuard
+        dirty={isDirty}
+        saving={savingProfile}
+        onSave={persist}
+      />
     </div>
   );
 }

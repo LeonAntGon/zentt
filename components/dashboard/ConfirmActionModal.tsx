@@ -12,6 +12,8 @@ type ConfirmActionModalProps = {
   variant?: "danger" | "primary";
   loading?: boolean;
   closeOnConfirm?: boolean;
+  extraLabel?: string;
+  onExtra?: () => void;
   onConfirm: () => void | Promise<void>;
   onClose: () => void;
 };
@@ -25,6 +27,8 @@ export function ConfirmActionModal({
   variant = "primary",
   loading = false,
   closeOnConfirm = true,
+  extraLabel,
+  onExtra,
   onConfirm,
   onClose,
 }: ConfirmActionModalProps) {
@@ -102,7 +106,17 @@ export function ConfirmActionModal({
           {body}
         </p>
 
-        <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+        <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end">
+          {extraLabel && onExtra ? (
+            <button
+              type="button"
+              onClick={onExtra}
+              disabled={loading}
+              className="rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 disabled:opacity-40 sm:mr-auto"
+            >
+              {extraLabel}
+            </button>
+          ) : null}
           <button
             type="button"
             onClick={onClose}

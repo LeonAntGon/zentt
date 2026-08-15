@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useAuth, type User } from "@/contexts/AuthContext";
 import api from "@/lib/api";
@@ -10,15 +10,28 @@ import { Label } from "@/components/ui/label";
 import {
   Building2,
   Camera,
+  Check,
+  CreditCard,
   Loader2,
   Mail,
   Save,
+  Sparkles,
 } from "lucide-react";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { TikTokIcon } from "@/components/icons/TikTokIcon";
 import { YouTubeIcon } from "@/components/icons/YouTubeIcon";
 import { toast } from "sonner";
 import axios from "axios";
+import type { Cabana } from "@/types/cabin";
+import {
+  getUsernameError,
+  normalizeUsername,
+  normalizeUsernameLive,
+} from "@/lib/username";
+import {
+  UnsavedChangesGuard,
+  type UnsavedChangesGuardHandle,
+} from "@/components/dashboard/UnsavedChangesGuard";
 
 type MetodoContacto = "WA" | "MAIL";
 
@@ -89,9 +102,99 @@ export default function SettingsPage() {
   const [instagramUser, setInstagramUser] = useState("");
   const [tiktokUser, setTiktokUser] = useState("");
   const [youtubeUser, setYoutubeUser] = useState("");
+  const [publicUsername, setPublicUsername] = useState("");
+  const [usernameError, setUsernameError] = useState("");
 
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [logoSaving, setLogoSaving] = useState(false);
+  const unsavedGuardRef = useRef<UnsavedChangesGuardHandle | null>(null);
+  const [cabanas, setCabanas] = useState<Cabana[]>([]);
+  const [cabanasLoading, setCabanasLoading] = useState(true);
+  const [checkoutLoading, setCheckoutLoading] = useState<"pro" | "complejo" | null>(
+    null
+  );
+
+  useEffect(() => {
+    const payment = new URLSearchParams(window.location.search).get("payment");
+    if (!payment) return;
+    if (payment === "success") {
+      toast.success("Pago recibido. Actualizamos tu plan en unos segundos.");
+      void checkCurrentUser();
+    } else if (payment === "failure") {
+      toast.error("El pago no se completó. Podés intentar de nuevo.");
+    } else if (payment === "pending") {
+      toast.message("El pago quedó pendiente. Te avisamos cuando se acredite.");
+    }
+    window.history.replaceState({}, "", `${window.location.pathname}#planes`);
+  }, [checkCurrentUser]);
+
+  useEffect(() => {
+    const loadCabanas = async () => {
+      try {
+        const { data } = await api.get<Cabana[]>("/cabanas/");
+        setCabanas(data || []);
+      } catch {
+        // Silently fail
+      } finally {
+        setCabanasLoading(false);
+      }
+    };
+    loadCabanas();
+  }, []);
+
+  const startCheckout = async (plan: "pro" | "complejo") => {
+    const run = async () => {
+      setCheckoutLoading(plan);
+      try {
+        const { data } = await api.post<{
+          checkout_url?: string;
+          init_point?: string;
+          sandbox_init_point?: string;
+        }>("/payments/create-preference/", { plan });
+        const url =
+          data.checkout_url || data.init_point || data.sandbox_init_point;
+        if (!url) {
+          toast.error("No pudimos iniciar el pago.");
+          return;
+        }
+        window.location.href = url;
+      } catch (err) {
+        if (axios.isAxiosError(err) && err.response?.status === 503) {
+          toast.error("MercadoPago todavía no está configurado.");
+        } else {
+          toast.error("No pudimos iniciar el pago. Probá de nuevo.");
+        }
+      } finally {
+        setCheckoutLoading(null);
+      }
+    };
+
+    if (unsavedGuardRef.current) {
+      unsavedGuardRef.current.tryLeave(() => {
+        void run();
+      });
+    } else {
+      void run();
+    }
+  };
+
+  const currentPlan = user?.profile?.plan || "gratis";
+  const planLabel =
+    currentPlan === "complejo"
+      ? "Plan Complejo"
+      : currentPlan === "pro"
+        ? "Plan Pro"
+        : "Plan Gratis";
+  const planUsage = cabanasLoading
+    ? "Cargando..."
+    : currentPlan === "complejo"
+      ? `${cabanas.length} de 15 alojamientos`
+      : currentPlan === "pro"
+        ? `${cabanas.length} de 5 alojamientos`
+        : `${cabanas.length} de 1 alojamiento`;
+  const expiresLabel = user?.profile?.plan_expires_at
+    ? new Date(user.profile.plan_expires_at).toLocaleDateString("es-AR")
+    : null;
 
   useEffect(() => {
     if (!user) return;
@@ -104,6 +207,8 @@ export default function SettingsPage() {
     setInstagramUser(user.profile?.instagram_user || "");
     setTiktokUser(user.profile?.tiktok_user || "");
     setYoutubeUser(user.profile?.youtube_user || "");
+    setPublicUsername(user.profile?.slug || user.username || "");
+    setUsernameError("");
     setPreviewUrl(getMediaUrl(user.profile?.foto_perfil));
     setHydrated(true);
   }, [user]);
@@ -113,15 +218,48 @@ export default function SettingsPage() {
     [countryCode, phoneLocal]
   );
 
-  const slugPreview = user?.profile?.slug
-    ? `zentt.app/${user.profile.slug}`
-    : "Se genera al guardar el nombre comercial";
+  const slugPreview = publicUsername
+    ? `zentt.app/${normalizeUsername(publicUsername) || publicUsername}`
+    : "zentt.app/tu-usuario";
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const savedPublicUsername = user?.profile?.slug || user?.username || "";
+  const savedPhone = parseWhatsApp(user?.profile?.telefono);
+  const isDirty =
+    hydrated &&
+    (nombre !== (user?.profile?.nombre_negocio || "") ||
+      metodoContacto !== (user?.profile?.metodo_contacto || "WA") ||
+      countryCode !== savedPhone.countryCode ||
+      phoneLocal !== savedPhone.localNumber ||
+      stripAt(instagramUser) !== (user?.profile?.instagram_user || "") ||
+      stripAt(tiktokUser) !== (user?.profile?.tiktok_user || "") ||
+      stripAt(youtubeUser) !== (user?.profile?.youtube_user || "") ||
+      normalizeUsername(publicUsername) !==
+        normalizeUsername(savedPublicUsername));
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = "";
     if (!file) return;
-    setSelectedFile(file);
-    setPreviewUrl(URL.createObjectURL(file));
+
+    const localPreview = URL.createObjectURL(file);
+    setPreviewUrl(localPreview);
+    setLogoSaving(true);
+    try {
+      const formData = new FormData();
+      formData.append("profile.foto_perfil", file);
+      const { data } = await api.patch<User>("/accounts/me/", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setUser(data);
+      setPreviewUrl(getMediaUrl(data.profile?.foto_perfil));
+      toast.success("Logo guardado");
+    } catch {
+      setPreviewUrl(getMediaUrl(user?.profile?.foto_perfil));
+      toast.error("No se pudo guardar el logo");
+    } finally {
+      URL.revokeObjectURL(localPreview);
+      setLogoSaving(false);
+    }
   };
 
   const validate = (): string | null => {
@@ -145,56 +283,52 @@ export default function SettingsPage() {
     youtube_user: stripAt(youtubeUser),
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const persist = async (): Promise<boolean> => {
     const error = validate();
     if (error) {
       toast.error(error);
-      return;
+      return false;
+    }
+
+    const nextUsername = normalizeUsername(publicUsername);
+    const usernameChanged =
+      nextUsername !== normalizeUsername(savedPublicUsername);
+    if (usernameChanged) {
+      const usernameErr = getUsernameError(publicUsername);
+      if (usernameErr) {
+        setUsernameError(usernameErr);
+        toast.error(usernameErr);
+        return false;
+      }
     }
 
     const payload = buildPayload();
     setLoading(true);
 
-    // Contrato lógico → campos reales de Profile en Django
     const profileBody = {
       nombre_negocio: payload.nombre,
       metodo_contacto: payload.metodo_contacto,
       telefono: payload.telefono_whatsapp || null,
-      // Siempre sincroniza el email de cuenta (consultas = User.email)
       email_contacto: payload.email_contacto || null,
       instagram_user: payload.instagram_user || null,
       tiktok_user: payload.tiktok_user || null,
       youtube_user: payload.youtube_user || null,
     };
 
+    const body: { profile: typeof profileBody; username?: string } = {
+      profile: profileBody,
+    };
+    if (usernameChanged) {
+      body.username = nextUsername;
+    }
+
     try {
-      let updatedUser: User;
-
-      if (selectedFile) {
-        const formData = new FormData();
-        Object.entries(profileBody).forEach(([key, value]) => {
-          formData.append(
-            `profile.${key}`,
-            value === null || value === undefined ? "" : String(value)
-          );
-        });
-        formData.append("profile.foto_perfil", selectedFile);
-
-        const { data } = await api.patch<User>("/accounts/me/", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-        updatedUser = data;
-      } else {
-        const { data } = await api.patch<User>("/accounts/me/", {
-          profile: profileBody,
-        });
-        updatedUser = data;
-      }
+      const { data: updatedUser } = await api.patch<User>(
+        "/accounts/me/",
+        body
+      );
 
       setUser(updatedUser);
-      setSelectedFile(null);
       setPreviewUrl(getMediaUrl(updatedUser.profile?.foto_perfil));
 
       const parsed = parseWhatsApp(updatedUser.profile?.telefono);
@@ -207,19 +341,31 @@ export default function SettingsPage() {
       setInstagramUser(updatedUser.profile?.instagram_user || "");
       setTiktokUser(updatedUser.profile?.tiktok_user || "");
       setYoutubeUser(updatedUser.profile?.youtube_user || "");
+      setPublicUsername(updatedUser.profile?.slug || updatedUser.username);
+      setUsernameError("");
 
       await checkCurrentUser();
       toast.success("Identidad del negocio guardada");
+      return true;
     } catch (err) {
       console.error(err);
       if (axios.isAxiosError(err) && err.response?.data) {
-        const body = err.response.data as Record<string, unknown>;
-        const profileErrors = body.profile as
+        const resBody = err.response.data as Record<string, unknown>;
+        const usernameErr = resBody.username;
+        const profileErrors = resBody.profile as
           | Record<string, string[] | string>
           | undefined;
         const telefonoErr = profileErrors?.telefono;
         const emailErr = profileErrors?.email_contacto;
-        if (telefonoErr) {
+        const usernameMsg = Array.isArray(usernameErr)
+          ? usernameErr[0]
+          : typeof usernameErr === "string"
+            ? usernameErr
+            : null;
+        if (usernameMsg) {
+          setUsernameError(usernameMsg);
+          toast.error(usernameMsg);
+        } else if (telefonoErr) {
           toast.error(
             Array.isArray(telefonoErr) ? telefonoErr[0] : String(telefonoErr)
           );
@@ -233,9 +379,15 @@ export default function SettingsPage() {
       } else {
         toast.error("No se pudieron guardar los cambios");
       }
+      return false;
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await persist();
   };
 
   return (
@@ -283,14 +435,23 @@ export default function SettingsPage() {
                 )}
               </div>
               <label
-                className="absolute -bottom-1 -right-1 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-primary text-white shadow-md shadow-primary/20 transition-all duration-300 ease-in-out hover:bg-primary/90"
+                className={`absolute -bottom-1 -right-1 flex h-9 w-9 items-center justify-center rounded-full bg-primary text-white shadow-md shadow-primary/20 transition-all duration-300 ease-in-out hover:bg-primary/90 ${
+                  logoSaving
+                    ? "pointer-events-none opacity-70"
+                    : "cursor-pointer"
+                }`}
                 title="Subir logo"
               >
-                <Camera size={16} />
+                {logoSaving ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <Camera size={16} />
+                )}
                 <input
                   type="file"
                   accept="image/*"
                   className="hidden"
+                  disabled={logoSaving}
                   onChange={handleFileChange}
                 />
               </label>
@@ -314,9 +475,48 @@ export default function SettingsPage() {
                 />
               </div>
               <p className="text-xs text-slate-400">
-                URL pública:{" "}
-                <span className="font-medium text-slate-500">{slugPreview}</span>
+                Nombre visible en tu sitio público.
               </p>
+              <div className="space-y-2 pt-2">
+                <Label
+                  htmlFor="public-username"
+                  className="text-sm font-semibold text-slate-700"
+                >
+                  URL de tu sitio
+                </Label>
+                <div
+                  className={`flex overflow-hidden rounded-xl border bg-white ${
+                    usernameError ? "border-red-300" : "border-slate-200"
+                  }`}
+                >
+                  <span className="flex shrink-0 items-center bg-slate-50 px-3 text-sm font-medium text-slate-500">
+                    zentt.app/
+                  </span>
+                  <input
+                    id="public-username"
+                    value={publicUsername}
+                    onChange={(e) => {
+                      setUsernameError("");
+                      setPublicUsername(normalizeUsernameLive(e.target.value));
+                    }}
+                    placeholder="tu-usuario"
+                    className="min-w-0 flex-1 border-0 bg-transparent px-3 py-3 text-sm text-slate-800 outline-none focus:ring-0"
+                    autoComplete="username"
+                  />
+                </div>
+                {usernameError ? (
+                  <p className="text-xs font-medium text-red-500">
+                    {usernameError}
+                  </p>
+                ) : (
+                  <p className="text-xs text-slate-400">
+                    También es tu nombre de usuario para iniciar sesión.{" "}
+                    <span className="font-medium text-slate-500">
+                      {slugPreview}
+                    </span>
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         </section>
@@ -505,6 +705,135 @@ export default function SettingsPage() {
           </div>
         </section>
 
+        {/* —— Tarjeta 4: Tu Plan —— */}
+        <section id="planes" className="scroll-mt-24 rounded-2xl bg-white p-6 shadow-sm transition-all duration-300 ease-in-out">
+          <div className="mb-5 flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+              <CreditCard className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <h2 className="section-title mb-0">Tu plan</h2>
+              <p className="text-sm text-slate-500">
+                Plan actual y renovación cada 30 días
+              </p>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-lg font-bold text-slate-900">
+                    {planLabel}
+                  </span>
+                  {currentPlan === "gratis" && (
+                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700">
+                      1 alojamiento
+                    </span>
+                  )}
+                  {currentPlan === "pro" && (
+                    <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
+                      Popular
+                    </span>
+                  )}
+                </div>
+                <p className="mt-1 text-sm text-slate-500">{planUsage}</p>
+                {expiresLabel && currentPlan !== "gratis" && (
+                  <p className="mt-1 text-xs text-slate-400">
+                    Vence el {expiresLabel}
+                  </p>
+                )}
+              </div>
+              <div className="flex flex-col gap-2 sm:items-end">
+                {currentPlan !== "pro" && currentPlan !== "complejo" && (
+                  <button
+                    type="button"
+                    disabled={checkoutLoading !== null}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-primary/20 transition-all duration-300 ease-in-out hover:bg-primary/90 disabled:opacity-60"
+                    onClick={() => void startCheckout("pro")}
+                  >
+                    {checkoutLoading === "pro" ? (
+                      <Loader2 size={16} className="animate-spin" />
+                    ) : (
+                      <Sparkles size={16} />
+                    )}
+                    Actualizar a Pro · $9.900
+                  </button>
+                )}
+                {currentPlan === "pro" && (
+                  <button
+                    type="button"
+                    disabled={checkoutLoading !== null}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-bold text-slate-800 transition-all hover:bg-slate-50 disabled:opacity-60"
+                    onClick={() => void startCheckout("pro")}
+                  >
+                    {checkoutLoading === "pro" && (
+                      <Loader2 size={16} className="animate-spin" />
+                    )}
+                    Renovar Pro · $9.900
+                  </button>
+                )}
+                {currentPlan !== "complejo" && (
+                  <button
+                    type="button"
+                    disabled={checkoutLoading !== null}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-bold text-slate-800 transition-all hover:bg-slate-50 disabled:opacity-60"
+                    onClick={() => void startCheckout("complejo")}
+                  >
+                    {checkoutLoading === "complejo" ? (
+                      <Loader2 size={16} className="animate-spin" />
+                    ) : null}
+                    {currentPlan === "pro" ? "Pasar a Complejo" : "Complejo"} · $19.900
+                  </button>
+                )}
+                {currentPlan === "complejo" && (
+                  <button
+                    type="button"
+                    disabled={checkoutLoading !== null}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-primary/20 transition-all hover:bg-primary/90 disabled:opacity-60"
+                    onClick={() => void startCheckout("complejo")}
+                  >
+                    {checkoutLoading === "complejo" && (
+                      <Loader2 size={16} className="animate-spin" />
+                    )}
+                    Renovar Complejo · $19.900
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {currentPlan === "gratis" && (
+              <div className="mt-4 border-t border-slate-200 pt-4">
+                <p className="mb-3 text-sm font-semibold text-slate-700">
+                  Desbloqueá más con Pro:
+                </p>
+                <ul className="grid gap-2 sm:grid-cols-2">
+                  {[
+                    "Hasta 5 alojamientos",
+                    "Sync Airbnb y Booking",
+                    "Precios dinámicos",
+                    "Analytics detalladas",
+                  ].map((feature) => (
+                    <li
+                      key={feature}
+                      className="flex items-center gap-2 text-sm text-slate-600"
+                    >
+                      <Check size={14} className="shrink-0 text-primary" />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+
+          <p className="mt-3 text-xs text-slate-400">
+            Los pagos se procesan de forma segura a través de MercadoPago.
+            Cada plan pago cubre 30 días y se renueva de forma manual desde
+            esta pantalla. No hay débito automático.
+          </p>
+        </section>
+
         {/* Spacer for sticky button */}
         <div className="h-4" aria-hidden />
       </form>
@@ -528,6 +857,12 @@ export default function SettingsPage() {
           </button>
         </div>
       </div>
+      <UnsavedChangesGuard
+        dirty={isDirty}
+        saving={loading}
+        onSave={persist}
+        guardRef={unsavedGuardRef}
+      />
     </div>
   );
 }

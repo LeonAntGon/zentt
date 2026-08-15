@@ -24,7 +24,7 @@ export const privacySections: LegalSection[] = [
     title: "3. Uso de la información y comunicaciones",
     paragraphs: [
       "Utilizamos la información para crear y mantener cuentas, alojar sitios públicos, administrar alojamientos, reservas y consultas, generar reportes, sincronizar disponibilidad, prevenir abusos, brindar soporte y mejorar la Plataforma.",
-      "Podemos utilizar el correo registrado para enviar bienvenida, códigos de recuperación, nuevas consultas, recordatorios de prueba, avisos de suscripción, cambios legales y comunicaciones operativas necesarias para el servicio.",
+      "Enviamos únicamente correos de servicio al correo registrado: bienvenida, códigos de recuperación de cuenta, nuevas consultas o reservas de huéspedes, confirmación de pago, avisos de vencimiento de plan y cambios legales. No enviamos publicidad ni newsletters comerciales.",
       "Los datos comerciales, ingresos, reservas y métricas de un usuario se mantienen aislados de otros usuarios y no se venden ni se publican como información individual.",
     ],
   },
@@ -40,13 +40,13 @@ export const privacySections: LegalSection[] = [
     title: "5. Pagos y transacciones",
     paragraphs: [
       "Zentt facilita la recepción de consultas, pero no interviene en los acuerdos, ventas ni pagos entre el usuario y sus clientes finales. Esas operaciones se realizan por fuera de la Plataforma.",
-      "El pago por el uso de Zentt puede gestionarse mediante transferencia bancaria o mediante los procesadores que se encuentren integrados y habilitados, como Polar o Stripe. Zentt no almacena datos completos de tarjetas; el procesamiento se rige por las políticas de cada proveedor.",
+      "El pago por el uso de Zentt se gestiona mediante MercadoPago (Checkout Pro). Zentt no almacena datos completos de tarjetas; el procesamiento se rige por las políticas de MercadoPago.",
     ],
   },
   {
     title: "6. Proveedores e infraestructura",
     paragraphs: [
-      "Para operar el servicio podemos utilizar proveedores especializados, incluyendo Render para el backend, Vercel para el frontend, Supabase/PostgreSQL para base de datos y almacenamiento, Brevo para correos transaccionales, y Google Analytics/Google Cloud para analíticas. Podrán intervenir AWS, Cloudflare, Airbnb u otros proveedores cuando formen parte de la configuración activa del servicio.",
+      "Para operar el servicio podemos utilizar proveedores especializados, incluyendo Render para el backend, Vercel para el frontend, Supabase/PostgreSQL para base de datos y almacenamiento, Brevo para correos transaccionales, MercadoPago para cobros de planes, y Google Analytics/Google Cloud para analíticas. Podrán intervenir AWS, Cloudflare, Airbnb u otros proveedores cuando formen parte de la configuración activa del servicio.",
       "Estos proveedores pueden alojar, procesar o transferir información en servidores ubicados fuera de Argentina y cuentan con sus propias condiciones y políticas de seguridad y privacidad.",
     ],
   },
@@ -111,16 +111,16 @@ export const termsSections: LegalSection[] = [
     ],
   },
   {
-    title: "5. Suscripción y pagos",
+    title: "5. Planes y pagos",
     paragraphs: [
-      "El acceso a determinadas funciones requiere una suscripción. Los pagos pueden realizarse por transferencia bancaria o mediante los procesadores que estén efectivamente habilitados, como Polar o Stripe.",
-      "El usuario debe mantener su suscripción al día. Ante falta de pago o vencimiento, Zentt podrá enviar avisos al correo registrado y suspender temporal o definitivamente el panel o el sitio público, respetando las obligaciones legales aplicables.",
+      "El acceso a determinadas funciones requiere un plan pago. Los cobros se realizan mediante MercadoPago como un pago único que otorga 30 días de acceso al plan contratado. No hay renovación automática ni débito recurrente: el usuario renueva desde Configuración cuando lo desea.",
+      "Zentt puede enviar al correo registrado avisos de servicio: consultas o reservas de huéspedes, confirmación de pago y vencimiento del plan. Ante falta de pago o vencimiento, el usuario pasa al plan gratuito (1 alojamiento). Los alojamientos extra no se eliminan, pero pueden quedar sujetos a los límites del plan vigente. El plan gratuito no vence por el paso del tiempo.",
     ],
   },
   {
     title: "6. Disponibilidad y servicios de terceros",
     paragraphs: [
-      "El funcionamiento puede depender de Render, Vercel, Supabase, Brevo, Google Analytics, servicios de almacenamiento, APIs de Airbnb/iCal y procesadores de pago. Cambios, caídas, límites, bloqueos o errores de dichos servicios pueden afectar la Plataforma.",
+      "El funcionamiento puede depender de Render, Vercel, Supabase, Brevo, MercadoPago, Google Analytics, servicios de almacenamiento, APIs de Airbnb/iCal y otros procesadores de pago. Cambios, caídas, límites, bloqueos o errores de dichos servicios pueden afectar la Plataforma.",
       "Zentt procurará restablecer el servicio razonablemente, pero no garantiza disponibilidad permanente ni sincronización ininterrumpida. Los calendarios iCal pueden presentar demoras o errores ajenos a Zentt.",
     ],
   },
