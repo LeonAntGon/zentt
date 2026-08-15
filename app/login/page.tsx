@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState, useEffect, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { ZenttLogo } from "@/components/landing/ZenttLogo";
@@ -10,20 +10,48 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 
-export default function LoginPage() {
+function safeNextPath(next: string | null): string {
+  if (!next) return "/dashboard";
+  let decoded = next;
+  try {
+    decoded = decodeURIComponent(next);
+  } catch {
+    return "/dashboard";
+  }
+  if (decoded === "#precios" || decoded === "/#precios") return "/#precios";
+  if (decoded === "/") return "/";
+  if (
+    decoded.startsWith("/") &&
+    !decoded.startsWith("//") &&
+    !decoded.includes("://")
+  ) {
+    return decoded;
+  }
+  return "/dashboard";
+}
+
+function goToNext(path: string) {
+  window.location.assign(path);
+}
+
+function LoginForm() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const { login, user } = useAuth();
-  const router = useRouter();
+  const searchParams = useSearchParams();
+  const nextPath = useMemo(
+    () => safeNextPath(searchParams.get("next")),
+    [searchParams]
+  );
 
   useEffect(() => {
     if (user) {
-      router.replace("/dashboard");
+      goToNext(nextPath);
     }
-  }, [user, router]);
+  }, [user, nextPath]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,7 +60,7 @@ export default function LoginPage() {
 
     try {
       await login(username, password);
-      router.replace("/dashboard");
+      goToNext(nextPath);
     } catch {
       setError("Credenciales inválidas. Verificá tu usuario y contraseña.");
     } finally {
@@ -158,5 +186,19 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-white">
+          <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
+        </div>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   );
 }

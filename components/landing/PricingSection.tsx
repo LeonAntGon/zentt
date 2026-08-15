@@ -1,9 +1,31 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Check } from "lucide-react";
+"use client";
 
-const plans = [
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import axios from "axios";
+import { toast } from "sonner";
+import { Check, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ConfirmActionModal } from "@/components/dashboard/ConfirmActionModal";
+import { useAuth } from "@/contexts/AuthContext";
+import api from "@/lib/api";
+
+type PlanId = "gratis" | "pro" | "complejo";
+
+const plans: {
+  id: PlanId;
+  name: string;
+  desc: string;
+  price: number;
+  priceLabel: string;
+  highlight: string;
+  features: string[];
+  cta: string;
+  popular: boolean;
+}[] = [
   {
+    id: "gratis",
     name: "Gratis",
     desc: "Ideal para empezar a recibir reservas directas sin inversión.",
     price: 0,
@@ -19,6 +41,7 @@ const plans = [
     popular: false,
   },
   {
+    id: "pro",
     name: "Pro",
     desc: "Para anfitriones que quieren crecer y profesionalizarse.",
     price: 9900,
@@ -34,6 +57,7 @@ const plans = [
     popular: true,
   },
   {
+    id: "complejo",
     name: "Complejo",
     desc: "Para complejos con varios alojamientos en un solo panel.",
     price: 19900,
@@ -51,6 +75,67 @@ const plans = [
 ];
 
 const PricingSection = () => {
+  const { isAuthenticated, user, loading, checkCurrentUser } = useAuth();
+  const router = useRouter();
+  const [loginModalOpen, setLoginModalOpen] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState<PlanId | null>(null);
+
+  const currentPlan = user?.profile?.plan || "gratis";
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const payment = params.get("payment");
+    if (!payment) return;
+    if (payment === "success") {
+      toast.success("Pago recibido. Actualizamos tu plan en unos segundos.");
+      void checkCurrentUser();
+    } else if (payment === "failure") {
+      toast.error("El pago no se completó. Podés intentar de nuevo.");
+    } else if (payment === "pending") {
+      toast.message("El pago quedó pendiente. Te avisamos cuando se acredite.");
+    }
+    window.history.replaceState({}, "", `${window.location.pathname}#precios`);
+    document.getElementById("precios")?.scrollIntoView({ behavior: "smooth" });
+  }, [checkCurrentUser]);
+
+  const startCheckout = async (plan: "pro" | "complejo") => {
+    setCheckoutLoading(plan);
+    try {
+      const { data } = await api.post<{
+        checkout_url?: string;
+        init_point?: string;
+        sandbox_init_point?: string;
+      }>("/payments/create-preference/", { plan });
+      const url =
+        data.checkout_url || data.init_point || data.sandbox_init_point;
+      if (!url) {
+        toast.error("No pudimos iniciar el pago.");
+        return;
+      }
+      window.location.href = url;
+    } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 503) {
+        toast.error("MercadoPago todavía no está configurado.");
+      } else {
+        toast.error("No pudimos iniciar el pago. Probá de nuevo.");
+      }
+    } finally {
+      setCheckoutLoading(null);
+    }
+  };
+
+  const handlePlanClick = (planId: PlanId) => {
+    if (planId === "gratis") {
+      router.push(isAuthenticated ? "/dashboard" : "/register");
+      return;
+    }
+    if (!isAuthenticated) {
+      setLoginModalOpen(true);
+      return;
+    }
+    void startCheckout(planId);
+  };
+
   return (
     <section id="precios" className="py-20 lg:py-28 bg-card">
       <div className="container mx-auto px-4 lg:px-8">
@@ -68,85 +153,128 @@ const PricingSection = () => {
         </div>
 
         <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          {plans.map((plan) => (
-            <div
-              key={plan.name}
-              className={`relative p-6 lg:p-8 rounded-2xl border-2 transition-all duration-300 ${
-                plan.popular
-                  ? "border-primary bg-background shadow-2xl scale-[1.02]"
-                  : "border-border/50 bg-background hover:shadow-lg"
-              }`}
-            >
-              {plan.popular && (
-                <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-5 py-1 bg-primary text-primary-foreground text-xs font-heading font-semibold rounded-full whitespace-nowrap shadow-md">
-                  Más popular
-                </span>
-              )}
+          {plans.map((plan) => {
+            const isCurrent =
+              isAuthenticated && !loading && currentPlan === plan.id;
+            const isBusy = checkoutLoading === plan.id;
 
-              <h3 className="text-xl font-heading font-bold text-foreground mb-1">
-                {plan.name}
-              </h3>
-              <p className="text-muted-foreground text-sm mb-5 min-h-[40px]">
-                {plan.desc}
-              </p>
-
-              <div className="mb-5">
-                {plan.price === 0 ? (
-                  <span className="text-4xl font-heading font-bold text-foreground">
-                    Gratis
-                  </span>
-                ) : (
-                  <>
-                    <span className="text-4xl font-heading font-bold text-foreground">
-                      {plan.priceLabel}
-                    </span>
-                    <span className="text-muted-foreground text-sm ml-1">
-                      cada 30 días
-                    </span>
-                  </>
-                )}
-              </div>
-
+            return (
               <div
-                className={`mb-5 px-3 py-2 rounded-lg text-sm font-semibold text-center ${
+                key={plan.id}
+                className={`relative p-6 lg:p-8 rounded-2xl border-2 transition-all duration-300 ${
                   plan.popular
-                    ? "bg-primary/10 text-primary"
-                    : "bg-muted text-foreground"
+                    ? "border-primary bg-background shadow-2xl scale-[1.02]"
+                    : "border-border/50 bg-background hover:shadow-lg"
                 }`}
               >
-                {plan.highlight}
-              </div>
+                {plan.popular && (
+                  <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-5 py-1 bg-primary text-primary-foreground text-xs font-heading font-semibold rounded-full whitespace-nowrap shadow-md">
+                    Más popular
+                  </span>
+                )}
 
-              <ul className="space-y-2.5 mb-6">
-                {plan.features.map((f) => (
-                  <li
-                    key={f}
-                    className="flex items-start gap-2.5 text-sm text-foreground/80"
+                <h3 className="text-xl font-heading font-bold text-foreground mb-1">
+                  {plan.name}
+                </h3>
+                <p className="text-muted-foreground text-sm mb-5 min-h-[40px]">
+                  {plan.desc}
+                </p>
+
+                <div className="mb-5">
+                  {plan.price === 0 ? (
+                    <span className="text-4xl font-heading font-bold text-foreground">
+                      Gratis
+                    </span>
+                  ) : (
+                    <>
+                      <span className="text-4xl font-heading font-bold text-foreground">
+                        {plan.priceLabel}
+                      </span>
+                      <span className="text-muted-foreground text-sm ml-1">
+                        cada 30 días
+                      </span>
+                    </>
+                  )}
+                </div>
+
+                <div
+                  className={`mb-5 px-3 py-2 rounded-lg text-sm font-semibold text-center ${
+                    plan.popular
+                      ? "bg-primary/10 text-primary"
+                      : "bg-muted text-foreground"
+                  }`}
+                >
+                  {plan.highlight}
+                </div>
+
+                <ul className="space-y-2.5 mb-6">
+                  {plan.features.map((f) => (
+                    <li
+                      key={f}
+                      className="flex items-start gap-2.5 text-sm text-foreground/80"
+                    >
+                      <Check size={16} className="text-primary shrink-0 mt-0.5" />
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+
+                {isCurrent ? (
+                  <Button
+                    variant={plan.popular ? "hero" : "hero-outline"}
+                    className="w-full"
+                    size="lg"
+                    disabled
                   >
-                    <Check size={16} className="text-primary shrink-0 mt-0.5" />
-                    {f}
-                  </li>
-                ))}
-              </ul>
-
-              <Button
-                variant={plan.popular ? "hero" : "hero-outline"}
-                className="w-full"
-                size="lg"
-                asChild
-              >
-                <Link href="/register">{plan.cta}</Link>
-              </Button>
-            </div>
-          ))}
+                    Tu plan actual
+                  </Button>
+                ) : plan.id === "gratis" && !isAuthenticated && !loading ? (
+                  <Button
+                    variant={plan.popular ? "hero" : "hero-outline"}
+                    className="w-full"
+                    size="lg"
+                    asChild
+                  >
+                    <Link href="/register">{plan.cta}</Link>
+                  </Button>
+                ) : (
+                  <Button
+                    variant={plan.popular ? "hero" : "hero-outline"}
+                    className="w-full"
+                    size="lg"
+                    disabled={loading || checkoutLoading !== null}
+                    onClick={() => handlePlanClick(plan.id)}
+                  >
+                    {isBusy ? (
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : (
+                      plan.cta
+                    )}
+                  </Button>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         <p className="text-center text-sm text-muted-foreground mt-8">
           Empezá gratis con 1 alojamiento. Sin tarjeta. Escalá cuando cargues el
           segundo. Los planes pagos son un cobro único por 30 días; se renuevan
-          desde Configuración.
+          desde esta sección.
         </p>
       </div>
+
+      <ConfirmActionModal
+        open={loginModalOpen}
+        title="Primero, iniciemos sesión"
+        body="Para contratar un plan pago necesitás una cuenta. Iniciá sesión y volvé a elegir el plan."
+        confirmLabel="Iniciar sesión"
+        cancelLabel="Cancelar"
+        onConfirm={() => {
+          router.push(`/login?next=${encodeURIComponent("/#precios")}`);
+        }}
+        onClose={() => setLoginModalOpen(false)}
+      />
     </section>
   );
 };

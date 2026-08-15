@@ -38,7 +38,7 @@ export function UpgradeBanner({
           Disponible en plan <span className="font-semibold">{planLabel}</span>
         </span>
         <Link
-          href="/dashboard/configuracion#planes"
+          href="/#precios"
           className="ml-1 font-semibold text-amber-900 underline hover:no-underline"
         >
           Actualizar
@@ -68,7 +68,7 @@ export function UpgradeBanner({
           </p>
         </div>
         <Button variant="default" size="sm" asChild>
-          <Link href="/dashboard/configuracion#planes">
+          <Link href="/#precios">
             Ver planes <ArrowRight size={14} className="ml-1" />
           </Link>
         </Button>
@@ -96,7 +96,7 @@ export function UpgradeBanner({
           </p>
           <div className="mt-4 flex flex-wrap gap-3">
             <Button variant="default" asChild>
-              <Link href="/dashboard/configuracion#planes">
+              <Link href="/#precios">
                 Ver planes <ArrowRight size={16} className="ml-1" />
               </Link>
             </Button>
