@@ -6,9 +6,9 @@ import api from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { Cabana } from "@/types/cabin";
 import { CabanaCard } from "@/components/CabanaCard";
-import { Plus, Home, Loader2, LayoutGrid } from "lucide-react";
+import { Plus, Home, LayoutGrid } from "lucide-react";
 import { toast } from "sonner";
-import { ZenttLogo } from "@/components/landing/ZenttLogo";
+import { SkeletonCabanaCard } from "@/components/ui/skeleton";
 
 export default function CabanasPage() {
   const [cabanas, setCabanas] = useState<Cabana[]>([]);
@@ -50,19 +50,6 @@ export default function CabanasPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">
-        <Loader2 className="h-10 w-10 animate-spin text-primary" />
-        <p className="flex items-center gap-2 text-muted-foreground font-bold uppercase tracking-tighter italic">
-          Cargando
-          <ZenttLogo className="h-4 w-auto aspect-[290/130]" />
-          ...
-        </p>
-      </div>
-    );
-  }
-
   return (
     <div className="p-6 md:p-10 max-w-7xl mx-auto animate-in fade-in duration-500">
       <div className="flex flex-col gap-10">
@@ -85,13 +72,19 @@ export default function CabanasPage() {
 
           <button
             onClick={handleCrearCabana}
-            className="bg-primary hover:bg-primary/90 text-white px-8 py-4 rounded-2xl font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2 shadow-xl shadow-primary/10 transition-all active:scale-95"
+            className="bg-primary hover:bg-primary/90 text-white px-8 py-4 rounded-2xl font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2 shadow-xl shadow-primary/10 transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2"
           >
             <Plus size={18} /> Añadir alojamiento
           </button>
         </header>
 
-        {cabanas.length === 0 ? (
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <SkeletonCabanaCard key={i} />
+            ))}
+          </div>
+        ) : cabanas.length === 0 ? (
           <div className="bg-white border-2 border-dashed border-slate-200 rounded-[3rem] p-20 flex flex-col items-center text-center gap-6">
             <div className="h-20 w-20 bg-slate-50 rounded-full flex items-center justify-center text-slate-300">
               <Home size={40} />

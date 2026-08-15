@@ -1,13 +1,13 @@
 "use client";
 
 import { RefreshCw } from "lucide-react";
-import { AirbnbIcon } from "@/components/icons/AirbnbIcon";
+import { BookingIcon } from "@/components/icons/BookingIcon";
 import {
   cabanaFieldClass,
   cabanaSectionClass,
 } from "@/components/dashboard/cabana-form-styles";
 
-type AirbnbCalendarConnectProps = {
+type BookingCalendarConnectProps = {
   value: string;
   onChange: (value: string) => void;
   showSyncButton?: boolean;
@@ -16,31 +16,31 @@ type AirbnbCalendarConnectProps = {
   bloqueosCount?: number;
 };
 
-export function AirbnbCalendarConnect({
+export function BookingCalendarConnect({
   value,
   onChange,
   showSyncButton = false,
   onSync,
   syncing = false,
   bloqueosCount,
-}: AirbnbCalendarConnectProps) {
+}: BookingCalendarConnectProps) {
   return (
     <div className={`${cabanaSectionClass} space-y-3`}>
       <h3 className="flex items-center gap-2 font-black text-slate-900">
-        <AirbnbIcon className="h-[18px] w-[18px] text-airbnb" />
-        Conectar con calendario Airbnb
+        <BookingIcon className="h-[18px] w-[18px] text-[#003580]" />
+        Conectar con calendario Booking
       </h3>
       <p className="text-xs text-slate-500">
-        Pegá el enlace del calendario de este alojamiento en Airbnb. Al
-        sincronizar, las fechas ocupadas ahí se bloquean en Zentt.
+        Pegá el enlace del calendario iCal de Booking.com para sincronizar las
+        fechas ocupadas de este alojamiento.
       </p>
       <input
         type="url"
-        name="ical_url"
+        name="ical_url_booking"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className={cabanaFieldClass}
-        placeholder="https://www.airbnb.com/calendar/...."
+        placeholder="https://admin.booking.com/hotel/hoteladmin/ical.html?..."
       />
       {showSyncButton && (
         <div className="flex flex-wrap items-center gap-3">

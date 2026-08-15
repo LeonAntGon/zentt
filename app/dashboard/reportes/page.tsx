@@ -20,7 +20,6 @@ import {
   Moon,
   Percent,
   MessageSquare,
-  Loader2,
   TrendingUp,
   TrendingDown,
   Minus,
@@ -31,6 +30,7 @@ import {
   Home,
 } from "lucide-react";
 import { toast } from "sonner";
+import { Skeleton, SkeletonKpi } from "@/components/ui/skeleton";
 import {
   Area,
   AreaChart,
@@ -492,8 +492,29 @@ export default function ReportesPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-[50vh] items-center justify-center bg-slate-50">
-        <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
+      <div className="mx-auto max-w-6xl space-y-8 p-6 md:p-10">
+        <div>
+          <Skeleton className="mb-3 h-3 w-24" />
+          <Skeleton className="mb-2 h-8 w-64" />
+          <Skeleton className="h-3 w-80" />
+        </div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <SkeletonKpi key={i} />
+          ))}
+        </div>
+        <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+          <Skeleton className="mb-4 h-4 w-40" />
+          <Skeleton className="h-64 w-full rounded-xl" />
+        </div>
+        <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+          <Skeleton className="mb-4 h-4 w-40" />
+          <div className="space-y-2">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} className="h-10 w-full rounded-lg" />
+            ))}
+          </div>
+        </div>
       </div>
     );
   }

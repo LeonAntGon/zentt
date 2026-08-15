@@ -167,7 +167,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                   className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition-all ${
                     active
                       ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
-                      : "text-primary hover:bg-primary hover:text-primary-foreground"
+                      : "text-slate-700 hover:bg-slate-100 hover:text-slate-900"
                   }`}
                 >
                   <Icon size={18} /> {item.label}

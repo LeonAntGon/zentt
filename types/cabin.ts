@@ -37,6 +37,7 @@ export interface Cabana {
   telefono_whatsapp: string | null;
   email_contacto: string | null;
   ical_url?: string | null;
+  ical_url_booking?: string | null;
   imagen_portada: string | null;
   imagenes: CabanaImagen[];
   videos?: CabanaVideo[];

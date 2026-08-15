@@ -131,7 +131,7 @@ export function MasterCalendar({
             {syncingIcal ? (
               <Loader2 size={14} className="animate-spin" />
             ) : (
-              <AirbnbIcon className="h-3.5 w-3.5 text-[#FF385C]" />
+              <AirbnbIcon className="h-3.5 w-3.5 text-airbnb" />
             )}
             Sync iCal
           </button>

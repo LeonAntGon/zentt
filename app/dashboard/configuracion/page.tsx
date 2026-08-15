@@ -511,7 +511,7 @@ export default function SettingsPage() {
       )}
 
       {/* Botón fijo Guardar */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-slate-200/80 bg-white/90 backdrop-blur-md md:left-64">
+      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-slate-200/80 bg-white/90 backdrop-blur-md md:left-52">
         <div className="mx-auto flex max-w-3xl items-center justify-end gap-3 px-6 py-4">
           <button
             type="submit"

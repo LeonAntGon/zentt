@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import api from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { AmenityPicker } from "@/components/dashboard/AmenityPicker";
 import { AirbnbCalendarConnect } from "@/components/dashboard/AirbnbCalendarConnect";
+import { BookingCalendarConnect } from "@/components/dashboard/BookingCalendarConnect";
 import { CabinAvailabilityCalendar } from "@/components/dashboard/CabinAvailabilityCalendar";
 import {
   CabinContactMethodToggle,
@@ -15,6 +16,11 @@ import {
 import { ContactConfigRequiredModal } from "@/components/dashboard/ContactConfigRequiredModal";
 import { ConfirmActionModal } from "@/components/dashboard/ConfirmActionModal";
 import { CabinVideoLinks } from "@/components/dashboard/CabinVideoLinks";
+import {
+  FormSectionNav,
+  type FormSection,
+} from "@/components/dashboard/FormSectionNav";
+import { FormStickySaveBar } from "@/components/dashboard/FormStickySaveBar";
 import {
   cabanaEmptyMediaClass,
   cabanaFieldClass,
@@ -27,14 +33,12 @@ import {
 } from "@/components/dashboard/cabana-form-styles";
 import type { PrecioPorFecha } from "@/types/cabin";
 import {
-  Save,
   ArrowLeft,
   Image as ImageIcon,
   DollarSign,
   Star,
   Trash2,
   UploadCloud,
-  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -50,6 +54,8 @@ type ImageConfirmState = {
   onConfirm: () => void;
 } | null;
 
+type FieldErrors = Partial<Record<"nombre" | "precio" | "capacidad", string>>;
+
 export default function CreateCabanaPage() {
   const router = useRouter();
   const { user } = useAuth();
@@ -64,7 +70,9 @@ export default function CreateCabanaPage() {
     capacidad: 2,
     amenities: [] as string[],
     ical_url: "",
+    ical_url_booking: "",
   });
+  const [errors, setErrors] = useState<FieldErrors>({});
   const [metodoContacto, setMetodoContacto] = useState<ContactMethod>("WA");
   const [contactModal, setContactModal] = useState<{
     open: boolean;
@@ -118,11 +126,65 @@ export default function CreateCabanaPage() {
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >
   ) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (name in errors) {
+      setErrors((prev) => ({ ...prev, [name]: undefined }));
+    }
   };
+
+  const validate = (): FieldErrors => {
+    const next: FieldErrors = {};
+    if (!formData.nombre.trim()) {
+      next.nombre = "Poné un nombre para el alojamiento.";
+    } else if (formData.nombre.trim().length < 3) {
+      next.nombre = "Al menos 3 caracteres.";
+    }
+    const precioNum = Number(formData.precio);
+    if (!formData.precio.trim()) {
+      next.precio = "Definí el precio base por noche.";
+    } else if (Number.isNaN(precioNum) || precioNum <= 0) {
+      next.precio = "El precio debe ser mayor a 0.";
+    }
+    const capNum = Number(formData.capacidad);
+    if (!formData.capacidad || Number.isNaN(capNum) || capNum <= 0) {
+      next.capacidad = "Ingresá una capacidad válida (personas).";
+    }
+    return next;
+  };
+
+  const missingCount = useMemo(() => {
+    let n = 0;
+    if (!formData.nombre.trim() || formData.nombre.trim().length < 3) n++;
+    if (!formData.precio.trim() || Number(formData.precio) <= 0) n++;
+    if (!formData.capacidad || Number(formData.capacidad) <= 0) n++;
+    return n;
+  }, [formData.nombre, formData.precio, formData.capacidad]);
+
+  const sections: FormSection[] = useMemo(
+    () => [
+      {
+        id: "sec-datos",
+        label: "Datos básicos",
+        required: true,
+        hasError: Boolean(errors.nombre || errors.precio || errors.capacidad),
+        complete:
+          !!formData.nombre.trim() &&
+          Number(formData.precio) > 0 &&
+          Number(formData.capacidad) > 0,
+      },
+      { id: "sec-descripcion", label: "Descripción" },
+      { id: "sec-contacto", label: "Canal de contacto" },
+      { id: "sec-airbnb", label: "Airbnb (iCal)" },
+      { id: "sec-booking", label: "Booking (iCal)" },
+      { id: "sec-precios-especiales", label: "Precios especiales" },
+      { id: "sec-amenities", label: "Amenities" },
+      { id: "sec-galeria", label: "Galería" },
+      { id: "sec-precios-dia", label: "Precios por día" },
+      { id: "sec-videos", label: "Videos" },
+    ],
+    [errors, formData.nombre, formData.precio, formData.capacidad]
+  );
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
@@ -195,10 +257,35 @@ export default function CreateCabanaPage() {
     );
   };
 
+  const scrollToFirstError = (nextErrors: FieldErrors) => {
+    const first =
+      nextErrors.nombre && "sec-datos"
+      || nextErrors.precio && "sec-datos"
+      || nextErrors.capacidad && "sec-datos"
+      || null;
+    if (first) {
+      const el = document.getElementById(first);
+      if (el) {
+        window.scrollTo({
+          top: el.getBoundingClientRect().top + window.scrollY - 96,
+          behavior: "smooth",
+        });
+      }
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (loading) return;
+
+    const nextErrors = validate();
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
+      toast.error("Revisá los campos marcados en rojo.");
+      scrollToFirstError(nextErrors);
+      return;
+    }
 
     if (metodoContacto === "WA" && !hasPhone) {
       openContactModal("WA");
@@ -216,6 +303,7 @@ export default function CreateCabanaPage() {
 
     try {
       const icalUrl = formData.ical_url.trim();
+      const icalUrlBooking = formData.ical_url_booking.trim();
 
       if (!slug) {
         const payload = {
@@ -225,6 +313,7 @@ export default function CreateCabanaPage() {
           capacidad: formData.capacidad,
           amenities: formData.amenities,
           ical_url: icalUrl || null,
+          ical_url_booking: icalUrlBooking || null,
           metodo_contacto: metodoContacto,
           telefono_whatsapp: null,
           email_contacto: null,
@@ -239,11 +328,27 @@ export default function CreateCabanaPage() {
         try {
           await api.post(`/cabanas/${slug}/sincronizar_ical/`, {
             ical_url: icalUrl,
+            source: "airbnb",
           });
         } catch (syncErr) {
-          console.error("Error al sincronizar calendario", syncErr);
+          console.error("Error al sincronizar calendario Airbnb", syncErr);
           toast.error(
             "Alojamiento creado, pero no se pudo sincronizar el calendario de Airbnb."
+          );
+        }
+      }
+
+      if (icalUrlBooking) {
+        setStatusText("Sincronizando calendario Booking...");
+        try {
+          await api.post(`/cabanas/${slug}/sincronizar_ical/`, {
+            ical_url_booking: icalUrlBooking,
+            source: "booking",
+          });
+        } catch (syncErr) {
+          console.error("Error al sincronizar calendario Booking", syncErr);
+          toast.error(
+            "Alojamiento creado, pero no se pudo sincronizar el calendario de Booking."
           );
         }
       }
@@ -296,8 +401,10 @@ export default function CreateCabanaPage() {
         const msg = Array.isArray(error.response.data.nombre)
           ? error.response.data.nombre[0]
           : String(error.response.data.nombre);
+        setErrors((prev) => ({ ...prev, nombre: msg }));
         toast.error(msg);
         setLoading(false);
+        scrollToFirstError({ nombre: msg });
         return;
       }
 
@@ -314,8 +421,10 @@ export default function CreateCabanaPage() {
     }
   };
 
+  const invalidFieldClass = `${cabanaFieldClass} border-red-300 focus:border-red-500 focus:ring-red-500/20`;
+
   return (
-    <div className="mx-auto max-w-5xl p-6 md:p-10">
+    <div className="mx-auto max-w-6xl p-6 pb-28 md:p-10 md:pb-28">
       <button
         type="button"
         onClick={() => router.push("/dashboard/cabanas")}
@@ -324,63 +433,127 @@ export default function CreateCabanaPage() {
         <ArrowLeft size={20} /> Volver a Mis Alojamientos
       </button>
 
-      <div className="rounded-[2rem] border border-slate-100 bg-white p-8 shadow-sm">
-        <h1 className="page-title-sm mb-8">
-          Publicar nuevo alojamiento
-        </h1>
+      <div className="mb-6">
+        <h1 className="page-title-sm">Publicar nuevo alojamiento</h1>
+        <p className="page-subtitle mt-1">
+          Completá los datos principales; podés seguir editando después.
+        </p>
+      </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <div>
-              <label className={cabanaLabelClass} htmlFor="nombre">
-                Nombre
-              </label>
-              <input
-                id="nombre"
-                type="text"
-                name="nombre"
-                value={formData.nombre}
-                onChange={handleChange}
-                className={cabanaFieldClass}
-                required
-                placeholder="Ej: Alojamiento del Bosque"
-              />
-            </div>
-            <div>
-              <label className={cabanaLabelClass} htmlFor="precio">
-                Precio Base ($)
-              </label>
-              <input
-                id="precio"
-                type="number"
-                name="precio"
-                value={formData.precio}
-                onChange={handleChange}
-                className={cabanaFieldClass}
-                required
-                placeholder="0.00"
-              />
-            </div>
-            <div>
-              <label className={cabanaLabelClass} htmlFor="capacidad">
-                Capacidad (Personas)
-              </label>
-              <input
-                id="capacidad"
-                type="number"
-                name="capacidad"
-                value={formData.capacidad}
-                onChange={handleChange}
-                className={cabanaFieldClass}
-                required
-                placeholder="Ej: 4"
-              />
-            </div>
-          </div>
+      <div className="lg:grid lg:grid-cols-[224px_minmax(0,1fr)] lg:gap-8">
+        <FormSectionNav sections={sections} />
 
-          <div>
-            <label className={cabanaLabelClass} htmlFor="descripcion">
+        <form
+          id="crear-cabana-form"
+          onSubmit={handleSubmit}
+          className="space-y-6"
+          noValidate
+        >
+          <section
+            id="sec-datos"
+            aria-labelledby="sec-datos-title"
+            className={`${cabanaSectionClass} scroll-mt-24`}
+          >
+            <h2 id="sec-datos-title" className="mb-4 font-black text-slate-900">
+              Datos básicos
+            </h2>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <div>
+                <label className={cabanaLabelClass} htmlFor="nombre">
+                  Nombre <span className="text-red-500">*</span>
+                </label>
+                <input
+                  id="nombre"
+                  type="text"
+                  name="nombre"
+                  value={formData.nombre}
+                  onChange={handleChange}
+                  className={errors.nombre ? invalidFieldClass : cabanaFieldClass}
+                  placeholder="Ej: Alojamiento del Bosque"
+                  aria-invalid={Boolean(errors.nombre)}
+                  aria-describedby={errors.nombre ? "err-nombre" : undefined}
+                />
+                {errors.nombre && (
+                  <p
+                    id="err-nombre"
+                    className="mt-1.5 text-xs font-medium text-red-600"
+                  >
+                    {errors.nombre}
+                  </p>
+                )}
+              </div>
+              <div>
+                <label className={cabanaLabelClass} htmlFor="precio">
+                  Precio base por noche ($) <span className="text-red-500">*</span>
+                </label>
+                <input
+                  id="precio"
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  name="precio"
+                  value={formData.precio}
+                  onChange={handleChange}
+                  className={errors.precio ? invalidFieldClass : cabanaFieldClass}
+                  placeholder="0.00"
+                  aria-invalid={Boolean(errors.precio)}
+                  aria-describedby={errors.precio ? "err-precio" : undefined}
+                />
+                {errors.precio && (
+                  <p
+                    id="err-precio"
+                    className="mt-1.5 text-xs font-medium text-red-600"
+                  >
+                    {errors.precio}
+                  </p>
+                )}
+              </div>
+              <div>
+                <label className={cabanaLabelClass} htmlFor="capacidad">
+                  Capacidad (personas) <span className="text-red-500">*</span>
+                </label>
+                <input
+                  id="capacidad"
+                  type="number"
+                  min={1}
+                  step={1}
+                  name="capacidad"
+                  value={formData.capacidad}
+                  onChange={handleChange}
+                  className={
+                    errors.capacidad ? invalidFieldClass : cabanaFieldClass
+                  }
+                  placeholder="Ej: 4"
+                  aria-invalid={Boolean(errors.capacidad)}
+                  aria-describedby={
+                    errors.capacidad ? "err-capacidad" : undefined
+                  }
+                />
+                {errors.capacidad && (
+                  <p
+                    id="err-capacidad"
+                    className="mt-1.5 text-xs font-medium text-red-600"
+                  >
+                    {errors.capacidad}
+                  </p>
+                )}
+              </div>
+            </div>
+          </section>
+
+          <section
+            id="sec-descripcion"
+            aria-labelledby="sec-descripcion-title"
+            className={`${cabanaSectionClass} scroll-mt-24`}
+          >
+            <h2
+              id="sec-descripcion-title"
+              className="mb-4 font-black text-slate-900"
+            >
               Descripción
+            </h2>
+            <label className={cabanaLabelClass} htmlFor="descripcion">
+              Contales a los huéspedes cómo es el lugar
             </label>
             <textarea
               id="descripcion"
@@ -391,49 +564,73 @@ export default function CreateCabanaPage() {
               className={cabanaTextareaClass}
               placeholder="Ubicación, ambiente y detalles del alojamiento..."
             />
-          </div>
+          </section>
 
-          <CabinContactMethodToggle
-            value={metodoContacto}
-            onChange={setMetodoContacto}
-            hasPhone={hasPhone}
-            hasEmail={hasEmail}
-            onBlocked={openContactModal}
-          />
+          <section id="sec-contacto" className="scroll-mt-24">
+            <CabinContactMethodToggle
+              value={metodoContacto}
+              onChange={setMetodoContacto}
+              hasPhone={hasPhone}
+              hasEmail={hasEmail}
+              onBlocked={openContactModal}
+            />
+          </section>
 
-          <AirbnbCalendarConnect
-            value={formData.ical_url}
-            onChange={(ical_url) => setFormData({ ...formData, ical_url })}
-            showSyncButton={false}
-          />
+          <section id="sec-airbnb" className="scroll-mt-24">
+            <AirbnbCalendarConnect
+              value={formData.ical_url}
+              onChange={(ical_url) => setFormData({ ...formData, ical_url })}
+              showSyncButton={false}
+            />
+          </section>
 
-          <CabinAvailabilityCalendar
-            mode="local"
-            precioBase={formData.precio}
-            preciosEspeciales={preciosEspeciales
-              .filter((p) => p.precio.trim() !== "")
-              .map((p) => ({
-                id: p.dia_semana,
-                dia_semana: p.dia_semana,
-                nombre_dia: diasSemana[p.dia_semana],
-                precio: p.precio,
-              }))}
-            initialOverrides={preciosPorFecha}
-            onLocalChange={setPreciosPorFecha}
-          />
+          <section id="sec-booking" className="scroll-mt-24">
+            <BookingCalendarConnect
+              value={formData.ical_url_booking}
+              onChange={(ical_url_booking) =>
+                setFormData({ ...formData, ical_url_booking })
+              }
+              showSyncButton={false}
+            />
+          </section>
 
-          <AmenityPicker
-            value={formData.amenities}
-            onChange={(amenities) => setFormData({ ...formData, amenities })}
-          />
+          <section id="sec-precios-especiales" className="scroll-mt-24">
+            <CabinAvailabilityCalendar
+              mode="local"
+              precioBase={formData.precio}
+              preciosEspeciales={preciosEspeciales
+                .filter((p) => p.precio.trim() !== "")
+                .map((p) => ({
+                  id: p.dia_semana,
+                  dia_semana: p.dia_semana,
+                  nombre_dia: diasSemana[p.dia_semana],
+                  precio: p.precio,
+                }))}
+              initialOverrides={preciosPorFecha}
+              onLocalChange={setPreciosPorFecha}
+            />
+          </section>
 
-          <div className="mt-12 grid grid-cols-1 gap-8 border-t border-slate-100 pt-8 lg:grid-cols-2">
-            <div className={cabanaSectionClass}>
+          <section id="sec-amenities" className="scroll-mt-24">
+            <AmenityPicker
+              value={formData.amenities}
+              onChange={(amenities) => setFormData({ ...formData, amenities })}
+            />
+          </section>
+
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+            <section
+              id="sec-galeria"
+              aria-labelledby="sec-galeria-title"
+              className={`${cabanaSectionClass} scroll-mt-24`}
+            >
               <div className="mb-6 flex items-center justify-between">
-                <h3 className="flex items-center gap-2 font-black text-slate-900">
-                  <ImageIcon size={20} className="text-primary" /> Galería de
-                  Fotos
-                </h3>
+                <h2
+                  id="sec-galeria-title"
+                  className="flex items-center gap-2 font-black text-slate-900"
+                >
+                  <ImageIcon size={20} className="text-primary" /> Galería de fotos
+                </h2>
                 <label className={cabanaUploadButtonClass}>
                   <UploadCloud size={16} /> Seleccionar
                   <input
@@ -511,70 +708,86 @@ export default function CreateCabanaPage() {
                   </div>
                 )}
               </div>
-            </div>
+            </section>
 
-            <div className={cabanaSectionClass}>
-              <h3 className="mb-4 flex items-center gap-2 font-black text-slate-900">
+            <section
+              id="sec-precios-dia"
+              aria-labelledby="sec-precios-dia-title"
+              className={`${cabanaSectionClass} scroll-mt-24`}
+            >
+              <h2
+                id="sec-precios-dia-title"
+                className="mb-4 flex items-center gap-2 font-black text-slate-900"
+              >
                 <DollarSign size={20} className="text-emerald-600" /> Precios por
-                Día (Opcional)
-              </h3>
+                día (opcional)
+              </h2>
               <div className="overflow-hidden rounded-xl border border-slate-100 bg-white">
                 <table className="w-full text-sm">
+                  <caption className="sr-only">Precios por día de la semana</caption>
                   <tbody className="divide-y divide-slate-100">
-                    {preciosEspeciales.map((item) => (
-                      <tr key={item.dia_semana} className="hover:bg-slate-50/80">
-                        <td className="px-4 py-3 font-semibold text-slate-700">
-                          {diasSemana[item.dia_semana]}
-                        </td>
-                        <td className="px-4 py-2 text-right">
-                          <input
-                            type="number"
-                            value={item.precio}
-                            onChange={(e) =>
-                              handlePrecioChange(
-                                item.dia_semana,
-                                e.target.value
-                              )
-                            }
-                            placeholder={`Base: $${formData.precio || "0"}`}
-                            className={cabanaPriceInputClass}
-                          />
-                        </td>
-                      </tr>
-                    ))}
+                    {preciosEspeciales.map((item) => {
+                      const inputId = `precio-dia-${item.dia_semana}`;
+                      return (
+                        <tr
+                          key={item.dia_semana}
+                          className="hover:bg-slate-50/80"
+                        >
+                          <td className="px-4 py-3">
+                            <label
+                              htmlFor={inputId}
+                              className="font-semibold text-slate-700"
+                            >
+                              {diasSemana[item.dia_semana]}
+                            </label>
+                          </td>
+                          <td className="px-4 py-2 text-right">
+                            <input
+                              id={inputId}
+                              type="number"
+                              min={0}
+                              step="0.01"
+                              value={item.precio}
+                              onChange={(e) =>
+                                handlePrecioChange(
+                                  item.dia_semana,
+                                  e.target.value
+                                )
+                              }
+                              placeholder={`Base: $${formData.precio || "0"}`}
+                              className={cabanaPriceInputClass}
+                              aria-label={`Precio para ${diasSemana[item.dia_semana]}`}
+                            />
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
-            </div>
+            </section>
           </div>
 
-          <CabinVideoLinks
-            mode="local"
-            value={videoUrls}
-            onChange={setVideoUrls}
-          />
-
-          <div className="flex flex-col items-center gap-4 border-t border-slate-100 pt-8">
-            {loading && (
-              <div className="flex animate-pulse items-center gap-2 text-sm font-bold text-primary">
-                <Loader2 className="animate-spin" /> {statusText}
-              </div>
-            )}
-            <button
-              type="submit"
-              disabled={loading}
-              className={`flex w-full max-w-md items-center justify-center gap-2 rounded-xl bg-primary px-8 py-4 text-lg font-bold text-white shadow-xl shadow-primary/15 transition-all hover:bg-primary/90 ${
-                loading
-                  ? "cursor-not-allowed opacity-50"
-                  : "active:scale-95"
-              }`}
-            >
-              {!loading && <Save size={22} />}
-              {loading ? "Publicando..." : "Publicar alojamiento"}
-            </button>
-          </div>
+          <section id="sec-videos" className="scroll-mt-24">
+            <CabinVideoLinks
+              mode="local"
+              value={videoUrls}
+              onChange={setVideoUrls}
+            />
+          </section>
         </form>
       </div>
+
+      <FormStickySaveBar
+        form="crear-cabana-form"
+        loading={loading}
+        statusText={statusText}
+        submitLabel="Publicar alojamiento"
+        loadingLabel="Publicando..."
+        missingCount={missingCount}
+        disabled={missingCount > 0}
+        onCancel={() => router.push("/dashboard/cabanas")}
+      />
 
       <ContactConfigRequiredModal
         open={contactModal.open}

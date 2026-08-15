@@ -38,6 +38,12 @@
     --navy: 213 74% 15%;
     --navy-foreground: 0 0% 100%;
 
+    /* Canales / marcas externas */
+    --whatsapp: 142 71% 45%;
+    --whatsapp-foreground: 0 0% 100%;
+    --airbnb: 349 100% 61%;
+    --airbnb-foreground: 0 0% 100%;
+
     --sidebar-background: 213 74% 12%;
     --sidebar-foreground: 210 40% 96%;
     --sidebar-primary: 213 74% 15%;
@@ -70,6 +76,10 @@
     --ring: 209 70% 45%;
     --navy: 213 74% 12%;
     --navy-foreground: 0 0% 100%;
+    --whatsapp: 142 71% 45%;
+    --whatsapp-foreground: 0 0% 100%;
+    --airbnb: 349 100% 61%;
+    --airbnb-foreground: 0 0% 100%;
     --sidebar-background: 213 50% 6%;
     --sidebar-foreground: 210 40% 96%;
     --sidebar-primary: 209 70% 45%;
@@ -133,7 +143,7 @@
   }
 
   .btn-whatsapp {
-    @apply bg-[#25D366] text-white px-4 py-2 rounded-xl hover:bg-[#1ebe57] transition-colors;
+    @apply bg-whatsapp text-whatsapp-foreground px-4 py-2 rounded-xl hover:bg-whatsapp/90 transition-colors;
   }
 
   /* Títulos de página (dashboard + auth) */

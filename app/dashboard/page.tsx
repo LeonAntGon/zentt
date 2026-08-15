@@ -13,16 +13,15 @@ import {
   ExternalLink,
   Copy,
   CheckCircle2,
-  Loader2,
   LayoutDashboard,
   CalendarDays,
   Clock,
   Percent,
   Reply,
 } from "lucide-react";
+import { Skeleton, SkeletonKpi, SkeletonRow } from "@/components/ui/skeleton";
 import { Cabana } from "@/types/cabin";
 import { toast } from "sonner";
-import { ZenttLogo } from "@/components/landing/ZenttLogo";
 import {
   OnboardingStepper,
   evaluateOnboarding,
@@ -282,13 +281,35 @@ export default function OverviewPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 bg-slate-50">
-        <Loader2 className="h-10 w-10 animate-spin text-primary" />
-        <p className="flex items-center gap-2 font-medium text-slate-500">
-          Sincronizando
-          <ZenttLogo className="h-4 w-auto aspect-[290/130]" />
-          ...
-        </p>
+      <div className="animate-in fade-in mx-auto max-w-7xl space-y-8 p-6 md:p-10">
+        <div>
+          <Skeleton className="mb-3 h-3 w-32" />
+          <Skeleton className="mb-3 h-8 w-64" />
+          <Skeleton className="h-3 w-80" />
+        </div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <SkeletonKpi key={i} />
+          ))}
+        </div>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+            <Skeleton className="mb-4 h-4 w-40" />
+            <div className="space-y-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <SkeletonRow key={i} />
+              ))}
+            </div>
+          </div>
+          <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+            <Skeleton className="mb-4 h-4 w-40" />
+            <div className="space-y-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <SkeletonRow key={i} />
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -503,7 +524,7 @@ export default function OverviewPage() {
                         fechaHasta={msg.fecha_hasta}
                         totalEstimado={msg.total_estimado}
                       />
-                      <div className="flex items-center gap-2 opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100 md:focus-within:opacity-100">
+                      <div className="flex items-center gap-2">
                         {waHref && (
                           <a
                             href={waHref}
@@ -511,7 +532,7 @@ export default function OverviewPage() {
                             rel="noopener noreferrer"
                             title="Contactar por WhatsApp"
                             aria-label="Contactar por WhatsApp"
-                            className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#25D366] text-white shadow-sm transition-transform hover:bg-[#1ebe57] hover:scale-105"
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-whatsapp text-whatsapp-foreground shadow-sm transition-transform hover:bg-whatsapp/90 hover:scale-105"
                             onClick={(e) => e.stopPropagation()}
                           >
                             <WhatsAppIcon className="h-4 w-4" />

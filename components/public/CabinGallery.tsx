@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import { ChevronLeft, ChevronRight, Expand, Images } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CabinImageLightbox } from "./CabinImageLightbox";
@@ -60,12 +61,13 @@ export function CabinGallery({ images, className }: CabinGalleryProps) {
                   aria-label={`Ampliar foto ${i + 1}`}
                   className="relative aspect-[4/3] w-full shrink-0 overflow-hidden"
                 >
-                  <img
+                  <Image
                     src={img.src}
                     alt={img.alt || `Foto ${i + 1}`}
-                    loading={i === 0 ? "eager" : "lazy"}
-                    decoding="async"
-                    className="h-full w-full object-cover"
+                    fill
+                    priority={i === 0}
+                    sizes="100vw"
+                    className="object-cover"
                     draggable={false}
                   />
                 </button>
@@ -151,12 +153,13 @@ export function CabinGallery({ images, className }: CabinGalleryProps) {
                 mosaicTiles.length > 1 ? "col-span-2" : "col-span-3"
               )}
             >
-              <img
+              <Image
                 src={mosaicTiles[0].src}
                 alt={mosaicTiles[0].alt || "Foto 1"}
-                loading="eager"
-                decoding="async"
-                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                fill
+                priority
+                sizes="(min-width: 1024px) 66vw, 100vw"
+                className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                 draggable={false}
               />
               <span className="pointer-events-none absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/10" />
@@ -169,12 +172,12 @@ export function CabinGallery({ images, className }: CabinGalleryProps) {
                 aria-label="Ampliar foto 2"
                 className="group relative overflow-hidden"
               >
-                <img
+                <Image
                   src={mosaicTiles[1].src}
                   alt={mosaicTiles[1].alt || "Foto 2"}
-                  loading="lazy"
-                  decoding="async"
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                  fill
+                  sizes="(min-width: 1024px) 33vw, 50vw"
+                  className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                   draggable={false}
                 />
                 <span className="pointer-events-none absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/10" />
@@ -229,12 +232,17 @@ export function CabinGallery({ images, className }: CabinGalleryProps) {
                     isHero ? heroSpan : ""
                   )}
                 >
-                  <img
+                  <Image
                     src={img.src}
                     alt={img.alt || `Foto ${i + 1}`}
-                    loading={i === 0 ? "eager" : "lazy"}
-                    decoding="async"
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                    fill
+                    priority={i === 0}
+                    sizes={
+                      isHero
+                        ? "(min-width: 1024px) 50vw, 100vw"
+                        : "(min-width: 1024px) 25vw, 50vw"
+                    }
+                    className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                     draggable={false}
                   />
                   <span className="pointer-events-none absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/10" />

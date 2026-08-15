@@ -64,7 +64,7 @@ export function ContactConfigRequiredModal({
 
         <div
           className={`mb-4 flex h-12 w-12 items-center justify-center rounded-2xl ${
-            method === "WA" ? "bg-[#25D366]/10 text-[#128C7E]" : "bg-primary/10 text-primary"
+            method === "WA" ? "bg-whatsapp/10 text-whatsapp" : "bg-primary/10 text-primary"
           }`}
         >
           <Icon className="h-6 w-6" />

@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Inbox as InboxIcon, Loader2, MessageSquare } from "lucide-react";
+import { Inbox as InboxIcon, MessageSquare } from "lucide-react";
+import { Skeleton, SkeletonRow } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import api from "@/lib/api";
 import type { Cabana, Mensaje } from "@/types/cabin";
@@ -237,9 +238,39 @@ export default function BuzonPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="text-sm font-medium text-slate-500">Cargando buzón...</p>
+      <div className="flex h-full min-h-0 flex-col px-3 py-4 sm:px-6 sm:py-6">
+        <header className="mb-4 flex shrink-0 items-start gap-3 sm:mb-5">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white shadow-sm shadow-primary/20">
+            <InboxIcon size={20} />
+          </div>
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-7 w-40" />
+            <Skeleton className="h-3 w-64" />
+          </div>
+        </header>
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm lg:grid lg:grid-cols-[380px_minmax(0,1fr)]">
+          <aside className="flex min-h-0 flex-col border-r border-slate-100">
+            <div className="border-b border-slate-100 p-4">
+              <Skeleton className="h-9 w-full rounded-lg" />
+            </div>
+            <div className="space-y-2 overflow-hidden p-4">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <SkeletonRow key={i} />
+              ))}
+            </div>
+          </aside>
+          <div className="hidden min-h-0 flex-col lg:flex">
+            <div className="border-b border-slate-100 p-6">
+              <Skeleton className="mb-3 h-5 w-64" />
+              <Skeleton className="h-3 w-40" />
+            </div>
+            <div className="space-y-3 p-6">
+              <Skeleton className="h-3 w-full" />
+              <Skeleton className="h-3 w-5/6" />
+              <Skeleton className="h-3 w-3/4" />
+            </div>
+          </div>
+        </div>
       </div>
     );
   }

@@ -22,7 +22,7 @@ export function MessageChannelBadge({
   if (variant === "pill") {
     if (channel === "WA") {
       return (
-        <span className="inline-flex items-center gap-1 rounded-md bg-[#25D366]/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#128C4B]">
+        <span className="inline-flex items-center gap-1 rounded-md bg-whatsapp/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-whatsapp">
           <WhatsAppIcon className="h-3 w-3" title="WhatsApp" /> WhatsApp
         </span>
       );
@@ -30,7 +30,7 @@ export function MessageChannelBadge({
 
     if (channel === "AIRBNB") {
       return (
-        <span className="inline-flex items-center gap-1 rounded-md bg-[#FF385C]/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#D92D4B]">
+        <span className="inline-flex items-center gap-1 rounded-md bg-airbnb/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-airbnb">
           <AirbnbIcon className="h-3 w-3" title="Airbnb" /> Airbnb
         </span>
       );
@@ -50,7 +50,7 @@ export function MessageChannelBadge({
         title="WhatsApp"
         aria-label="WhatsApp"
       >
-        <WhatsAppIcon className="h-4 w-4 text-[#25D366]" />
+        <WhatsAppIcon className="h-4 w-4 text-whatsapp" />
       </span>
     );
   }
@@ -62,7 +62,7 @@ export function MessageChannelBadge({
         title="Airbnb"
         aria-label="Airbnb"
       >
-        <AirbnbIcon className="h-4 w-4 text-[#FF385C]" />
+        <AirbnbIcon className="h-4 w-4 text-airbnb" />
       </span>
     );
   }

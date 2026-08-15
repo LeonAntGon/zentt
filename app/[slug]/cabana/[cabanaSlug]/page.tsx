@@ -22,24 +22,14 @@ import {
   Building2,
   Send,
   CheckCircle2,
-  CalendarDays,
-  Menu,
-  X,
   AlertCircle,
 } from "lucide-react";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
-import { UserIcon } from "@/components/icons/UserIcon";
 import { CabinGallery } from "@/components/public/CabinGallery";
 import { CabinVideoEmbeds } from "@/components/public/CabinVideoEmbeds";
 import { resolveAmenities } from "@/lib/amenities";
 import { toast } from "sonner";
 import { eachDayOfInterval, parseISO, startOfDay } from "date-fns";
-
-const cabinNavLinks = (slug: string) => [
-  { href: `/${slug}#inicio`, label: "Inicio" },
-  { href: `/${slug}#cabanas`, label: "Alojamientos" },
-  { href: `/${slug}#contacto`, label: "Contacto" },
-];
 
 function occupiedMatchers(ranges: FechaOcupada[]) {
   const blocked = new Set<string>();
@@ -67,7 +57,6 @@ export default function CabinDetailPublicPage() {
   const [sending, setSending] = useState(false);
   const [ocupadas, setOcupadas] = useState<FechaOcupada[]>([]);
   const [range, setRange] = useState<DateRange | undefined>();
-  const [menuOpen, setMenuOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     nombre_turista: "",
@@ -99,14 +88,9 @@ export default function CabinDetailPublicPage() {
     if (slug && cabanaSlug) fetchCabanaDetail();
   }, [slug, cabanaSlug]);
 
-  const isDisabled = useMemo(
-    () => occupiedMatchers(ocupadas),
-    [ocupadas]
-  );
+  const isDisabled = useMemo(() => occupiedMatchers(ocupadas), [ocupadas]);
 
-  const lastNight = range?.from
-    ? range.to ?? range.from
-    : undefined;
+  const lastNight = range?.from ? (range.to ?? range.from) : undefined;
 
   const estimado = useMemo(() => {
     if (!cabana || !range?.from || !lastNight) return 0;
@@ -205,13 +189,14 @@ export default function CabinDetailPublicPage() {
   if (loading)
     return (
       <div className="flex min-h-screen items-center justify-center bg-white">
-        <Loader2 className="animate-spin text-primary" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
+
   if (!cabana)
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-white px-6 text-center">
-        <Building2 size={48} className="text-slate-300" />
+        <Building2 size={48} className="text-slate-200" />
         <p className="text-sm font-medium text-slate-500">
           No pudimos encontrar este alojamiento.
         </p>
@@ -233,9 +218,7 @@ export default function CabinDetailPublicPage() {
       .filter((url): url is string => Boolean(url)) || [];
 
   const carouselImages = [
-    ...(portadaUrl
-      ? [{ src: portadaUrl, alt: cabana.nombre }]
-      : []),
+    ...(portadaUrl ? [{ src: portadaUrl, alt: cabana.nombre }] : []),
     ...galeriaUrls.map((src, i) => ({
       src,
       alt: `${cabana.nombre} · foto ${i + 2}`,
@@ -243,233 +226,152 @@ export default function CabinDetailPublicPage() {
   ];
   const cabinAmenities = resolveAmenities(cabana.amenities);
 
-  const navLinks = cabinNavLinks(slug);
-
   return (
-    <div className="min-h-screen bg-white text-slate-900">
-      <nav className="sticky top-0 z-50 border-b border-slate-100 bg-white/85 backdrop-blur-lg">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-6">
+    <div className="min-h-screen bg-white font-public text-slate-900">
+      {/* Simplified Navbar */}
+      <nav className="sticky top-0 z-50 border-b border-slate-100 bg-white/95 backdrop-blur-lg">
+        <div className="mx-auto flex h-14 max-w-4xl items-center px-4">
           <Link
             href={`/${slug}`}
-            className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-slate-500 transition-colors hover:text-slate-900"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
+            aria-label="Volver"
           >
-            <ArrowLeft size={14} /> Volver
+            <ArrowLeft size={20} />
           </Link>
-          <span className="min-w-0 flex-1 truncate text-center text-[10px] font-semibold uppercase tracking-[0.3em] text-slate-400 md:hidden">
+          <span className="min-w-0 flex-1 truncate text-center text-sm font-semibold text-slate-900">
             {cabana.nombre}
           </span>
-          <div className="hidden items-center gap-8 text-sm font-medium text-slate-500 md:flex">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="transition-colors hover:text-slate-900"
-              >
-                {link.label}
-              </Link>
-            ))}
-          </div>
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            <button
-              type="button"
-              onClick={() => setMenuOpen(!menuOpen)}
-              className="rounded-xl p-2 text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-900 md:hidden"
-              aria-label="Menú"
-            >
-              {menuOpen ? (
-                <X className="h-5 w-5" />
-              ) : (
-                <Menu className="h-5 w-5" />
-              )}
-            </button>
-            <Link
-              href="/login"
-              title="Acceso anfitrión"
-              aria-label="Iniciar sesión — acceso anfitrión"
-              className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition-colors hover:border-primary/30 hover:bg-primary/5 hover:text-primary md:flex"
-            >
-              <UserIcon className="h-[18px] w-[18px]" />
-            </Link>
-          </div>
+          <div className="w-9" />
         </div>
-
-        {menuOpen && (
-          <div className="animate-fade-in border-t border-slate-100 bg-white/95 backdrop-blur-lg md:hidden">
-            <div className="flex flex-col gap-3 px-6 py-4">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setMenuOpen(false)}
-                  className="py-2 text-sm font-semibold text-slate-500 transition-colors hover:text-slate-900"
-                >
-                  {link.label}
-                </Link>
-              ))}
-              <Link
-                href="/login"
-                onClick={() => setMenuOpen(false)}
-                className="mt-1 flex items-center gap-2 border-t border-slate-100 pt-3 text-sm font-semibold text-slate-500 transition-colors hover:text-primary"
-              >
-                <UserIcon className="h-4 w-4" />
-                Acceso anfitrión
-              </Link>
-            </div>
-          </div>
-        )}
       </nav>
 
-      <main className="mx-auto max-w-7xl px-4 py-5 sm:px-6 md:py-8">
+      <main className="mx-auto max-w-4xl px-4 py-5 sm:px-6 md:py-8">
         <CabinGallery images={carouselImages} className="mb-6 md:mb-10" />
 
-        <div className="flex flex-col gap-8 md:flex-row md:gap-10 lg:gap-14">
-          <div className="md:w-3/5">
-            <h1 className="mb-3 text-3xl font-extrabold tracking-tight text-slate-900 md:text-4xl">
+        <div className="flex flex-col gap-8 lg:flex-row lg:gap-12">
+          {/* Left Column - Info */}
+          <div className="lg:w-3/5">
+            <h1 className="mb-3 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
               {cabana.nombre}
             </h1>
-            <div className="mb-6 flex flex-wrap items-center gap-x-6 gap-y-2 border-b border-slate-100 pb-4 text-[11px] font-semibold uppercase tracking-widest text-slate-500">
-              <div className="flex items-center gap-2">
-                <Users size={16} className="text-slate-400" /> Hasta{" "}
-                {cabana.capacidad} personas
-              </div>
-              <div className="flex items-center gap-2">
-                <CalendarDays size={16} className="text-slate-400" /> Elegí las
-                noches
+
+            <div className="mb-6 flex items-center gap-4 border-b border-slate-100 pb-4">
+              <div className="flex items-center gap-1.5 text-sm text-slate-500">
+                <Users size={16} className="text-slate-400" />
+                <span>Hasta {cabana.capacidad} personas</span>
               </div>
             </div>
-            <p className="whitespace-pre-line text-base font-normal leading-relaxed text-slate-600 md:text-lg">
+
+            <p className="whitespace-pre-line text-base leading-relaxed text-slate-600">
               {cabana.descripcion?.trim() ||
                 "Hermoso alojamiento equipado para tu descanso."}
             </p>
 
             {cabinAmenities.length > 0 && (
               <div className="mt-8">
-                <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.3em] text-slate-400">
+                <h2 className="mb-4 text-lg font-semibold text-slate-900">
                   Comodidades
-                </p>
-                <h2 className="mb-4 text-xl font-bold tracking-tight text-slate-900">
-                  Todo lo que vas a encontrar
                 </h2>
-                <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                   {cabinAmenities.map((a) => (
                     <div
                       key={a.id}
-                      className="flex items-center gap-2.5 rounded-xl border border-slate-100 bg-slate-50 px-3 py-2.5"
+                      className="flex items-center gap-2.5 rounded-xl border border-slate-100 bg-slate-50/50 px-3 py-2.5"
                     >
-                      <a.icon className="h-4 w-4 shrink-0 text-slate-700" />
-                      <span className="text-sm font-medium text-slate-900">
-                        {a.label}
-                      </span>
+                      <a.icon className="h-4 w-4 shrink-0 text-slate-600" />
+                      <span className="text-sm text-slate-700">{a.label}</span>
                     </div>
                   ))}
                 </div>
               </div>
             )}
 
-            <CabinVideoEmbeds
-              videos={cabana.videos || []}
-              className="mt-10"
-            />
+            <CabinVideoEmbeds videos={cabana.videos || []} className="mt-10" />
           </div>
 
-          <div className="md:w-2/5">
-            <div
-              className={`rounded-2xl border p-4 shadow-lg shadow-slate-900/[0.03] transition-colors md:sticky md:top-24 md:p-6 ${
-                isWhatsApp
-                  ? "border-emerald-100 bg-emerald-50/40"
-                  : "border-slate-100 bg-white"
-              }`}
-            >
+          {/* Right Column - Booking Card */}
+          <div className="lg:w-2/5">
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:sticky lg:top-20">
+              {/* Price */}
               <div className="mb-5">
-                <p className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-slate-400">
-                  Tarifa por noche
-                </p>
                 <div className="flex items-baseline gap-1.5">
-                  <span className="text-4xl font-extrabold tracking-tight text-slate-900">
-                    ${cabana.precio}
+                  <span className="text-3xl font-bold text-slate-900">
+                    $ {Number(cabana.precio).toLocaleString("es-AR")}
                   </span>
-                  <span className="text-xs font-semibold uppercase tracking-widest text-slate-400">
-                    / noche
-                  </span>
+                  <span className="text-sm text-slate-400">/ noche</span>
                 </div>
               </div>
 
-              <div className="mb-4 rounded-xl border border-slate-100 bg-white p-3 sm:p-3">
-                <p className="mb-1 px-1 text-[10px] font-semibold uppercase tracking-widest text-slate-400 sm:px-2">
-                  Noches de estadía
-                </p>
-                <p className="mb-2 px-1 text-[11px] text-slate-500 sm:px-2">
-                  Elegí las noches
+              {/* Calendar */}
+              <div className="mb-4 rounded-xl border border-slate-100 bg-slate-50/50 p-3">
+                <p className="mb-2 px-1 text-xs font-medium text-slate-500">
+                  Seleccioná las noches
                 </p>
                 <div className="w-full min-w-0">
                   <Calendar
                     mode="range"
                     selected={range}
                     onSelect={setRange}
-                    disabled={[
-                      { before: startOfDay(new Date()) },
-                      isDisabled,
-                    ]}
+                    disabled={[{ before: startOfDay(new Date()) }, isDisabled]}
                     numberOfMonths={1}
-                    className="w-full p-0 sm:p-1"
+                    className="w-full p-0"
                   />
                 </div>
-                <div className="mt-2 flex gap-3 px-2 text-[10px] text-slate-500">
+                <div className="mt-2 flex gap-3 px-1 text-[10px] text-slate-500">
                   <span className="flex items-center gap-1">
-                    <span className="h-2 w-2 rounded-sm bg-slate-200" /> Ocupado
+                    <span className="h-2 w-2 rounded-sm bg-slate-300" /> Ocupado
                   </span>
                   <span className="flex items-center gap-1">
-                    <span className="h-2 w-2 rounded-sm bg-primary" /> Selección
+                    <span className="h-2 w-2 rounded-sm bg-primary" /> Tu
+                    selección
                   </span>
                 </div>
 
                 {rangeHasConflict && (
-                  <div className="mt-3 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-sm font-medium text-red-700">
+                  <div className="mt-3 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700">
                     <AlertCircle
                       size={16}
                       className="mt-0.5 shrink-0 text-red-500"
                     />
                     <span>
-                      Alojamiento no disponible en esas fechas. Elegí otras
-                      noches.
+                      No disponible en esas fechas. Elegí otras noches.
                     </span>
                   </div>
                 )}
               </div>
 
+              {/* Estimate */}
               {noches > 0 && (
                 <div className="mb-4 rounded-xl bg-slate-50 px-4 py-3">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+                  <p className="text-xs font-medium text-slate-500">
                     Estimado · {noches} {noches === 1 ? "noche" : "noches"}
                   </p>
                   <p className="text-xl font-bold text-slate-900">
                     {formatMoneyARS(estimado)}
                   </p>
-                  <p className="text-[11px] text-slate-500">
-                    Estimado según tu tarifa. El anfitrión confirma.
+                  <p className="text-[11px] text-slate-400">
+                    Estimado según tarifa. El anfitrión confirma.
                   </p>
                 </div>
               )}
 
+              {/* Form */}
               <form onSubmit={handleSubmitConsulta} className="space-y-3">
                 <input
                   type="text"
-                  placeholder="Tu Nombre"
+                  placeholder="Tu nombre"
                   required
-                  className="field-auth"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   value={formData.nombre_turista}
                   onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      nombre_turista: e.target.value,
-                    })
+                    setFormData({ ...formData, nombre_turista: e.target.value })
                   }
                 />
                 <input
                   type="email"
-                  placeholder="Email"
+                  placeholder="Tu email"
                   required
-                  className="field-auth"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   value={formData.email_turista}
                   onChange={(e) =>
                     setFormData({ ...formData, email_turista: e.target.value })
@@ -477,13 +379,9 @@ export default function CabinDetailPublicPage() {
                 />
                 <input
                   type="tel"
-                  placeholder={
-                    isWhatsApp
-                      ? "Tu WhatsApp"
-                      : "Teléfono / WhatsApp de contacto"
-                  }
+                  placeholder={isWhatsApp ? "Tu WhatsApp" : "Tu teléfono"}
                   required
-                  className="field-auth"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   value={formData.telefono_turista}
                   onChange={(e) =>
                     setFormData({
@@ -493,10 +391,10 @@ export default function CabinDetailPublicPage() {
                   }
                 />
                 <textarea
-                  placeholder="Mensaje o duda adicional"
+                  placeholder="Mensaje o consulta adicional"
                   rows={2}
                   required
-                  className="field-auth-area"
+                  className="w-full resize-none rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   value={formData.contenido}
                   onChange={(e) =>
                     setFormData({ ...formData, contenido: e.target.value })
@@ -506,32 +404,31 @@ export default function CabinDetailPublicPage() {
                 <button
                   type="submit"
                   disabled={sending || rangeHasConflict}
-                  className={`flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 text-[11px] font-bold uppercase tracking-widest transition-colors ${
+                  className={`flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-semibold transition-all disabled:opacity-50 ${
                     isWhatsApp
-                      ? "btn-whatsapp shadow-lg shadow-[#25D366]/25"
-                      : "bg-primary text-white shadow-lg shadow-primary/20 hover:bg-primary/90"
+                      ? "bg-whatsapp text-white hover:bg-whatsapp/90"
+                      : "bg-primary text-white hover:bg-primary/90"
                   }`}
                 >
                   {sending ? (
-                    <Loader2 className="animate-spin" size={16} />
+                    <Loader2 className="h-4 w-4 animate-spin" />
                   ) : isWhatsApp ? (
                     <>
-                      <WhatsAppIcon className="h-4 w-4" /> Consultar por
-                      WhatsApp
+                      <WhatsAppIcon className="h-4 w-4" />
+                      Consultar por WhatsApp
                     </>
                   ) : (
                     <>
-                      <Send size={16} /> Enviar consulta
+                      <Send size={16} />
+                      Enviar consulta
                     </>
                   )}
                 </button>
               </form>
 
-              <div className="mt-5 border-t border-slate-100 pt-5">
-                <div className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-widest text-slate-400">
-                  <CheckCircle2 size={14} className="text-emerald-500" />
-                  Consulta directa · el anfitrión confirma
-                </div>
+              <div className="mt-4 flex items-center justify-center gap-1.5 text-[11px] text-slate-400">
+                <CheckCircle2 size={12} className="text-emerald-500" />
+                <span>Consulta directa · el anfitrión confirma</span>
               </div>
             </div>
           </div>

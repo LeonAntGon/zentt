@@ -1,6 +1,6 @@
 import { Navbar } from "@/components/landing/Navbar";
 import { AcmeHero } from "@/components/landing/AcmeHero";
-// import { IntegrationsMarquee } from "@/components/landing/IntegrationsMarquee";
+import { IntegrationsMarquee } from "@/components/landing/IntegrationsMarquee";
 import FeaturesSection from "@/components/landing/FeaturesSection";
 import PricingSection from "@/components/landing/PricingSection";
 import Footer from "@/components/landing/Footer";
@@ -12,7 +12,7 @@ export default function HomePage() {
       <GoogleAnalytics />
       <Navbar />
       <AcmeHero />
-      {/* <IntegrationsMarquee /> */}
+      <IntegrationsMarquee />
       <FeaturesSection />
       <PricingSection />
       <Footer />

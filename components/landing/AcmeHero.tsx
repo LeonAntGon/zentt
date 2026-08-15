@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { motion } from "motion/react";
+import { DashboardHeroMockup } from "@/components/landing/DashboardHeroMockup";
 
 export function AcmeHero() {
   return (
@@ -72,25 +73,14 @@ export function AcmeHero() {
               </p>
             </motion.div>
             <motion.div
-              className="w-full border p-2 rounded-3xl"
+              className="w-full"
               initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6, duration: 0.8 }}
             >
               <div className="relative w-full">
-                <div className="relative w-full rounded-3xl overflow-hidden border shadow-2xl">
-                  <img
-                    src="https://ui.shadcn.com/examples/dashboard-dark.png"
-                    alt="Vista previa del panel Zentt"
-                    className="w-full h-full object-center hidden dark:block rounded-3xl"
-                  />
-                  <img
-                    src="https://ui.shadcn.com/examples/dashboard-light.png"
-                    alt="Vista previa del panel Zentt"
-                    className="w-full h-full object-center dark:hidden block rounded-3xl"
-                  />
-                </div>
-                <div className="absolute inset-x-0 bottom-0 h-[50%] bg-gradient-to-t from-white to-transparent" />
+                <DashboardHeroMockup />
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[30%] bg-gradient-to-t from-white to-transparent" />
               </div>
             </motion.div>
           </motion.div>

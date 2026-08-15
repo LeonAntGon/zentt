@@ -19,6 +19,8 @@ const buttonVariants = cva(
         "hero-outline": "border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-300 font-heading font-semibold text-base",
         "nav-ghost": "text-foreground/80 hover:text-foreground hover:bg-transparent font-medium",
         "nav-solid": "bg-primary text-primary-foreground hover:bg-primary/90 font-heading font-semibold shadow-md hover:shadow-lg transition-all duration-300",
+        whatsapp: "bg-whatsapp text-whatsapp-foreground hover:bg-whatsapp/90",
+        "destructive-outline": "border border-destructive/40 text-destructive bg-transparent hover:bg-destructive/5",
       },
       size: {
         default: "h-10 px-4 py-2",
