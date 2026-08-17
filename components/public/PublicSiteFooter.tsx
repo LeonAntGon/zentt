@@ -25,7 +25,7 @@ export function PublicSiteFooter({ businessName }: PublicSiteFooterProps) {
           <span className="text-[10px] font-medium uppercase tracking-widest text-slate-300">
             Powered by
           </span>
-          <ZenttLogo className="aspect-[290/130] h-4 w-auto translate-x-[9px] -translate-y-[1px]" />
+          <ZenttLogo className="aspect-[290/130] h-4 w-auto -translate-x-[9px] -translate-y-[1px]" />
         </Link>
       </div>
     </footer>
