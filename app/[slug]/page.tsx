@@ -14,6 +14,7 @@ import { SocialIconButton } from "@/components/public/SocialIconButton";
 import { TikTokIcon } from "@/components/icons/TikTokIcon";
 import { YouTubeIcon } from "@/components/icons/YouTubeIcon";
 import { FacebookIcon } from "@/components/icons/FacebookIcon";
+import { PublicSiteFooter } from "@/components/public/PublicSiteFooter";
 
 interface PublicWebsiteData {
   nombre_negocio: string | null;
@@ -165,8 +166,8 @@ export default function LinktreePage() {
     cabanasCount === 1 ? "Nuestro alojamiento" : "Nuestras cabañas";
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white font-public">
-      <div className="mx-auto max-w-md px-5 py-10 sm:py-16">
+    <div className="flex flex-1 flex-col bg-gradient-to-b from-slate-50 to-white font-public">
+      <div className="mx-auto w-full max-w-md flex-1 px-5 py-10 sm:py-16">
         {/* Avatar / Logo */}
         <div className="flex flex-col items-center">
           {logoUrl ? (
@@ -234,25 +235,9 @@ export default function LinktreePage() {
             </div>
           )}
         </div>
-
-        {/* Footer */}
-        <footer className="mt-14 text-center">
-          <p className="text-[11px] text-slate-400">
-            © {new Date().getFullYear()} {nombreParaMostrar}
-          </p>
-          <p className="mt-1 text-[11px] text-slate-400">
-            Reservas directas sin intermediarios.
-          </p>
-          <div className="mt-4 flex items-center justify-center gap-1.5">
-            <span className="text-[10px] font-medium uppercase tracking-widest text-slate-300">
-              Powered by
-            </span>
-            <span className="text-xs font-bold tracking-tight text-slate-500">
-              ZENTT
-            </span>
-          </div>
-        </footer>
       </div>
+
+      <PublicSiteFooter businessName={nombreParaMostrar} />
     </div>
   );
 }

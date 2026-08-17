@@ -27,6 +27,7 @@ import {
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { CabinGallery } from "@/components/public/CabinGallery";
 import { CabinVideoEmbeds } from "@/components/public/CabinVideoEmbeds";
+import { PublicSiteFooter } from "@/components/public/PublicSiteFooter";
 import { resolveAmenities } from "@/lib/amenities";
 import { toast } from "sonner";
 import { eachDayOfInterval, parseISO, startOfDay } from "date-fns";
@@ -227,7 +228,7 @@ export default function CabinDetailPublicPage() {
   const cabinAmenities = resolveAmenities(cabana.amenities);
 
   return (
-    <div className="min-h-screen bg-white font-public text-slate-900">
+    <div className="flex flex-1 flex-col bg-white font-public text-slate-900">
       {/* Simplified Navbar */}
       <nav className="sticky top-0 z-50 border-b border-slate-100 bg-white/95 backdrop-blur-lg">
         <div className="mx-auto flex h-14 max-w-4xl items-center px-4">
@@ -245,7 +246,7 @@ export default function CabinDetailPublicPage() {
         </div>
       </nav>
 
-      <main className="mx-auto max-w-4xl px-4 py-5 sm:px-6 md:py-8">
+      <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-5 sm:px-6 md:py-8">
         <CabinGallery images={carouselImages} className="mb-6 md:mb-10" />
 
         <div className="flex flex-col gap-8 lg:flex-row lg:gap-12">
@@ -434,6 +435,7 @@ export default function CabinDetailPublicPage() {
           </div>
         </div>
       </main>
+      <PublicSiteFooter />
     </div>
   );
 }

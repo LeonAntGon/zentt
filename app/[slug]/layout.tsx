@@ -7,11 +7,9 @@ export default function PublicSiteLayout({
   children: ReactNode;
 }) {
   return (
-    <div
-      className="public-site min-h-screen bg-white font-public text-slate-900 antialiased"
-    >
+    <div className="public-site flex min-h-dvh flex-col bg-white font-public text-slate-900 antialiased">
       <GoogleAnalytics />
-      {children}
+      <div className="flex min-h-0 flex-1 flex-col">{children}</div>
     </div>
   );
 }
