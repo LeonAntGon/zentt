@@ -103,6 +103,19 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtmlOverflow = html.style.overflow;
+    const prevBodyOverflow = body.style.overflow;
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    return () => {
+      html.style.overflow = prevHtmlOverflow;
+      body.style.overflow = prevBodyOverflow;
+    };
+  }, []);
+
+  useEffect(() => {
     const loadUnread = async () => {
       try {
         const [mensajes, contacto] = await Promise.all([
@@ -317,7 +330,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-40 flex items-center gap-3 border-b border-border bg-card/95 px-4 py-3 backdrop-blur md:hidden">
           <BusinessAvatar
             fotoPerfil={fotoPerfil}
@@ -336,7 +349,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           {planBadge}
         </header>
 
-        <main className="flex-1 overflow-y-auto bg-slate-50 pb-[calc(var(--mobile-nav-offset)+0.5rem)] md:pb-0">
+        <main className="min-h-0 flex-1 overflow-y-auto bg-slate-50 pb-[calc(var(--mobile-nav-offset)+0.5rem)] md:pb-0">
           {children}
         </main>
       </div>

@@ -17,10 +17,16 @@ type FormSectionNavProps = {
   className?: string;
 };
 
-/**
- * TOC vertical (desktop) + chips horizontales (mobile) que resalta
- * la sección activa mediante IntersectionObserver.
- */
+function getScrollParent(el: HTMLElement): HTMLElement {
+  let parent = el.parentElement;
+  while (parent) {
+    const overflowY = getComputedStyle(parent).overflowY;
+    if (overflowY === "auto" || overflowY === "scroll") return parent;
+    parent = parent.parentElement;
+  }
+  return (document.scrollingElement as HTMLElement) || document.documentElement;
+}
+
 export function FormSectionNav({
   sections,
   offset = 96,
@@ -36,6 +42,8 @@ export function FormSectionNav({
       .filter((el): el is HTMLElement => !!el);
     if (targets.length === 0) return;
 
+    const main = document.querySelector("main");
+
     const io = new IntersectionObserver(
       (entries) => {
         const visible = entries
@@ -46,6 +54,7 @@ export function FormSectionNav({
         }
       },
       {
+        root: main instanceof HTMLElement ? main : null,
         rootMargin: `-${offset}px 0px -60% 0px`,
         threshold: [0, 0.25, 0.5, 1],
       }
@@ -58,8 +67,13 @@ export function FormSectionNav({
   const handleClick = (id: string) => {
     const el = document.getElementById(id);
     if (!el) return;
-    const y = el.getBoundingClientRect().top + window.scrollY - offset;
-    window.scrollTo({ top: y, behavior: "smooth" });
+    const scroller = getScrollParent(el);
+    const top =
+      el.getBoundingClientRect().top -
+      scroller.getBoundingClientRect().top +
+      scroller.scrollTop -
+      offset;
+    scroller.scrollTo({ top, behavior: "smooth" });
   };
 
   return (
