@@ -159,10 +159,10 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           {nombreNegocio || "Mi Complejo"}
         </h2>
         <div className="mt-1 flex items-center gap-1.5" aria-label="Panel Zentt">
-          <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-            Panel
+          <span className="text-[10px] font-bold tracking-widest text-[#184E77]">
+            panel
           </span>
-          <ZenttLogo className="aspect-[290/130] h-3.5 w-auto" />
+          <ZenttLogo className="aspect-[290/130] h-4 w-auto -translate-x-[9px] -translate-y-px" />
         </div>
       </div>
     </div>
