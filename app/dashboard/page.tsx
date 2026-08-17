@@ -14,7 +14,6 @@ import {
   CalendarDays,
   Clock,
   Percent,
-  Reply,
 } from "lucide-react";
 import { Skeleton, SkeletonKpi, SkeletonRow } from "@/components/ui/skeleton";
 import { Cabana } from "@/types/cabin";
@@ -23,11 +22,7 @@ import {
   OnboardingStepper,
 } from "@/components/dashboard/OnboardingStepper";
 import { HeroSiteCard } from "@/components/dashboard/HeroSiteCard";
-import {
-  MessageChannelBadge,
-  MessageInitialAvatar,
-} from "@/components/dashboard/MessageChannelBadge";
-import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
+import { InquiryPreviewCard } from "@/components/dashboard/InquiryPreviewCard";
 import type { MessageOrigen } from "@/types/cabin";
 import { formatCurrencyCompact, getMaxCabanas } from "@/lib/planLimits";
 
@@ -411,7 +406,7 @@ export default function OverviewPage() {
             </Link>
           </div>
 
-          <div className="divide-y divide-slate-100 rounded-xl border border-slate-100">
+          <div className="space-y-3">
             {mensajesRecientes.length > 0 ? (
               mensajesRecientes.map((msg) => {
                 const nombre =
@@ -424,70 +419,29 @@ export default function OverviewPage() {
                     : "Consulta general";
                 const telefono =
                   msg._tipo === "cabanas" ? msg.telefono_turista : msg.telefono;
-                const waHref = buildWhatsAppHref(
-                  telefono,
-                  nombre,
-                  msg._tipo === "cabanas" ? msg.cabana_nombre : null
-                );
 
                 return (
-                  <div
+                  <InquiryPreviewCard
                     key={`${msg._tipo}-${msg.id}`}
-                    className="group flex flex-col gap-3 px-3 py-3 transition-colors hover:bg-slate-50/80 sm:flex-row sm:items-start sm:justify-between sm:px-4"
-                  >
-                    <div className="flex min-w-0 items-start gap-3">
-                      <MessageInitialAvatar
-                        name={nombre}
-                        leido={msg.leido}
-                      />
-                      <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="font-semibold capitalize text-slate-800">
-                            {nombre?.toLowerCase()}
-                          </span>
-                          <MessageChannelBadge origen={msg.origen} />
-                        </div>
-                        <p className="mt-0.5 truncate text-[11px] font-medium text-slate-400">
-                          {alojamientoLabel}
-                          {msg.fecha_desde && msg.fecha_hasta
-                            ? ` · ${formatShortRange(msg.fecha_desde, msg.fecha_hasta)}`
-                            : ""}
-                        </p>
-                        {preview && (
-                          <p className="mt-0.5 truncate text-sm text-slate-500">
-                            {preview}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex w-full items-center gap-2 sm:w-auto sm:shrink-0">
-                      {waHref && (
-                        <a
-                          href={waHref}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          title="Contactar por WhatsApp"
-                          aria-label="Contactar por WhatsApp"
-                          className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-whatsapp text-whatsapp-foreground shadow-sm transition-transform hover:bg-whatsapp/90 hover:scale-105"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <WhatsAppIcon className="h-4 w-4" />
-                        </a>
-                      )}
-                      <Link
-                        href="/dashboard/buzon"
-                        className="inline-flex h-10 flex-1 items-center justify-center gap-1.5 rounded-lg bg-primary px-3 text-xs font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 sm:w-auto sm:flex-none"
-                      >
-                        <Reply size={14} />
-                        Responder
-                      </Link>
-                    </div>
-                  </div>
+                    name={nombre}
+                    origen={msg.origen}
+                    leido={msg.leido}
+                    propertyLabel={alojamientoLabel}
+                    preview={preview}
+                    fechaDesde={msg.fecha_desde}
+                    fechaHasta={msg.fecha_hasta}
+                    totalEstimado={msg.total_estimado}
+                    fechaEnvio={msg.fecha_envio}
+                    whatsappHref={buildWhatsAppHref(
+                      telefono,
+                      nombre,
+                      msg._tipo === "cabanas" ? msg.cabana_nombre : null
+                    )}
+                  />
                 );
               })
             ) : (
-              <div className="px-4 py-10 text-center">
+              <div className="rounded-2xl bg-slate-50 px-4 py-10 text-center">
                 <p className="text-sm font-medium text-slate-500">
                   Todavía no hay consultas.
                 </p>

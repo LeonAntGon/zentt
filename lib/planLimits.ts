@@ -37,6 +37,15 @@ export function formatCurrencyCompact(value: number): string {
     return `${sign}$${compact}M`;
   }
 
+  if (abs >= 100_000) {
+    const thousands = abs / 1_000;
+    const compact =
+      thousands >= 100
+        ? thousands.toFixed(0)
+        : thousands.toFixed(1).replace(/\.0$/, "");
+    return `${sign}$${compact}k`;
+  }
+
   return `${sign}${new Intl.NumberFormat("es-AR", {
     style: "currency",
     currency: "ARS",
