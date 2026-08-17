@@ -36,7 +36,7 @@ export function FormStickySaveBar({
 
   return (
     <div
-      className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] left-0 right-0 z-40 border-t border-slate-200/80 bg-white/95 backdrop-blur-md md:bottom-0 md:left-52"
+      className="fixed bottom-[var(--mobile-nav-offset)] left-0 right-0 z-40 border-t border-slate-200/80 bg-white/95 backdrop-blur-md md:bottom-0 md:left-52"
       role="region"
       aria-label="Barra de guardado"
     >

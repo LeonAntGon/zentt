@@ -202,7 +202,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         <Link
           key={item.href}
           href={item.href}
-          className="relative -mt-5 flex flex-col items-center justify-end pb-1"
+          className="relative -mt-5 flex min-h-12 flex-col items-center justify-end pb-1"
           aria-label={item.label}
         >
           <span
@@ -229,7 +229,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       <Link
         key={item.href}
         href={item.href}
-        className={`relative flex flex-1 flex-col items-center justify-center gap-0.5 py-1 ${
+        className={`relative flex min-h-12 flex-1 flex-col items-center justify-center gap-1 py-1 ${
           active ? "text-primary" : "text-slate-500"
         }`}
       >
@@ -239,7 +239,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             <span className="absolute -right-1.5 -top-0.5 h-2 w-2 rounded-full bg-red-500" />
           ) : null}
         </span>
-        <span className="mt-0.5 text-[10px] font-bold leading-none">
+        <span className="text-[10px] font-bold leading-none">
           {item.label}
         </span>
       </Link>
@@ -336,17 +336,16 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           {planBadge}
         </header>
 
-        <main className="flex-1 overflow-y-auto bg-slate-50 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0">
+        <main className="flex-1 overflow-y-auto bg-slate-50 pb-[calc(var(--mobile-nav-offset)+0.5rem)] md:pb-0">
           {children}
         </main>
       </div>
 
       <nav
         aria-label="Navegación principal"
-        className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200 bg-white/95 backdrop-blur-md md:hidden"
-        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+        className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200 bg-white/95 px-2 pb-[var(--mobile-nav-safe)] pt-2 backdrop-blur-md md:hidden"
       >
-        <div className="grid h-16 grid-cols-5 px-1">
+        <div className="grid min-h-16 grid-cols-5">
           {PRIMARY_NAV.map((item, index) => renderTabItem(item, index === 2))}
         </div>
       </nav>

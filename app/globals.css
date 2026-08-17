@@ -35,6 +35,10 @@
 
     --radius: 0.75rem;
 
+    --mobile-nav-content: 4rem;
+    --mobile-nav-safe: max(0.75rem, env(safe-area-inset-bottom, 0px));
+    --mobile-nav-offset: calc(var(--mobile-nav-content) + var(--mobile-nav-safe));
+
     --navy: 213 74% 15%;
     --navy-foreground: 0 0% 100%;
 
