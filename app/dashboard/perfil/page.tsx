@@ -16,8 +16,6 @@ import {
   KeyRound,
   Loader2,
   LogOut,
-  Mail,
-  Shield,
   User,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -161,8 +159,16 @@ export default function PerfilPage() {
     }
   };
 
+  const showSaveBar = isDirty || savingProfile;
+
   return (
-    <div className="mx-auto max-w-4xl animate-in fade-in p-6 pb-16 duration-500 md:p-10 md:pb-28">
+    <div
+      className={`mx-auto max-w-4xl animate-in fade-in p-6 duration-500 md:p-10 md:pb-28 ${
+        showSaveBar
+          ? "pb-[calc(var(--mobile-nav-offset)+9rem)]"
+          : "pb-[calc(var(--mobile-nav-offset)+5rem)]"
+      }`}
+    >
       <header className="mb-10">
         <p className="page-eyebrow mb-2 flex items-center gap-2">
           <User size={14} /> Cuenta
@@ -173,29 +179,31 @@ export default function PerfilPage() {
         </p>
       </header>
 
-      <div className="mb-8 rounded-[2.5rem] border border-slate-100 bg-white p-8 shadow-sm md:p-10">
-        <div className="flex flex-col items-center gap-8 sm:flex-row sm:items-start">
+      <div className="mb-8 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm md:p-6">
+        <div className="flex items-center gap-4">
           <UserAvatar
             firstName={formData.first_name}
             lastName={formData.last_name}
             email={user?.email}
             alt={fullName}
-            size="2xl"
+            size="lg"
+            className="shrink-0 md:h-28 md:w-28 md:text-2xl"
           />
-          <div className="flex-1 space-y-4 text-center sm:text-left">
-            <div>
-              <h2 className="text-2xl font-black capitalize text-slate-900">
-                {fullName.toLowerCase()}
-              </h2>
-              <p className="mt-1 flex items-center justify-center gap-2 font-medium text-slate-500 sm:justify-start">
-                <Mail size={16} className="text-slate-400" />
-                {formData.email || user?.email}
-              </p>
-            </div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-slate-100 bg-slate-50 px-4 py-2 text-[11px] font-bold uppercase tracking-widest text-slate-500">
-              <Shield size={14} className="text-emerald-500" />
-              @{user?.username}
-            </div>
+          <div className="min-w-0 flex-1 space-y-1.5">
+            <p className="truncate text-sm">
+              <span className="text-[11px] font-semibold text-slate-400">
+                Nombre:{" "}
+              </span>
+              <span className="font-bold text-slate-900">{fullName}</span>
+            </p>
+            <p className="truncate text-sm">
+              <span className="text-[11px] font-semibold text-slate-400">
+                Usuario:{" "}
+              </span>
+              <span className="font-bold text-slate-900">
+                @{user?.username}
+              </span>
+            </p>
           </div>
         </div>
       </div>
@@ -422,12 +430,14 @@ export default function PerfilPage() {
         </button>
       </div>
 
-      <FormStickySaveBar
-        form="perfil-cuenta-form"
-        loading={savingProfile}
-        submitLabel="Guardar cambios"
-        loadingLabel="Guardando..."
-      />
+      {showSaveBar ? (
+        <FormStickySaveBar
+          form="perfil-cuenta-form"
+          loading={savingProfile}
+          submitLabel="Guardar cambios"
+          loadingLabel="Guardando..."
+        />
+      ) : null}
       <UnsavedChangesGuard
         dirty={isDirty}
         saving={savingProfile}
