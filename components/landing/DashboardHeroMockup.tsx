@@ -4,7 +4,7 @@ import {
   LayoutDashboard,
   Mail,
   CalendarDays,
-  Globe,
+  Home,
   User,
   DollarSign,
   Clock,
@@ -17,8 +17,8 @@ import { ZenttLogo } from "@/components/landing/ZenttLogo";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Inicio", active: true },
-  { icon: CalendarDays, label: "Agenda" },
-  { icon: Globe, label: "Sitio" },
+  { icon: CalendarDays, label: "Calendario" },
+  { icon: Home, label: "Alojamientos" },
   { icon: Mail, label: "Buzón", badge: "3" },
   { icon: User, label: "Cuenta" },
 ];

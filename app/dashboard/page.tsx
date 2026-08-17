@@ -10,32 +10,26 @@ import {
   DollarSign,
   ArrowRight,
   MessageSquare,
-  ExternalLink,
-  Copy,
-  CheckCircle2,
   LayoutDashboard,
   CalendarDays,
   Clock,
   Percent,
   Reply,
-  BarChart3,
-  Globe,
 } from "lucide-react";
 import { Skeleton, SkeletonKpi, SkeletonRow } from "@/components/ui/skeleton";
 import { Cabana } from "@/types/cabin";
 import { toast } from "sonner";
 import {
   OnboardingStepper,
-  evaluateOnboarding,
 } from "@/components/dashboard/OnboardingStepper";
-import { StaySummary } from "@/components/dashboard/StaySummary";
+import { HeroSiteCard } from "@/components/dashboard/HeroSiteCard";
 import {
   MessageChannelBadge,
   MessageInitialAvatar,
 } from "@/components/dashboard/MessageChannelBadge";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import type { MessageOrigen } from "@/types/cabin";
-import { TrialBanner } from "@/components/dashboard/TrialBanner";
+import { formatCurrencyCompact, getMaxCabanas } from "@/lib/planLimits";
 
 interface Mensaje {
   id: number;
@@ -65,14 +59,6 @@ interface Reserva {
   cabana_nombre?: string;
   nombre_turista?: string;
   created_at: string;
-}
-
-function formatMoney(value: number) {
-  return new Intl.NumberFormat("es-AR", {
-    style: "currency",
-    currency: "ARS",
-    maximumFractionDigits: 0,
-  }).format(value);
 }
 
 function formatShortRange(desde?: string | null, hasta?: string | null) {
@@ -176,6 +162,7 @@ export default function OverviewPage() {
   const [mensajesRecientes, setMensajesRecientes] = useState<Mensaje[]>([]);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [visitsLabel, setVisitsLabel] = useState("—");
 
   const slug = user?.profile?.slug;
 
@@ -188,14 +175,6 @@ export default function OverviewPage() {
     () => (user?.profile ? { ...user.profile } : null),
     [user]
   );
-
-  const onboarding = evaluateOnboarding(
-    cabanas,
-    businessProfile,
-    user?.email
-  );
-  const onboardingReady =
-    onboarding.contacto && onboarding.alojamiento && onboarding.logo;
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -252,6 +231,23 @@ export default function OverviewPage() {
     };
 
     fetchDashboardData();
+  }, []);
+
+  useEffect(() => {
+    const loadVisits = async () => {
+      try {
+        const { data } = await api.get<{
+          summary?: { sessions?: number };
+        }>("/analytics/web-performance/");
+        const sessions = data?.summary?.sessions;
+        setVisitsLabel(
+          typeof sessions === "number" ? String(sessions) : "—"
+        );
+      } catch {
+        setVisitsLabel("—");
+      }
+    };
+    void loadVisits();
   }, []);
 
   const copyToClipboard = () => {
@@ -320,26 +316,26 @@ export default function OverviewPage() {
     {
       label: "Ingresos del mes",
       hint: "Confirmadas",
-      value: formatMoney(stats.ingresosDelMes),
+      value: formatCurrencyCompact(stats.ingresosDelMes),
       icon: DollarSign,
       href: "/dashboard/calendario",
     },
     {
-      label: "Ingresos pendientes",
+      label: "Pendientes",
       hint: "Por confirmar",
-      value: formatMoney(stats.ingresosPendientes),
+      value: formatCurrencyCompact(stats.ingresosPendientes),
       icon: Clock,
       href: "/dashboard/calendario",
     },
     {
-      label: "Consultas sin leer",
+      label: "Sin leer",
       hint: "Requieren respuesta",
       value: String(stats.consultasSinLeer),
       icon: Mail,
       href: "/dashboard/buzon",
     },
     {
-      label: "Ocupación del mes",
+      label: "Ocupación",
       hint: `${stats.proximosCheckIns} check-ins · 7 días`,
       value: `${stats.ocupacionPct}%`,
       icon: Percent,
@@ -356,8 +352,6 @@ export default function OverviewPage() {
         </h1>
       </header>
 
-      <TrialBanner dateJoined={user?.date_joined} plan={user?.profile?.plan} />
-
       <OnboardingStepper
         cabanas={cabanas}
         profile={businessProfile}
@@ -366,128 +360,38 @@ export default function OverviewPage() {
         hasSlug={Boolean(slug)}
       />
 
-      {onboardingReady && (
-        <div className="mb-6 flex flex-col gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex min-w-0 items-center gap-3">
-            <span
-              className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider ${
-                slug
-                  ? "bg-emerald-50 text-emerald-700"
-                  : "bg-orange-50 text-orange-700"
-              }`}
-            >
-              <span
-                className={`h-1.5 w-1.5 rounded-full ${
-                  slug ? "animate-pulse bg-emerald-500" : "bg-orange-500"
-                }`}
-              />
-              {slug ? "Online" : "Pendiente"}
-            </span>
-            <div className="min-w-0">
-              <p className="text-xs font-medium text-slate-500">
-                Tu sitio público
-              </p>
-              <p className="truncate text-sm font-semibold text-slate-800">
-                {slug ? publicUrl : "Configurá el nombre de tu negocio"}
-              </p>
-            </div>
-          </div>
-          <div className="flex shrink-0 items-center gap-2">
-            {slug ? (
-              <>
-                <button
-                  type="button"
-                  onClick={copyToClipboard}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-100"
-                >
-                  {copied ? (
-                    <CheckCircle2 size={14} className="text-emerald-500" />
-                  ) : (
-                    <Copy size={14} />
-                  )}
-                  Copiar
-                </button>
-                <a
-                  href={publicUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-primary/90"
-                >
-                  Ver web <ExternalLink size={14} />
-                </a>
-              </>
-            ) : (
-              <Link
-                href="/dashboard/configuracion"
-                className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-white"
-              >
-                Configurar
-              </Link>
-            )}
-          </div>
-        </div>
-      )}
+      <HeroSiteCard
+        slug={slug}
+        publicUrl={publicUrl}
+        displayUrl={
+          slug
+            ? `${typeof window !== "undefined" ? window.location.host : "zentt.agency"}/${slug}`
+            : ""
+        }
+        cabanasCount={stats.totalCabanas}
+        cabanasMax={getMaxCabanas(user?.profile?.plan)}
+        visitsLabel={visitsLabel}
+        copied={copied}
+        onCopy={copyToClipboard}
+      />
 
-      <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-4">
         {metricCards.map((item) => (
           <Link
             key={item.label}
             href={item.href}
-            className="relative rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-md"
+            className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-md"
           >
-            <div className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <item.icon size={16} />
-            </div>
-            <div className="min-w-0 pr-10">
+            <div className="flex items-center justify-between gap-2">
               <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
                 {item.label}
               </p>
-              <p className="mt-1 truncate text-2xl font-bold leading-tight text-slate-900">
-                {item.value}
-              </p>
-              <p className="mt-0.5 text-[11px] text-slate-400">{item.hint}</p>
+              <item.icon size={14} className="shrink-0 text-slate-400" />
             </div>
-          </Link>
-        ))}
-      </div>
-
-      <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-3">
-        {[
-          {
-            href: "/dashboard/cabanas",
-            label: "Alojamientos",
-            hint:
-              stats.totalCabanas === 1
-                ? "1 alojamiento"
-                : `${stats.totalCabanas} alojamientos`,
-            icon: Home,
-          },
-          {
-            href: "/dashboard/reportes",
-            label: "Reportes",
-            hint: "Ingresos y ocupación",
-            icon: BarChart3,
-          },
-          {
-            href: "/dashboard/rendimiento-web",
-            label: "Rendimiento web",
-            hint: "Visitas a tu sitio",
-            icon: Globe,
-          },
-        ].map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:border-primary/30 hover:shadow-md"
-          >
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <item.icon size={18} />
-            </div>
-            <div className="min-w-0">
-              <p className="text-sm font-semibold text-slate-800">{item.label}</p>
-              <p className="text-xs text-slate-400">{item.hint}</p>
-            </div>
-            <ArrowRight size={16} className="ml-auto shrink-0 text-slate-300" />
+            <p className="mt-2 truncate text-2xl font-bold leading-tight text-slate-900">
+              {item.value}
+            </p>
+            <p className="mt-0.5 text-[11px] text-slate-400">{item.hint}</p>
           </Link>
         ))}
       </div>
@@ -529,7 +433,7 @@ export default function OverviewPage() {
                 return (
                   <div
                     key={`${msg._tipo}-${msg.id}`}
-                    className="group flex items-start justify-between gap-3 px-3 py-3 transition-colors hover:bg-slate-50/80 sm:px-4"
+                    className="group flex flex-col gap-3 px-3 py-3 transition-colors hover:bg-slate-50/80 sm:flex-row sm:items-start sm:justify-between sm:px-4"
                   >
                     <div className="flex min-w-0 items-start gap-3">
                       <MessageInitialAvatar
@@ -542,53 +446,42 @@ export default function OverviewPage() {
                             {nombre?.toLowerCase()}
                           </span>
                           <MessageChannelBadge origen={msg.origen} />
-                          <span className="truncate text-[11px] font-medium text-slate-400">
-                            {alojamientoLabel}
-                          </span>
                         </div>
+                        <p className="mt-0.5 truncate text-[11px] font-medium text-slate-400">
+                          {alojamientoLabel}
+                          {msg.fecha_desde && msg.fecha_hasta
+                            ? ` · ${formatShortRange(msg.fecha_desde, msg.fecha_hasta)}`
+                            : ""}
+                        </p>
                         {preview && (
                           <p className="mt-0.5 truncate text-sm text-slate-500">
                             {preview}
                           </p>
                         )}
-                        <p className="mt-1 text-[11px] text-slate-400">
-                          {new Date(msg.fecha_envio).toLocaleDateString(
-                            "es-AR",
-                            { day: "numeric", month: "short" }
-                          )}
-                        </p>
                       </div>
                     </div>
 
-                    <div className="flex shrink-0 flex-col items-end gap-2">
-                      <StaySummary
-                        compact
-                        fechaDesde={msg.fecha_desde}
-                        fechaHasta={msg.fecha_hasta}
-                        totalEstimado={msg.total_estimado}
-                      />
-                      <div className="flex items-center gap-2">
-                        {waHref && (
-                          <a
-                            href={waHref}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            title="Contactar por WhatsApp"
-                            aria-label="Contactar por WhatsApp"
-                            className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-whatsapp text-whatsapp-foreground shadow-sm transition-transform hover:bg-whatsapp/90 hover:scale-105"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <WhatsAppIcon className="h-4 w-4" />
-                          </a>
-                        )}
-                        <Link
-                          href="/dashboard/buzon"
-                          className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
+                    <div className="flex w-full items-center gap-2 sm:w-auto sm:shrink-0">
+                      {waHref && (
+                        <a
+                          href={waHref}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title="Contactar por WhatsApp"
+                          aria-label="Contactar por WhatsApp"
+                          className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-whatsapp text-whatsapp-foreground shadow-sm transition-transform hover:bg-whatsapp/90 hover:scale-105"
+                          onClick={(e) => e.stopPropagation()}
                         >
-                          <Reply size={14} />
-                          Responder
-                        </Link>
-                      </div>
+                          <WhatsAppIcon className="h-4 w-4" />
+                        </a>
+                      )}
+                      <Link
+                        href="/dashboard/buzon"
+                        className="inline-flex h-10 flex-1 items-center justify-center gap-1.5 rounded-lg bg-primary px-3 text-xs font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 sm:w-auto sm:flex-none"
+                      >
+                        <Reply size={14} />
+                        Responder
+                      </Link>
                     </div>
                   </div>
                 );

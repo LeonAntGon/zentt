@@ -6,6 +6,8 @@ import api from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { Cabana } from "@/types/cabin";
 import { CabanaCard } from "@/components/CabanaCard";
+import { UpgradePricingModal } from "@/components/dashboard/UpgradePricingModal";
+import { canCreateCabana, getMaxCabanas } from "@/lib/planLimits";
 import { Plus, Home, LayoutGrid } from "lucide-react";
 import { toast } from "sonner";
 import { SkeletonCabanaCard } from "@/components/ui/skeleton";
@@ -13,8 +15,11 @@ import { SkeletonCabanaCard } from "@/components/ui/skeleton";
 export default function CabanasPage() {
   const [cabanas, setCabanas] = useState<Cabana[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [paywallOpen, setPaywallOpen] = useState(false);
   const { user } = useAuth();
   const router = useRouter();
+  const plan = user?.profile?.plan;
+  const maxCabanas = getMaxCabanas(plan);
 
   useEffect(() => {
     const loadData = async () => {
@@ -36,6 +41,10 @@ export default function CabanasPage() {
   };
 
   const handleCrearCabana = () => {
+    if (!canCreateCabana(plan, cabanas.length)) {
+      setPaywallOpen(true);
+      return;
+    }
     router.push("/dashboard/cabanas/crear");
   };
 
@@ -66,7 +75,7 @@ export default function CabanasPage() {
               <span className="text-primary font-bold">
                 {user?.profile?.nombre_negocio || "tu complejo"}
               </span>
-              . Acá podés ver y editar tus alojamientos.
+              . {cabanas.length} / {maxCabanas} alojamientos en tu plan.
             </p>
           </div>
 
@@ -74,7 +83,7 @@ export default function CabanasPage() {
             onClick={handleCrearCabana}
             className="bg-primary hover:bg-primary/90 text-white px-8 py-4 rounded-2xl font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2 shadow-xl shadow-primary/10 transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2"
           >
-            <Plus size={18} /> Añadir alojamiento
+            <Plus size={18} /> Agregar alojamiento
           </button>
         </header>
 
@@ -118,6 +127,15 @@ export default function CabanasPage() {
           </div>
         )}
       </div>
+
+      <UpgradePricingModal
+        open={paywallOpen}
+        onClose={() => setPaywallOpen(false)}
+        title={`Tu plan incluye ${maxCabanas} ${
+          maxCabanas === 1 ? "alojamiento" : "alojamientos"
+        }`}
+        body="Para agregar otro alojamiento, pasate a un plan pago. Es un cobro único por 30 días, sin débito automático."
+      />
     </div>
   );
 }

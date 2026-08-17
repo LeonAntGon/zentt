@@ -31,7 +31,7 @@ import {
   cabanaTextareaClass,
   cabanaUploadButtonClass,
 } from "@/components/dashboard/cabana-form-styles";
-import type { PrecioPorFecha } from "@/types/cabin";
+import type { Cabana, PrecioPorFecha } from "@/types/cabin";
 import {
   ArrowLeft,
   Image as ImageIcon,
@@ -41,7 +41,8 @@ import {
   UploadCloud,
 } from "lucide-react";
 import { toast } from "sonner";
-import { UpgradeBanner } from "@/components/dashboard/UpgradeBanner";
+import { UpgradePricingModal } from "@/components/dashboard/UpgradePricingModal";
+import { canCreateCabana, getMaxCabanas } from "@/lib/planLimits";
 
 function isImageFile(file: File): boolean {
   return Boolean(file.type && file.type.startsWith("image/"));
@@ -90,6 +91,7 @@ export default function CreateCabanaPage() {
     message: string;
     plan: string;
   }>({ show: false, message: "", plan: "gratis" });
+  const [paywallOpen, setPaywallOpen] = useState(false);
 
   const hasPhone = Boolean(user?.profile?.telefono?.trim());
   const hasEmail = Boolean(
@@ -99,6 +101,21 @@ export default function CreateCabanaPage() {
   const openContactModal = (method: ContactMethod) => {
     setContactModal({ open: true, method });
   };
+
+  useEffect(() => {
+    const guardPlanLimit = async () => {
+      try {
+        const { data } = await api.get<Cabana[]>("/cabanas/");
+        const plan = user?.profile?.plan;
+        if (!canCreateCabana(plan, data.length)) {
+          setPaywallOpen(true);
+        }
+      } catch {
+        // If we cannot check, the submit handler still respects the backend.
+      }
+    };
+    if (user) void guardPlanLimit();
+  }, [user]);
 
   useEffect(() => {
     if (!user) return;
@@ -409,6 +426,7 @@ export default function CreateCabanaPage() {
         error.response?.status === 403 &&
         error.response.data?.upgrade_required
       ) {
+        setPaywallOpen(true);
         setUpgradeRequired({
           show: true,
           message: error.response.data.detail || "Alcanzaste el límite de tu plan.",
@@ -461,15 +479,25 @@ export default function CreateCabanaPage() {
         </p>
       </div>
 
-      {upgradeRequired.show && (
-        <UpgradeBanner
-          title="Límite de alojamientos alcanzado"
-          description={upgradeRequired.message}
-          planRequired="pro"
-          className="mb-6"
+      {paywallOpen ? (
+        <UpgradePricingModal
+          open={paywallOpen}
+          onClose={() => {
+            setPaywallOpen(false);
+            router.push("/dashboard/cabanas");
+          }}
+          title={`Tu plan incluye ${getMaxCabanas(user?.profile?.plan)} ${
+            getMaxCabanas(user?.profile?.plan) === 1
+              ? "alojamiento"
+              : "alojamientos"
+          }`}
+          body={
+            upgradeRequired.message ||
+            "Para agregar otro alojamiento, pasate a un plan pago. Es un cobro único por 30 días, sin débito automático."
+          }
         />
-      )}
-
+      ) : (
+        <>
       <div className="lg:grid lg:grid-cols-[224px_minmax(0,1fr)] lg:gap-8">
         <FormSectionNav sections={sections} />
 
@@ -818,6 +846,8 @@ export default function CreateCabanaPage() {
         disabled={missingCount > 0}
         onCancel={() => router.push("/dashboard/cabanas")}
       />
+      </>
+      )}
 
       <ContactConfigRequiredModal
         open={contactModal.open}

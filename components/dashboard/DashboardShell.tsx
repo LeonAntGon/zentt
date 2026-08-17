@@ -7,7 +7,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import api from "@/lib/api";
 import { BusinessAvatar } from "@/components/dashboard/BusinessAvatar";
 import { UserAvatar } from "@/components/dashboard/UserAvatar";
+import { UpgradePricingModal } from "@/components/dashboard/UpgradePricingModal";
 import { ZenttLogo } from "@/components/landing/ZenttLogo";
+import { normalizePlan } from "@/lib/planLimits";
 import {
   Home,
   Mail,
@@ -17,7 +19,7 @@ import {
   BarChart3,
   Globe,
   User,
-  ExternalLink,
+  Sparkles,
 } from "lucide-react";
 
 type NavItem = {
@@ -37,14 +39,15 @@ const PRIMARY_NAV: NavItem[] = [
   },
   {
     href: "/dashboard/calendario",
-    label: "Agenda",
+    label: "Calendario",
     icon: CalendarDays,
     exact: true,
   },
   {
-    href: "__sitio__",
-    label: "Sitio",
-    icon: Globe,
+    href: "/dashboard/cabanas",
+    label: "Alojamientos",
+    icon: Home,
+    prefix: "/dashboard/cabanas",
   },
   {
     href: "/dashboard/buzon",
@@ -62,12 +65,6 @@ const PRIMARY_NAV: NavItem[] = [
 
 const MORE_NAV: NavItem[] = [
   {
-    href: "/dashboard/cabanas",
-    label: "Alojamientos",
-    icon: Home,
-    prefix: "/dashboard/cabanas",
-  },
-  {
     href: "/dashboard/reportes",
     label: "Reportes",
     icon: BarChart3,
@@ -82,7 +79,6 @@ const MORE_NAV: NavItem[] = [
 ];
 
 function navItemActive(pathname: string, item: NavItem) {
-  if (item.href === "__sitio__") return false;
   if (item.href === "/dashboard/perfil") {
     return (
       pathname.startsWith("/dashboard/perfil") ||
@@ -99,6 +95,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { logout, user } = useAuth();
   const [unreadCount, setUnreadCount] = useState(0);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -125,8 +122,13 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
   const fotoPerfil = user?.profile?.foto_perfil;
   const nombreNegocio = user?.profile?.nombre_negocio;
-  const slug = user?.profile?.slug || user?.username || "";
-  const publicUrl = slug ? `/${slug}` : "";
+  const currentPlan = normalizePlan(user?.profile?.plan);
+  const planBadgeLabel =
+    currentPlan === "complejo"
+      ? "Complejo"
+      : currentPlan === "pro"
+        ? "Pro"
+        : "Pro";
 
   const brandBlock = (
     <div className="flex items-start gap-3">
@@ -153,10 +155,23 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     </div>
   );
 
+  const planBadge = (
+    <button
+      type="button"
+      onClick={() => setUpgradeOpen(true)}
+      className="inline-flex shrink-0 items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-bold text-slate-800 transition-colors hover:bg-slate-100"
+      aria-label={
+        currentPlan === "gratis" ? "Actualizar a Pro" : `Plan ${planBadgeLabel}`
+      }
+    >
+      <Sparkles size={12} className="text-primary" />
+      {planBadgeLabel}
+    </button>
+  );
+
   const renderNavLink = (item: NavItem) => {
     const Icon = item.icon;
     const active = navItemActive(pathname, item);
-    const isSitio = item.href === "__sitio__";
     const showBuzonBadge = item.href === "/dashboard/buzon" && unreadCount > 0;
     const className = `relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition-all ${
       active
@@ -164,45 +179,15 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         : "text-slate-700 hover:bg-slate-100 hover:text-slate-900"
     }`;
 
-    const inner = (
-      <>
+    return (
+      <Link key={item.href} href={item.href} className={className}>
         <Icon size={18} />
         <span className="flex-1 truncate">{item.label}</span>
-        {isSitio ? (
-          <ExternalLink size={14} className="shrink-0 opacity-60" />
-        ) : null}
         {showBuzonBadge ? (
           <span className="ml-auto inline-flex min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
             {unreadCount > 99 ? "99+" : unreadCount}
           </span>
         ) : null}
-      </>
-    );
-
-    if (isSitio) {
-      if (publicUrl) {
-        return (
-          <a
-            key={item.label}
-            href={publicUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={className}
-          >
-            {inner}
-          </a>
-        );
-      }
-      return (
-        <Link key={item.label} href="/dashboard/configuracion" className={className}>
-          {inner}
-        </Link>
-      );
-    }
-
-    return (
-      <Link key={item.href} href={item.href} className={className}>
-        {inner}
       </Link>
     );
   };
@@ -210,76 +195,53 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const renderTabItem = (item: NavItem, isCenter: boolean) => {
     const Icon = item.icon;
     const active = navItemActive(pathname, item);
-    const isSitio = item.href === "__sitio__";
     const showBuzonBadge = item.href === "/dashboard/buzon" && unreadCount > 0;
 
-    const label = (
-      <span className="mt-0.5 text-[10px] font-bold leading-none">{item.label}</span>
-    );
-
     if (isCenter) {
-      const centerInner = (
-        <>
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-white shadow-lg shadow-primary/30">
-            <Icon size={22} />
-          </span>
-          <span className="mt-1 text-[10px] font-bold leading-none text-slate-700">
-            {item.label}
-          </span>
-        </>
-      );
-      const centerClass =
-        "relative -mt-5 flex flex-col items-center justify-end pb-1";
-      if (publicUrl) {
-        return (
-          <a
-            key={item.label}
-            href={publicUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={centerClass}
-            aria-label="Ver sitio público"
-          >
-            {centerInner}
-          </a>
-        );
-      }
       return (
         <Link
-          key={item.label}
-          href="/dashboard/configuracion"
-          className={centerClass}
-          aria-label="Configurar sitio"
+          key={item.href}
+          href={item.href}
+          className="relative -mt-5 flex flex-col items-center justify-end pb-1"
+          aria-label={item.label}
         >
-          {centerInner}
+          <span
+            className={`flex h-12 w-12 items-center justify-center rounded-full shadow-lg ${
+              active
+                ? "bg-primary text-white shadow-primary/30"
+                : "bg-primary text-white shadow-primary/30"
+            }`}
+          >
+            <Icon size={22} />
+          </span>
+          <span
+            className={`mt-1 text-[10px] font-bold leading-none ${
+              active ? "text-primary" : "text-slate-700"
+            }`}
+          >
+            {item.label}
+          </span>
         </Link>
       );
     }
 
-    const tabClass = `relative flex flex-1 flex-col items-center justify-center gap-0.5 py-1 ${
-      active ? "text-primary" : "text-slate-500"
-    }`;
-    const tabInner = (
-      <>
+    return (
+      <Link
+        key={item.href}
+        href={item.href}
+        className={`relative flex flex-1 flex-col items-center justify-center gap-0.5 py-1 ${
+          active ? "text-primary" : "text-slate-500"
+        }`}
+      >
         <span className="relative">
           <Icon size={20} />
           {showBuzonBadge ? (
-            <span className="absolute -right-2 -top-1 inline-flex min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold leading-4 text-white">
-              {unreadCount > 9 ? "9+" : unreadCount}
-            </span>
+            <span className="absolute -right-1.5 -top-0.5 h-2 w-2 rounded-full bg-red-500" />
           ) : null}
         </span>
-        {label}
-      </>
-    );
-
-    if (isSitio) {
-      return null;
-    }
-
-    return (
-      <Link key={item.href} href={item.href} className={tabClass}>
-        {tabInner}
+        <span className="mt-0.5 text-[10px] font-bold leading-none">
+          {item.label}
+        </span>
       </Link>
     );
   };
@@ -291,7 +253,10 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         className="hidden w-52 shrink-0 flex-col border-r border-slate-200 bg-white md:flex"
       >
         <div className="border-b border-slate-200 bg-slate-50/70 p-4">
-          {brandBlock}
+          <div className="flex items-start justify-between gap-2">
+            {brandBlock}
+          </div>
+          <div className="mt-3">{planBadge}</div>
         </div>
         <nav
           aria-label="Navegación del panel"
@@ -360,14 +325,15 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             size="sm"
             className="h-8 w-8 shrink-0 rounded-lg text-[10px]"
           />
-          <div className="flex min-w-0 flex-col overflow-hidden">
-            <span className="truncate text-sm font-black uppercase tracking-tight text-slate-900">
+          <div className="min-w-0 flex-1 overflow-hidden">
+            <span className="block truncate text-sm font-black uppercase tracking-tight text-slate-900">
               {nombreNegocio || "Mi Complejo"}
             </span>
             <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
               Panel Zentt
             </span>
           </div>
+          {planBadge}
         </header>
 
         <main className="flex-1 overflow-y-auto bg-slate-50 pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0">
@@ -384,6 +350,23 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           {PRIMARY_NAV.map((item, index) => renderTabItem(item, index === 2))}
         </div>
       </nav>
+
+      <UpgradePricingModal
+        open={upgradeOpen}
+        onClose={() => setUpgradeOpen(false)}
+        title={
+          currentPlan === "gratis"
+            ? "Pasate a Pro"
+            : currentPlan === "pro"
+              ? "Renovar o subir de plan"
+              : "Renovar Complejo"
+        }
+        body={
+          currentPlan === "gratis"
+            ? "Tu plan gratis incluye 1 alojamiento. Escalá cuando cargues el segundo."
+            : "Los planes pagos son un cobro único por 30 días. No hay débito automático."
+        }
+      />
     </div>
   );
 }
