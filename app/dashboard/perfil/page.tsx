@@ -5,23 +5,27 @@ import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import api from "@/lib/api";
 import { UserAvatar } from "@/components/dashboard/UserAvatar";
+import { BusinessAvatar } from "@/components/dashboard/BusinessAvatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FormStickySaveBar } from "@/components/dashboard/FormStickySaveBar";
 import { UnsavedChangesGuard } from "@/components/dashboard/UnsavedChangesGuard";
 import {
+  ArrowRight,
   KeyRound,
   Loader2,
+  LogOut,
   Mail,
-  Settings,
   Shield,
   User,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export default function PerfilPage() {
-  const { user, checkCurrentUser } = useAuth();
+  const { user, checkCurrentUser, logout } = useAuth();
+  const router = useRouter();
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
 
@@ -110,6 +114,20 @@ export default function PerfilPage() {
     await persist();
   };
 
+  const handleLogout = () => {
+    logout();
+    router.push("/login");
+  };
+
+  const plan = user?.profile?.plan || "gratis";
+  const planLabel =
+    plan === "complejo" ? "Complejo" : plan === "pro" ? "Pro" : "Gratis";
+  const publicPath = user?.profile?.slug
+    ? `zentt.app/${user.profile.slug}`
+    : user?.username
+      ? `zentt.app/${user.username}`
+      : "zentt.app/tu-usuario";
+
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (passwordData.new_password !== passwordData.confirm_password) {
@@ -144,7 +162,7 @@ export default function PerfilPage() {
   };
 
   return (
-    <div className="mx-auto max-w-4xl animate-in fade-in p-6 pb-28 duration-500 md:p-10">
+    <div className="mx-auto max-w-4xl animate-in fade-in p-6 pb-16 duration-500 md:p-10 md:pb-28">
       <header className="mb-10">
         <p className="page-eyebrow mb-2 flex items-center gap-2">
           <User size={14} /> Cuenta
@@ -181,6 +199,34 @@ export default function PerfilPage() {
           </div>
         </div>
       </div>
+
+      <Link
+        href="/dashboard/configuracion"
+        className="mb-8 flex items-center gap-4 rounded-[2rem] border border-slate-100 bg-white p-6 shadow-sm transition-all hover:border-primary/30 hover:shadow-md md:p-8"
+      >
+        <BusinessAvatar
+          fotoPerfil={user?.profile?.foto_perfil}
+          nombreNegocio={user?.profile?.nombre_negocio}
+          size="md"
+          className="h-14 w-14 shrink-0"
+        />
+        <div className="min-w-0 flex-1">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+            Negocio
+          </p>
+          <p className="truncate text-base font-bold text-slate-900">
+            {user?.profile?.nombre_negocio || "Tu negocio"}
+          </p>
+          <p className="truncate text-xs text-slate-500">{publicPath}</p>
+          <p className="mt-1 text-[11px] font-semibold text-primary">
+            Plan {planLabel}
+          </p>
+        </div>
+        <span className="inline-flex shrink-0 items-center gap-1 text-sm font-bold text-primary">
+          Editar negocio
+          <ArrowRight size={16} />
+        </span>
+      </Link>
 
       <form
         id="perfil-cuenta-form"
@@ -238,7 +284,7 @@ export default function PerfilPage() {
               href="/dashboard/configuracion"
               className="text-primary hover:underline"
             >
-              Editalo en Configuración
+              Editalo en Negocio
             </Link>
           </p>
         </div>
@@ -365,17 +411,15 @@ export default function PerfilPage() {
         </Button>
       </form>
 
-      <div className="mt-8 flex justify-end">
-        <Button
-          asChild
-          variant="ghost"
-          className="gap-2 rounded-xl font-bold text-slate-600"
+      <div className="mt-8">
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="flex w-full items-center justify-center gap-2 rounded-2xl border border-red-100 bg-white px-4 py-3.5 text-sm font-bold text-red-500 transition-colors hover:bg-red-50 md:hidden"
         >
-          <Link href="/dashboard/configuracion">
-            <Settings size={16} />
-            Ir a configuración del negocio
-          </Link>
-        </Button>
+          <LogOut size={16} />
+          Cerrar sesión
+        </button>
       </div>
 
       <FormStickySaveBar

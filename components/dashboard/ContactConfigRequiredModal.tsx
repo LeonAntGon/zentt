@@ -22,12 +22,12 @@ const COPY: Record<
 > = {
   WA: {
     title: "Falta tu número de WhatsApp",
-    body: "Para que los huéspedes te contacten por WhatsApp en este alojamiento, primero tenés que cargar tu número en Configuración.",
+    body: "Para que los huéspedes te contacten por WhatsApp en este alojamiento, primero tenés que cargar tu número en Negocio.",
     Icon: WhatsAppIcon,
   },
   MAIL: {
     title: "Falta tu email de contacto",
-    body: "Para recibir consultas por email en este alojamiento, primero tenés que tener un email en tu cuenta (Perfil) o en Configuración.",
+    body: "Para recibir consultas por email en este alojamiento, primero tenés que tener un email en tu cuenta (Perfil) o en Negocio.",
     Icon: Mail,
   },
 };
@@ -91,7 +91,7 @@ export function ContactConfigRequiredModal({
             className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-primary/90"
           >
             <Settings2 size={16} />
-            Ir a Configuración
+            Ir a Negocio
           </Link>
         </div>
       </div>

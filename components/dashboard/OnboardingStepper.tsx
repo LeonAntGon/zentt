@@ -75,7 +75,7 @@ const STEPS: StepDef[] = [
     id: "contacto",
     title: "Configura medios de contacto",
     description:
-      "Elegí WhatsApp (con número) o Email (correo de tu cuenta) en Configuración.",
+      "Elegí WhatsApp (con número) o Email (correo de tu cuenta) en Negocio.",
     href: "/dashboard/configuracion",
     icon: Phone,
   },
@@ -89,7 +89,7 @@ const STEPS: StepDef[] = [
   {
     id: "logo",
     title: "Sube tu logo",
-    description: "Subí el logo de tu negocio en Configuración.",
+    description: "Subí el logo de tu marca en Negocio.",
     href: "/dashboard/configuracion",
     icon: ImageIcon,
   },

@@ -445,7 +445,7 @@ export default function CreateCabanaPage() {
   const invalidFieldClass = `${cabanaFieldClass} border-red-300 focus:border-red-500 focus:ring-red-500/20`;
 
   return (
-    <div className="mx-auto max-w-6xl p-6 pb-28 md:p-10 md:pb-28">
+    <div className="mx-auto max-w-6xl p-6 pb-16 md:p-10 md:pb-28">
       <button
         type="button"
         onClick={() => router.push("/dashboard/cabanas")}

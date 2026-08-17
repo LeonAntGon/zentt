@@ -43,7 +43,7 @@ export function CabinContactMethodToggle({
             href="/dashboard/configuracion"
             className="font-semibold text-primary underline-offset-2 hover:underline"
           >
-            Configuración
+            Negocio
           </Link>
           .
         </p>

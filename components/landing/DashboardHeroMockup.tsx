@@ -2,11 +2,10 @@
 
 import {
   LayoutDashboard,
-  Home,
   Mail,
   CalendarDays,
-  BarChart3,
-  Settings,
+  Globe,
+  User,
   DollarSign,
   Clock,
   Percent,
@@ -17,12 +16,11 @@ import { AirbnbIcon } from "@/components/icons/AirbnbIcon";
 import { ZenttLogo } from "@/components/landing/ZenttLogo";
 
 const navItems = [
-  { icon: LayoutDashboard, label: "Vista General", active: true },
-  { icon: Home, label: "Alojamientos" },
+  { icon: LayoutDashboard, label: "Inicio", active: true },
+  { icon: CalendarDays, label: "Agenda" },
+  { icon: Globe, label: "Sitio" },
   { icon: Mail, label: "Buzón", badge: "3" },
-  { icon: CalendarDays, label: "Calendario" },
-  { icon: BarChart3, label: "Reportes" },
-  { icon: Settings, label: "Configuración" },
+  { icon: User, label: "Cuenta" },
 ];
 
 const kpis = [
@@ -119,7 +117,7 @@ export function DashboardHeroMockup() {
             <ZenttLogo className="h-4 w-auto aspect-[290/130]" />
           </div>
           <p className="mt-2 px-2 text-[9px] font-bold uppercase tracking-widest text-slate-400">
-            Operación
+            Principal
           </p>
           <nav className="flex flex-col gap-0.5">
             {navItems.map((item) => (
@@ -149,7 +147,7 @@ export function DashboardHeroMockup() {
         <div className="flex flex-col gap-4 bg-slate-50 p-4 sm:p-5">
           <div>
             <p className="text-[9px] font-bold uppercase tracking-widest text-primary">
-              Vista general
+              Inicio
             </p>
             <h3 className="mt-1 text-sm font-bold text-slate-900 sm:text-base">
               ¡Buen día, María!

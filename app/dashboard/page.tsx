@@ -18,6 +18,8 @@ import {
   Clock,
   Percent,
   Reply,
+  BarChart3,
+  Globe,
 } from "lucide-react";
 import { Skeleton, SkeletonKpi, SkeletonRow } from "@/components/ui/skeleton";
 import { Cabana } from "@/types/cabin";
@@ -254,7 +256,7 @@ export default function OverviewPage() {
 
   const copyToClipboard = () => {
     if (!publicUrl) {
-      toast.error("Primero define el nombre de tu negocio en Configuración");
+      toast.error("Primero definí el nombre de tu negocio en Negocio");
       return;
     }
     navigator.clipboard.writeText(publicUrl);
@@ -449,6 +451,47 @@ export default function OverviewPage() {
         ))}
       </div>
 
+      <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-3">
+        {[
+          {
+            href: "/dashboard/cabanas",
+            label: "Alojamientos",
+            hint:
+              stats.totalCabanas === 1
+                ? "1 alojamiento"
+                : `${stats.totalCabanas} alojamientos`,
+            icon: Home,
+          },
+          {
+            href: "/dashboard/reportes",
+            label: "Reportes",
+            hint: "Ingresos y ocupación",
+            icon: BarChart3,
+          },
+          {
+            href: "/dashboard/rendimiento-web",
+            label: "Rendimiento web",
+            hint: "Visitas a tu sitio",
+            icon: Globe,
+          },
+        ].map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:border-primary/30 hover:shadow-md"
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <item.icon size={18} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-slate-800">{item.label}</p>
+              <p className="text-xs text-slate-400">{item.hint}</p>
+            </div>
+            <ArrowRight size={16} className="ml-auto shrink-0 text-slate-300" />
+          </Link>
+        ))}
+      </div>
+
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm lg:col-span-2 md:p-6">
           <div className="mb-5 flex items-center justify-between gap-3">
@@ -617,25 +660,6 @@ export default function OverviewPage() {
               </p>
             )}
           </div>
-
-          <Link
-            href="/dashboard/cabanas"
-            className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:border-primary/30 hover:shadow-md"
-          >
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <Home size={18} />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-slate-800">
-                {stats.totalCabanas}{" "}
-                {stats.totalCabanas === 1 ? "alojamiento" : "alojamientos"}
-              </p>
-              <p className="text-xs text-slate-400">
-                Fotos, precios y disponibilidad
-              </p>
-            </div>
-            <ArrowRight size={16} className="ml-auto text-slate-300" />
-          </Link>
         </div>
       </div>
     </div>

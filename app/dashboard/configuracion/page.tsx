@@ -391,7 +391,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="min-h-full bg-slate-50 pb-28">
+    <div className="min-h-full bg-slate-50 pb-16 md:pb-28">
       {!hydrated && !user ? (
         <div className="flex min-h-[40vh] items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -403,7 +403,7 @@ export default function SettingsPage() {
         className="mx-auto max-w-3xl space-y-5 p-6 md:p-10"
       >
         <header className="mb-2">
-          <p className="page-eyebrow mb-1">Configuración</p>
+          <p className="page-eyebrow mb-1">Negocio</p>
           <h1 className="page-title">Identidad del Negocio</h1>
           <p className="page-subtitle mt-1">
             Cómo se ve tu marca y cómo te contactan los huéspedes.
@@ -840,7 +840,7 @@ export default function SettingsPage() {
       )}
 
       {/* Botón fijo Guardar */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-slate-200/80 bg-white/90 backdrop-blur-md md:left-52">
+      <div className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] left-0 right-0 z-40 border-t border-slate-200/80 bg-white/90 backdrop-blur-md md:bottom-0 md:left-52">
         <div className="mx-auto flex max-w-3xl items-center justify-end gap-3 px-6 py-4">
           <button
             type="submit"
