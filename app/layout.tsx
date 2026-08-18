@@ -9,14 +9,17 @@ export const metadata: Metadata = {
   description:
     "Plataforma SaaS para dueños de complejos de alojamientos: sitio público, reservas y mensajes.",
   openGraph: {
+    type: "website",
+    locale: "es_AR",
     title: "Zentt — Gestión de alojamientos",
     description:
       "Plataforma SaaS para dueños de complejos de alojamientos: sitio público, reservas y mensajes.",
     images: [
       {
-        url: "/assets/og-image.png",
+        url: "/assets/og-image.jpg",
         width: 1200,
         height: 630,
+        type: "image/jpeg",
         alt: "Zentt",
       },
     ],
@@ -26,7 +29,7 @@ export const metadata: Metadata = {
     title: "Zentt — Gestión de alojamientos",
     description:
       "Plataforma SaaS para dueños de complejos de alojamientos: sitio público, reservas y mensajes.",
-    images: ["/assets/og-image.png"],
+    images: ["/assets/og-image.jpg"],
   },
 };
 
