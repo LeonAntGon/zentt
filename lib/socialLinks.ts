@@ -61,10 +61,7 @@ function stripTrackingParams(url: string): string {
 }
 
 /** Valor a persistir: handle sin @, o URL con https y sin tracking. */
-export function normalizeSocialValue(
-  raw: string,
-  _network?: SocialNetwork
-): string {
+export function normalizeSocialValue(raw: string): string {
   const value = raw.trim();
   if (!value) return "";
   if (looksLikeUrl(value)) {
@@ -78,7 +75,7 @@ export function socialHref(
   raw: string | null | undefined,
   network: SocialNetwork
 ): string | null {
-  const normalized = normalizeSocialValue(raw || "", network);
+  const normalized = normalizeSocialValue(raw || "");
   if (!normalized) return null;
   if (looksLikeUrl(normalized) || /^https?:\/\//i.test(normalized)) {
     return ensureHttps(normalized);

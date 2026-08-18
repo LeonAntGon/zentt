@@ -230,13 +230,13 @@ export default function SettingsPage() {
       metodoContacto !== (user?.profile?.metodo_contacto || "WA") ||
       countryCode !== savedPhone.countryCode ||
       phoneLocal !== savedPhone.localNumber ||
-      normalizeSocialValue(instagramUser, "instagram") !==
+      normalizeSocialValue(instagramUser) !==
         (user?.profile?.instagram_user || "") ||
-      normalizeSocialValue(tiktokUser, "tiktok") !==
+      normalizeSocialValue(tiktokUser) !==
         (user?.profile?.tiktok_user || "") ||
-      normalizeSocialValue(youtubeUser, "youtube") !==
+      normalizeSocialValue(youtubeUser) !==
         (user?.profile?.youtube_user || "") ||
-      normalizeSocialValue(facebookUser, "facebook") !==
+      normalizeSocialValue(facebookUser) !==
         (user?.profile?.facebook_user || "") ||
       normalizeUsername(publicUsername) !==
         normalizeUsername(savedPublicUsername));
@@ -283,10 +283,10 @@ export default function SettingsPage() {
     metodo_contacto: metodoContacto,
     telefono_whatsapp: phoneLocal.trim() ? telefonoWhatsapp : "",
     email_contacto: (user?.email || "").trim(),
-    instagram_user: normalizeSocialValue(instagramUser, "instagram"),
-    tiktok_user: normalizeSocialValue(tiktokUser, "tiktok"),
-    youtube_user: normalizeSocialValue(youtubeUser, "youtube"),
-    facebook_user: normalizeSocialValue(facebookUser, "facebook"),
+    instagram_user: normalizeSocialValue(instagramUser),
+    tiktok_user: normalizeSocialValue(tiktokUser),
+    youtube_user: normalizeSocialValue(youtubeUser),
+    facebook_user: normalizeSocialValue(facebookUser),
   });
 
   const persist = async (): Promise<boolean> => {

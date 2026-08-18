@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { CalendarDays, Check, ChevronRight, Link2 } from "lucide-react";
