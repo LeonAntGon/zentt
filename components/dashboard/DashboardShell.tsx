@@ -143,6 +143,15 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         ? "Pro"
         : "Pro";
 
+  const panelZenttMark = (
+    <div className="flex items-center gap-1.5" aria-label="Panel Zentt">
+      <span className="text-[10px] font-bold tracking-widest text-[#184E77]">
+        panel
+      </span>
+      <ZenttLogo className="aspect-[290/130] h-4 w-auto -translate-x-[9px] -translate-y-px" />
+    </div>
+  );
+
   const brandBlock = (
     <div className="flex items-start gap-3">
       <BusinessAvatar
@@ -158,12 +167,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         >
           {nombreNegocio || "Mi Complejo"}
         </h2>
-        <div className="mt-1 flex items-center gap-1.5" aria-label="Panel Zentt">
-          <span className="text-[10px] font-bold tracking-widest text-[#184E77]">
-            Panel
-          </span>
-          <ZenttLogo className="aspect-[290/130] h-4 w-auto -translate-x-[9px] -translate-y-px" />
-        </div>
+        <div className="mt-1">{panelZenttMark}</div>
       </div>
     </div>
   );
@@ -342,9 +346,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             <span className="block truncate text-sm font-black uppercase tracking-tight text-slate-900">
               {nombreNegocio || "Mi Complejo"}
             </span>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-              Panel Zentt
-            </span>
+            {panelZenttMark}
           </div>
           {planBadge}
         </header>
