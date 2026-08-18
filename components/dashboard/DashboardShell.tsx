@@ -8,6 +8,7 @@ import api from "@/lib/api";
 import { BusinessAvatar } from "@/components/dashboard/BusinessAvatar";
 import { UserAvatar } from "@/components/dashboard/UserAvatar";
 import { UpgradePricingModal } from "@/components/dashboard/UpgradePricingModal";
+import { EmailVerifyBanner } from "@/components/dashboard/EmailVerify";
 import { ZenttLogo } from "@/components/landing/ZenttLogo";
 import { normalizePlan } from "@/lib/planLimits";
 import { ZenttMarkIcon } from "@/components/icons/ZenttMarkIcon";
@@ -352,6 +353,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         </header>
 
         <main className="min-h-0 flex-1 overflow-y-auto bg-slate-50 pb-[calc(var(--mobile-nav-offset)+0.5rem)] md:pb-0">
+          <EmailVerifyBanner />
           {children}
         </main>
       </div>

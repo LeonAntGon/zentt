@@ -8,6 +8,10 @@ export const metadata: Metadata = {
   title: "Zentt — Gestión de alojamientos",
   description:
     "Plataforma SaaS para dueños de complejos de alojamientos: sitio público, reservas y mensajes.",
+  icons: {
+    icon: [{ url: "/assets/t-logotipo.png", type: "image/png" }],
+    apple: [{ url: "/assets/t-logotipo.png", type: "image/png" }],
+  },
   openGraph: {
     type: "website",
     locale: "es_AR",

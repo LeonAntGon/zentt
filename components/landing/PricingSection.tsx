@@ -97,6 +97,13 @@ const PricingSection = () => {
   }, [checkCurrentUser]);
 
   const startCheckout = async (plan: "pro" | "complejo") => {
+    if (!user?.email_verified) {
+      toast.error(
+        "Verificá tu email desde el panel antes de suscribirte."
+      );
+      router.push("/dashboard");
+      return;
+    }
     setCheckoutLoading(plan);
     try {
       const { data } = await api.post<{
@@ -112,7 +119,15 @@ const PricingSection = () => {
       }
       window.location.href = url;
     } catch (err) {
-      if (axios.isAxiosError(err) && err.response?.status === 503) {
+      if (axios.isAxiosError(err) && err.response?.status === 403) {
+        toast.error(
+          String(
+            err.response.data?.detail ||
+              "Verificá tu email desde el panel antes de suscribirte."
+          )
+        );
+        router.push("/dashboard");
+      } else if (axios.isAxiosError(err) && err.response?.status === 503) {
         toast.error("MercadoPago todavía no está configurado.");
       } else {
         toast.error("No pudimos iniciar el pago. Probá de nuevo.");

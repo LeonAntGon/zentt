@@ -29,6 +29,7 @@ import {
   getMaxCabanas,
   PLAN_LIMITS,
 } from "@/lib/planLimits";
+import { useEmailVerify } from "@/components/dashboard/EmailVerify";
 import {
   getUsernameError,
   normalizeUsername,
@@ -95,6 +96,7 @@ function InstagramIcon({ className }: { className?: string }) {
 
 export default function SettingsPage() {
   const { user, checkCurrentUser, setUser } = useAuth();
+  const { requireEmailVerified } = useEmailVerify();
   const [loading, setLoading] = useState(false);
   const [hydrated, setHydrated] = useState(false);
 
@@ -149,6 +151,7 @@ export default function SettingsPage() {
 
   const startCheckout = async (plan: "pro" | "complejo") => {
     const run = async () => {
+      if (!requireEmailVerified()) return;
       setCheckoutLoading(plan);
       try {
         const { data } = await api.post<{
@@ -164,7 +167,15 @@ export default function SettingsPage() {
         }
         window.location.href = url;
       } catch (err) {
-        if (axios.isAxiosError(err) && err.response?.status === 503) {
+        if (axios.isAxiosError(err) && err.response?.status === 403) {
+          toast.error(
+            String(
+              err.response.data?.detail ||
+                "Verificá tu email para suscribirte."
+            )
+          );
+          requireEmailVerified();
+        } else if (axios.isAxiosError(err) && err.response?.status === 503) {
           toast.error("MercadoPago todavía no está configurado.");
         } else {
           toast.error("No pudimos iniciar la suscripción. Probá de nuevo.");

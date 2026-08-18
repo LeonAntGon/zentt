@@ -13,6 +13,7 @@ import {
   PLAN_PRICE_PERIOD,
 } from "@/lib/planLimits";
 import { ZenttMarkIcon } from "@/components/icons/ZenttMarkIcon";
+import { useEmailVerify } from "@/components/dashboard/EmailVerify";
 
 type PaidPlan = "pro" | "complejo";
 
@@ -59,10 +60,12 @@ export function UpgradePricingModal({
   body = `Agregá más alojamientos, quitá la marca de agua y sincronizá precios dinámicos por ${formatPlanPrice(PLAN_LIMITS.pro.priceArs)} / mes.`,
 }: UpgradePricingModalProps) {
   const { user } = useAuth();
+  const { requireEmailVerified } = useEmailVerify();
   const [checkoutLoading, setCheckoutLoading] = useState<PaidPlan | null>(null);
   const currentPlan = normalizePlan(user?.profile?.plan);
 
   const startCheckout = async (plan: PaidPlan) => {
+    if (!requireEmailVerified()) return;
     setCheckoutLoading(plan);
     try {
       const { data } = await api.post<{
@@ -78,7 +81,12 @@ export function UpgradePricingModal({
       }
       window.location.href = url;
     } catch (err) {
-      if (axios.isAxiosError(err) && err.response?.status === 503) {
+      if (axios.isAxiosError(err) && err.response?.status === 403) {
+        toast.error(
+          String(err.response.data?.detail || "Verificá tu email para suscribirte.")
+        );
+        requireEmailVerified();
+      } else if (axios.isAxiosError(err) && err.response?.status === 503) {
         toast.error("MercadoPago todavía no está configurado.");
       } else {
         toast.error("No pudimos iniciar el pago. Probá de nuevo.");

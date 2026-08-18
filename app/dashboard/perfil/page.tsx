@@ -20,9 +20,11 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useEmailVerify } from "@/components/dashboard/EmailVerify";
 
 export default function PerfilPage() {
   const { user, checkCurrentUser, logout } = useAuth();
+  const { openVerify } = useEmailVerify();
   const router = useRouter();
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
@@ -79,10 +81,24 @@ export default function PerfilPage() {
       data.append("first_name", formData.first_name);
       data.append("last_name", formData.last_name);
       data.append("email", email);
-      await api.patch("/accounts/me/", data, {
+      const { data: response } = await api.patch<{
+        email_change_pending?: boolean;
+        detail?: string;
+        pending_email?: string;
+      }>("/accounts/me/", data, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       await checkCurrentUser();
+      if (response.email_change_pending) {
+        toast.message(
+          response.detail ||
+            "Te enviamos un código al nuevo email para confirmar el cambio."
+        );
+        openVerify({
+          reason: `Ingresá el código enviado a ${response.pending_email || email}.`,
+        });
+        return true;
+      }
       toast.success("Perfil actualizado");
       return true;
     } catch (error) {
@@ -90,6 +106,7 @@ export default function PerfilPage() {
         response?: {
           data?: {
             email?: string[] | string;
+            detail?: string;
           };
         };
       };
@@ -98,8 +115,8 @@ export default function PerfilPage() {
         ? emailErr[0]
         : typeof emailErr === "string"
           ? emailErr
-          : null;
-      if (emailMsg) setEmailError(emailMsg);
+          : err.response?.data?.detail || null;
+      if (emailMsg) setEmailError(String(emailMsg));
       toast.error(emailMsg || "No se pudo guardar el perfil");
       return false;
     } finally {
@@ -139,13 +156,20 @@ export default function PerfilPage() {
 
     setSavingPassword(true);
     try {
-      await api.post("/accounts/me/change-password/", passwordData);
+      const { data } = await api.post<{
+        detail?: string;
+        reauth_required?: boolean;
+      }>("/accounts/me/change-password/", passwordData);
       setPasswordData({
         current_password: "",
         new_password: "",
         confirm_password: "",
       });
-      toast.success("Contraseña actualizada");
+      toast.success(data.detail || "Contraseña actualizada");
+      if (data.reauth_required) {
+        logout();
+        router.push("/login");
+      }
     } catch (error) {
       const err = error as {
         response?: { data?: { current_password?: string[] } };

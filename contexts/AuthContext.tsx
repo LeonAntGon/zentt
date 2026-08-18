@@ -37,6 +37,7 @@ export interface User {
   last_name: string;
   date_joined: string;
   profile: UserProfile;
+  email_verified?: boolean;
 }
 
 interface AuthContextType {
