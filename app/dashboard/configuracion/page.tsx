@@ -20,6 +20,7 @@ import {
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { TikTokIcon } from "@/components/icons/TikTokIcon";
 import { YouTubeIcon } from "@/components/icons/YouTubeIcon";
+import { FacebookIcon } from "@/components/icons/FacebookIcon";
 import { toast } from "sonner";
 import axios from "axios";
 import type { Cabana } from "@/types/cabin";
@@ -28,6 +29,7 @@ import {
   normalizeUsername,
   normalizeUsernameLive,
 } from "@/lib/username";
+import { normalizeSocialValue } from "@/lib/socialLinks";
 import {
   UnsavedChangesGuard,
   type UnsavedChangesGuardHandle,
@@ -45,10 +47,6 @@ const COUNTRY_CODES = [
 
 const inputBase =
   "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 outline-none transition-all duration-300 ease-in-out focus:border-primary focus:ring-2 focus:ring-primary";
-
-function stripAt(value: string) {
-  return value.replace(/^@+/, "").trim();
-}
 
 function parseWhatsApp(full?: string | null) {
   const digits = (full || "").replace(/[^\d+]/g, "");
@@ -102,6 +100,7 @@ export default function SettingsPage() {
   const [instagramUser, setInstagramUser] = useState("");
   const [tiktokUser, setTiktokUser] = useState("");
   const [youtubeUser, setYoutubeUser] = useState("");
+  const [facebookUser, setFacebookUser] = useState("");
   const [publicUsername, setPublicUsername] = useState("");
   const [usernameError, setUsernameError] = useState("");
 
@@ -207,6 +206,7 @@ export default function SettingsPage() {
     setInstagramUser(user.profile?.instagram_user || "");
     setTiktokUser(user.profile?.tiktok_user || "");
     setYoutubeUser(user.profile?.youtube_user || "");
+    setFacebookUser(user.profile?.facebook_user || "");
     setPublicUsername(user.profile?.slug || user.username || "");
     setUsernameError("");
     setPreviewUrl(getMediaUrl(user.profile?.foto_perfil));
@@ -230,9 +230,14 @@ export default function SettingsPage() {
       metodoContacto !== (user?.profile?.metodo_contacto || "WA") ||
       countryCode !== savedPhone.countryCode ||
       phoneLocal !== savedPhone.localNumber ||
-      stripAt(instagramUser) !== (user?.profile?.instagram_user || "") ||
-      stripAt(tiktokUser) !== (user?.profile?.tiktok_user || "") ||
-      stripAt(youtubeUser) !== (user?.profile?.youtube_user || "") ||
+      normalizeSocialValue(instagramUser, "instagram") !==
+        (user?.profile?.instagram_user || "") ||
+      normalizeSocialValue(tiktokUser, "tiktok") !==
+        (user?.profile?.tiktok_user || "") ||
+      normalizeSocialValue(youtubeUser, "youtube") !==
+        (user?.profile?.youtube_user || "") ||
+      normalizeSocialValue(facebookUser, "facebook") !==
+        (user?.profile?.facebook_user || "") ||
       normalizeUsername(publicUsername) !==
         normalizeUsername(savedPublicUsername));
 
@@ -278,9 +283,10 @@ export default function SettingsPage() {
     metodo_contacto: metodoContacto,
     telefono_whatsapp: phoneLocal.trim() ? telefonoWhatsapp : "",
     email_contacto: (user?.email || "").trim(),
-    instagram_user: stripAt(instagramUser),
-    tiktok_user: stripAt(tiktokUser),
-    youtube_user: stripAt(youtubeUser),
+    instagram_user: normalizeSocialValue(instagramUser, "instagram"),
+    tiktok_user: normalizeSocialValue(tiktokUser, "tiktok"),
+    youtube_user: normalizeSocialValue(youtubeUser, "youtube"),
+    facebook_user: normalizeSocialValue(facebookUser, "facebook"),
   });
 
   const persist = async (): Promise<boolean> => {
@@ -313,6 +319,7 @@ export default function SettingsPage() {
       instagram_user: payload.instagram_user || null,
       tiktok_user: payload.tiktok_user || null,
       youtube_user: payload.youtube_user || null,
+      facebook_user: payload.facebook_user || null,
     };
 
     const body: { profile: typeof profileBody; username?: string } = {
@@ -341,6 +348,7 @@ export default function SettingsPage() {
       setInstagramUser(updatedUser.profile?.instagram_user || "");
       setTiktokUser(updatedUser.profile?.tiktok_user || "");
       setYoutubeUser(updatedUser.profile?.youtube_user || "");
+      setFacebookUser(updatedUser.profile?.facebook_user || "");
       setPublicUsername(updatedUser.profile?.slug || updatedUser.username);
       setUsernameError("");
 
@@ -645,15 +653,35 @@ export default function SettingsPage() {
                 Instagram
               </Label>
               <div className="flex overflow-hidden rounded-xl border border-slate-200 bg-white transition-all duration-300 ease-in-out focus-within:border-primary focus-within:ring-2 focus-within:ring-primary">
-                <span className="flex items-center gap-2 border-r border-slate-200 bg-slate-50 px-3.5 text-slate-500">
+                <span className="flex items-center border-r border-slate-200 bg-slate-50 px-3.5 text-slate-500">
                   <InstagramIcon className="h-4 w-4" />
-                  <span className="text-sm font-medium text-slate-400">@</span>
                 </span>
                 <input
                   id="instagram_user"
                   value={instagramUser}
-                  onChange={(e) => setInstagramUser(stripAt(e.target.value))}
-                  placeholder="micabana"
+                  onChange={(e) => setInstagramUser(e.target.value)}
+                  placeholder="usuario o https://instagram.com/..."
+                  className="min-w-0 flex-1 bg-transparent px-4 py-3 text-sm text-slate-800 outline-none placeholder:text-slate-400"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label
+                htmlFor="facebook_user"
+                className="text-sm font-semibold text-slate-700"
+              >
+                Facebook
+              </Label>
+              <div className="flex overflow-hidden rounded-xl border border-slate-200 bg-white transition-all duration-300 ease-in-out focus-within:border-primary focus-within:ring-2 focus-within:ring-primary">
+                <span className="flex items-center border-r border-slate-200 bg-slate-50 px-3.5 text-slate-500">
+                  <FacebookIcon className="h-4 w-4" />
+                </span>
+                <input
+                  id="facebook_user"
+                  value={facebookUser}
+                  onChange={(e) => setFacebookUser(e.target.value)}
+                  placeholder="usuario o https://facebook.com/..."
                   className="min-w-0 flex-1 bg-transparent px-4 py-3 text-sm text-slate-800 outline-none placeholder:text-slate-400"
                 />
               </div>
@@ -667,15 +695,14 @@ export default function SettingsPage() {
                 TikTok
               </Label>
               <div className="flex overflow-hidden rounded-xl border border-slate-200 bg-white transition-all duration-300 ease-in-out focus-within:border-primary focus-within:ring-2 focus-within:ring-primary">
-                <span className="flex items-center gap-2 border-r border-slate-200 bg-slate-50 px-3.5 text-slate-500">
+                <span className="flex items-center border-r border-slate-200 bg-slate-50 px-3.5 text-slate-500">
                   <TikTokIcon className="h-4 w-4" />
-                  <span className="text-sm font-medium text-slate-400">@</span>
                 </span>
                 <input
                   id="tiktok_user"
                   value={tiktokUser}
-                  onChange={(e) => setTiktokUser(stripAt(e.target.value))}
-                  placeholder="micabana"
+                  onChange={(e) => setTiktokUser(e.target.value)}
+                  placeholder="usuario o https://tiktok.com/..."
                   className="min-w-0 flex-1 bg-transparent px-4 py-3 text-sm text-slate-800 outline-none placeholder:text-slate-400"
                 />
               </div>
@@ -689,15 +716,14 @@ export default function SettingsPage() {
                 YouTube
               </Label>
               <div className="flex overflow-hidden rounded-xl border border-slate-200 bg-white transition-all duration-300 ease-in-out focus-within:border-primary focus-within:ring-2 focus-within:ring-primary">
-                <span className="flex items-center gap-2 border-r border-slate-200 bg-slate-50 px-3.5 text-slate-500">
+                <span className="flex items-center border-r border-slate-200 bg-slate-50 px-3.5 text-slate-500">
                   <YouTubeIcon className="h-4 w-4" />
-                  <span className="text-sm font-medium text-slate-400">@</span>
                 </span>
                 <input
                   id="youtube_user"
                   value={youtubeUser}
-                  onChange={(e) => setYoutubeUser(stripAt(e.target.value))}
-                  placeholder="micabana"
+                  onChange={(e) => setYoutubeUser(e.target.value)}
+                  placeholder="usuario o https://youtube.com/..."
                   className="min-w-0 flex-1 bg-transparent px-4 py-3 text-sm text-slate-800 outline-none placeholder:text-slate-400"
                 />
               </div>

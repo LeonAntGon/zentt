@@ -15,6 +15,7 @@ import { TikTokIcon } from "@/components/icons/TikTokIcon";
 import { YouTubeIcon } from "@/components/icons/YouTubeIcon";
 import { FacebookIcon } from "@/components/icons/FacebookIcon";
 import { PublicSiteFooter } from "@/components/public/PublicSiteFooter";
+import { socialHref } from "@/lib/socialLinks";
 
 interface PublicWebsiteData {
   nombre_negocio: string | null;
@@ -116,41 +117,41 @@ export default function LinktreePage() {
   const logoUrl = getMediaUrl(siteData.foto_perfil);
   const ubicacion = siteData.ubicacion || null;
 
-  const ig = (siteData.instagram_user || "").trim().replace(/^@+/, "");
-  const tt = (siteData.tiktok_user || "").trim().replace(/^@+/, "");
-  const yt = (siteData.youtube_user || "").trim().replace(/^@+/, "");
-  const fb = (siteData.facebook_user || "").trim().replace(/^@+/, "");
+  const igHref = socialHref(siteData.instagram_user, "instagram");
+  const fbHref = socialHref(siteData.facebook_user, "facebook");
+  const ttHref = socialHref(siteData.tiktok_user, "tiktok");
+  const ytHref = socialHref(siteData.youtube_user, "youtube");
 
   const socialLinks = [
-    ig
+    igHref
       ? {
           id: "instagram",
           label: "Instagram",
-          href: `https://www.instagram.com/${ig}/`,
+          href: igHref,
           Icon: InstagramIcon,
         }
       : null,
-    fb
+    fbHref
       ? {
           id: "facebook",
           label: "Facebook",
-          href: `https://www.facebook.com/${fb}`,
+          href: fbHref,
           Icon: FacebookIcon,
         }
       : null,
-    tt
+    ttHref
       ? {
           id: "tiktok",
           label: "TikTok",
-          href: `https://www.tiktok.com/@${tt}`,
+          href: ttHref,
           Icon: TikTokIcon,
         }
       : null,
-    yt
+    ytHref
       ? {
           id: "youtube",
           label: "YouTube",
-          href: `https://www.youtube.com/@${yt}`,
+          href: ytHref,
           Icon: YouTubeIcon,
         }
       : null,
