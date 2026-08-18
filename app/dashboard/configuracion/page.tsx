@@ -27,6 +27,7 @@ import type { Cabana } from "@/types/cabin";
 import {
   formatPlanPrice,
   getMaxCabanas,
+  PLAN_LIMITS,
 } from "@/lib/planLimits";
 import {
   getUsernameError,
@@ -840,7 +841,7 @@ export default function SettingsPage() {
                       ) : (
                         <ZenttMarkIcon size={16} className="text-white" />
                       )}
-                      Suscribirme a Pro · {formatPlanPrice(9900)}
+                      Suscribirme a Pro · {formatPlanPrice(PLAN_LIMITS.pro.priceArs)}
                     </button>
                     <p className="text-xs text-gray-500 sm:text-right">
                       Pago seguro y automático vía Mercado Pago
@@ -866,7 +867,7 @@ export default function SettingsPage() {
                       {checkoutLoading === "pro" && (
                         <Loader2 size={16} className="animate-spin" />
                       )}
-                      Reactivar Pro · {formatPlanPrice(9900)}
+                      Reactivar Pro · {formatPlanPrice(PLAN_LIMITS.pro.priceArs)}
                     </button>
                     <p className="text-xs text-gray-500 sm:text-right">
                       Pago seguro y automático vía Mercado Pago
@@ -894,7 +895,7 @@ export default function SettingsPage() {
                       {checkoutLoading === "complejo" && (
                         <Loader2 size={16} className="animate-spin" />
                       )}
-                      Reactivar Complejo · {formatPlanPrice(19900)}
+                      Reactivar Complejo · {formatPlanPrice(PLAN_LIMITS.complejo.priceArs)}
                     </button>
                     <p className="text-xs text-gray-500 sm:text-right">
                       Pago seguro y automático vía Mercado Pago

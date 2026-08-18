@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import {
   formatPlanPrice,
   normalizePlan,
+  PLAN_LIMITS,
   PLAN_PRICE_PERIOD,
 } from "@/lib/planLimits";
 import { ZenttMarkIcon } from "@/components/icons/ZenttMarkIcon";
@@ -32,7 +33,7 @@ const PAID_PLANS: {
   {
     id: "pro",
     name: "Pro",
-    price: 9900,
+    price: PLAN_LIMITS.pro.priceArs,
     highlight: "Hasta 5 alojamientos",
     features: [
       "Todo lo de Gratis",
@@ -45,7 +46,7 @@ const PAID_PLANS: {
   {
     id: "complejo",
     name: "Complejo",
-    price: 19900,
+    price: PLAN_LIMITS.complejo.priceArs,
     highlight: "Hasta 15 alojamientos",
     features: ["Todo lo de Pro", "Soporte prioritario"],
   },
@@ -55,7 +56,7 @@ export function UpgradePricingModal({
   open,
   onClose,
   title = "Escalá tus reservas con Zentt Pro",
-  body = "Agregá más alojamientos, quitá la marca de agua y sincronizá precios dinámicos por $9.900 ARS / mes.",
+  body = `Agregá más alojamientos, quitá la marca de agua y sincronizá precios dinámicos por ${formatPlanPrice(PLAN_LIMITS.pro.priceArs)} / mes.`,
 }: UpgradePricingModalProps) {
   const { user } = useAuth();
   const [checkoutLoading, setCheckoutLoading] = useState<PaidPlan | null>(null);

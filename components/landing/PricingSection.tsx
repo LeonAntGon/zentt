@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { ConfirmActionModal } from "@/components/dashboard/ConfirmActionModal";
 import { useAuth } from "@/contexts/AuthContext";
 import api from "@/lib/api";
+import { formatPlanPrice, PLAN_LIMITS, PLAN_PRICE_PERIOD } from "@/lib/planLimits";
 
 type PlanId = "gratis" | "pro" | "complejo";
 
@@ -46,8 +47,8 @@ const plans: {
     id: "pro",
     name: "Pro",
     desc: "Para administrar y hacer crecer varios alojamientos.",
-    price: 9900,
-    priceLabel: "$9.900 ARS",
+    price: PLAN_LIMITS.pro.priceArs,
+    priceLabel: formatPlanPrice(PLAN_LIMITS.pro.priceArs),
     highlight: "Hasta 5 alojamientos",
     features: [
       "Todo lo de Gratis",
@@ -62,8 +63,8 @@ const plans: {
     id: "complejo",
     name: "Complejo",
     desc: "Para complejos con varios alojamientos en un solo panel.",
-    price: 19900,
-    priceLabel: "$19.900 ARS",
+    price: PLAN_LIMITS.complejo.priceArs,
+    priceLabel: formatPlanPrice(PLAN_LIMITS.complejo.priceArs),
     highlight: "Hasta 15 alojamientos",
     features: ["Todo lo de Pro", "Soporte prioritario"],
     cta: "Suscribirme a Complejo",
@@ -188,7 +189,7 @@ const PricingSection = () => {
                         {plan.priceLabel}
                       </span>
                       <span className="text-muted-foreground text-sm ml-1">
-                        / mes
+                        {PLAN_PRICE_PERIOD}
                       </span>
                     </>
                   )}
