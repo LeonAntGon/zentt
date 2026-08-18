@@ -22,6 +22,23 @@ export function canCreateCabana(plan: string | null | undefined, count: number) 
   return count < getMaxCabanas(plan);
 }
 
+/** Periodo mostrado junto al precio de planes pagos (UI). */
+export const PLAN_PRICE_PERIOD = "/ mes";
+
+/**
+ * Precio de plan para CTAs y pricing: "$9.900 ARS".
+ * No usar para ingresos del dashboard (usar formatCurrencyCompact).
+ */
+export function formatPlanPrice(ars: number): string {
+  if (!Number.isFinite(ars) || ars === 0) return "$0 ARS";
+  const abs = Math.abs(ars);
+  const amount = new Intl.NumberFormat("es-AR", {
+    maximumFractionDigits: 0,
+  }).format(abs);
+  const label = `$${amount} ARS`;
+  return ars < 0 ? `-${label}` : label;
+}
+
 export function formatCurrencyCompact(value: number): string {
   if (!Number.isFinite(value) || value === 0) return "$0";
 

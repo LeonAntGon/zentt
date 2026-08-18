@@ -2,11 +2,16 @@
 
 import { useState } from "react";
 import axios from "axios";
-import { Check, Loader2, Sparkles, X } from "lucide-react";
+import { Check, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 import api from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
-import { formatCurrencyCompact, normalizePlan } from "@/lib/planLimits";
+import {
+  formatPlanPrice,
+  normalizePlan,
+  PLAN_PRICE_PERIOD,
+} from "@/lib/planLimits";
+import { ZenttMarkIcon } from "@/components/icons/ZenttMarkIcon";
 
 type PaidPlan = "pro" | "complejo";
 
@@ -32,6 +37,7 @@ const PAID_PLANS: {
     features: [
       "Todo lo de Gratis",
       "Tarifas por fecha y temporada",
+      "Sin marca de agua",
       "Analytics avanzadas",
       "Soporte prioritario",
     ],
@@ -48,8 +54,8 @@ const PAID_PLANS: {
 export function UpgradePricingModal({
   open,
   onClose,
-  title = "Pasate a Pro",
-  body = "Se renueva cada 30 días con MercadoPago. Podés cancelar la renovación cuando quieras.",
+  title = "Escalá tus reservas con Zentt Pro",
+  body = "Agregá más alojamientos, quitá la marca de agua y sincronizá precios dinámicos por $9.900 ARS / mes.",
 }: UpgradePricingModalProps) {
   const { user } = useAuth();
   const [checkoutLoading, setCheckoutLoading] = useState<PaidPlan | null>(null);
@@ -83,6 +89,9 @@ export function UpgradePricingModal({
 
   if (!open) return null;
 
+  const proPlan = PAID_PLANS.find((p) => p.id === "pro")!;
+  const complejoPlan = PAID_PLANS.find((p) => p.id === "complejo")!;
+
   return (
     <div
       className="fixed inset-0 z-[90] flex items-end justify-center bg-slate-900/40 p-0 backdrop-blur-[2px] sm:items-center sm:p-4"
@@ -106,7 +115,7 @@ export function UpgradePricingModal({
         </button>
 
         <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-          <Sparkles size={18} />
+          <ZenttMarkIcon size={20} />
         </div>
         <h2
           id="upgrade-pricing-title"
@@ -117,27 +126,22 @@ export function UpgradePricingModal({
         <p className="mt-2 text-sm leading-relaxed text-slate-500">{body}</p>
 
         <div className="mt-5 space-y-3">
-          {PAID_PLANS.map((plan) => {
+          {/* Pro — CTA principal */}
+          {(() => {
+            const plan = proPlan;
             const isCurrent = currentPlan === plan.id;
             const isBusy = checkoutLoading === plan.id;
             return (
-              <div
-                key={plan.id}
-                className={`rounded-2xl border p-4 ${
-                  plan.id === "pro"
-                    ? "border-primary/30 bg-primary/5"
-                    : "border-slate-200 bg-white"
-                }`}
-              >
+              <div className="rounded-2xl border border-slate-900/15 bg-slate-50 p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-sm font-bold text-slate-900">{plan.name}</p>
                     <p className="text-xs text-slate-500">{plan.highlight}</p>
                   </div>
                   <p className="text-sm font-black text-slate-900">
-                    {formatCurrencyCompact(plan.price)}
+                    {formatPlanPrice(plan.price)}
                     <span className="ml-1 text-[10px] font-semibold text-slate-400">
-                      / 30 días
+                      {PLAN_PRICE_PERIOD}
                     </span>
                   </p>
                 </div>
@@ -156,13 +160,64 @@ export function UpgradePricingModal({
                   type="button"
                   disabled={checkoutLoading !== null || isCurrent}
                   onClick={() => void startCheckout(plan.id)}
-                  className="mt-3 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-primary text-sm font-bold text-white transition-colors hover:bg-primary/90 disabled:opacity-60"
+                  className="mt-3 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-slate-900 text-sm font-bold text-white transition-colors hover:bg-slate-800 disabled:opacity-60"
                 >
                   {isBusy ? (
                     <Loader2 size={16} className="animate-spin" />
                   ) : isCurrent ? (
                     "Tu plan actual"
-                  ) : currentPlan === "pro" && plan.id === "complejo" ? (
+                  ) : (
+                    "Suscribirme con Mercado Pago"
+                  )}
+                </button>
+                <p className="mt-2 text-center text-xs text-gray-500">
+                  Pago seguro y automático vía Mercado Pago
+                </p>
+              </div>
+            );
+          })()}
+
+          {/* Complejo — secundario / outline */}
+          {(() => {
+            const plan = complejoPlan;
+            const isCurrent = currentPlan === plan.id;
+            const isBusy = checkoutLoading === plan.id;
+            return (
+              <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-bold text-slate-900">{plan.name}</p>
+                    <p className="text-xs text-slate-500">{plan.highlight}</p>
+                  </div>
+                  <p className="text-sm font-black text-slate-900">
+                    {formatPlanPrice(plan.price)}
+                    <span className="ml-1 text-[10px] font-semibold text-slate-400">
+                      {PLAN_PRICE_PERIOD}
+                    </span>
+                  </p>
+                </div>
+                <ul className="mt-2 space-y-1">
+                  {plan.features.map((feature) => (
+                    <li
+                      key={feature}
+                      className="flex items-center gap-2 text-xs text-slate-500"
+                    >
+                      <Check size={12} className="shrink-0 text-slate-400" />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  type="button"
+                  disabled={checkoutLoading !== null || isCurrent}
+                  onClick={() => void startCheckout(plan.id)}
+                  className="mt-3 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-slate-900 bg-transparent text-sm font-bold text-slate-900 transition-colors hover:bg-slate-50 disabled:opacity-60"
+                >
+                  {isBusy ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : isCurrent ? (
+                    "Tu plan actual"
+                  ) : currentPlan === "pro" ? (
                     "Pasar a Complejo"
                   ) : (
                     `Elegir ${plan.name}`
@@ -170,7 +225,7 @@ export function UpgradePricingModal({
                 </button>
               </div>
             );
-          })}
+          })()}
         </div>
       </div>
     </div>

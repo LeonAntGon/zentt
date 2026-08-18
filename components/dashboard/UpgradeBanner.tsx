@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Sparkles, Lock } from "lucide-react";
+import { ArrowRight, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ZenttMarkIcon } from "@/components/icons/ZenttMarkIcon";
 
 interface UpgradeBannerProps {
   feature?: string;
@@ -54,7 +55,7 @@ export function UpgradeBanner({
       >
         <div className="flex items-center gap-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-            <Sparkles size={16} className="text-primary" />
+            <ZenttMarkIcon size={16} className="text-primary" />
           </div>
           <p className="text-sm font-medium text-slate-700">
             {feature ? (
@@ -82,7 +83,7 @@ export function UpgradeBanner({
     >
       <div className="flex items-start gap-4">
         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-          <Sparkles size={24} className="text-primary" />
+          <ZenttMarkIcon size={24} className="text-primary" />
         </div>
         <div className="flex-1">
           <h3 className="text-lg font-bold text-slate-900">

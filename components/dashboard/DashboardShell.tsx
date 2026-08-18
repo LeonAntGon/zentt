@@ -10,6 +10,7 @@ import { UserAvatar } from "@/components/dashboard/UserAvatar";
 import { UpgradePricingModal } from "@/components/dashboard/UpgradePricingModal";
 import { ZenttLogo } from "@/components/landing/ZenttLogo";
 import { normalizePlan } from "@/lib/planLimits";
+import { ZenttMarkIcon } from "@/components/icons/ZenttMarkIcon";
 import {
   Home,
   Mail,
@@ -19,7 +20,6 @@ import {
   BarChart3,
   Globe,
   User,
-  Sparkles,
 } from "lucide-react";
 
 type NavItem = {
@@ -181,7 +181,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         currentPlan === "gratis" ? "Actualizar a Pro" : `Plan ${planBadgeLabel}`
       }
     >
-      <Sparkles size={12} className="text-primary" />
+      <ZenttMarkIcon size={12} className="text-primary" />
       {planBadgeLabel}
     </button>
   );
@@ -370,15 +370,15 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         onClose={() => setUpgradeOpen(false)}
         title={
           currentPlan === "gratis"
-            ? "Pasate a Pro"
+            ? undefined
             : currentPlan === "pro"
               ? "Renovar o subir de plan"
               : "Renovar Complejo"
         }
         body={
           currentPlan === "gratis"
-            ? "Tu plan gratis incluye 1 alojamiento. Escalá cuando cargues el segundo."
-            : "Se renueva cada 30 días con MercadoPago. Podés cancelar la renovación cuando quieras."
+            ? undefined
+            : "Se renueva cada mes con Mercado Pago. Podés cancelar la renovación cuando quieras."
         }
       />
     </div>

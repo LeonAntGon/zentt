@@ -47,7 +47,7 @@ const plans: {
     name: "Pro",
     desc: "Para administrar y hacer crecer varios alojamientos.",
     price: 9900,
-    priceLabel: "$9.900",
+    priceLabel: "$9.900 ARS",
     highlight: "Hasta 5 alojamientos",
     features: [
       "Todo lo de Gratis",
@@ -63,7 +63,7 @@ const plans: {
     name: "Complejo",
     desc: "Para complejos con varios alojamientos en un solo panel.",
     price: 19900,
-    priceLabel: "$19.900",
+    priceLabel: "$19.900 ARS",
     highlight: "Hasta 15 alojamientos",
     features: ["Todo lo de Pro", "Soporte prioritario"],
     cta: "Suscribirme a Complejo",
@@ -188,7 +188,7 @@ const PricingSection = () => {
                         {plan.priceLabel}
                       </span>
                       <span className="text-muted-foreground text-sm ml-1">
-                        cada 30 días
+                        / mes
                       </span>
                     </>
                   )}
@@ -249,13 +249,18 @@ const PricingSection = () => {
                     )}
                   </Button>
                 )}
+                {plan.price > 0 && (
+                  <p className="mt-2 text-center text-xs text-gray-500">
+                    Pago seguro y automático vía Mercado Pago
+                  </p>
+                )}
               </div>
             );
           })}
         </div>
 
         <p className="text-center text-sm text-muted-foreground mt-8">
-          Se renueva cada 30 días con MercadoPago. Podés cancelar la renovación
+          Se renueva cada mes con Mercado Pago. Podés cancelar la renovación
           cuando quieras desde tu cuenta.
         </p>
 

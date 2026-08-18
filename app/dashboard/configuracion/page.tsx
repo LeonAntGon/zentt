@@ -15,15 +15,19 @@ import {
   Loader2,
   Mail,
   Save,
-  Sparkles,
 } from "lucide-react";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { TikTokIcon } from "@/components/icons/TikTokIcon";
 import { YouTubeIcon } from "@/components/icons/YouTubeIcon";
 import { FacebookIcon } from "@/components/icons/FacebookIcon";
+import { ZenttMarkIcon } from "@/components/icons/ZenttMarkIcon";
 import { toast } from "sonner";
 import axios from "axios";
 import type { Cabana } from "@/types/cabin";
+import {
+  formatPlanPrice,
+  getMaxCabanas,
+} from "@/lib/planLimits";
 import {
   getUsernameError,
   normalizeUsername,
@@ -218,6 +222,7 @@ export default function SettingsPage() {
     ? new Date(user.profile.plan_expires_at).toLocaleDateString("es-AR")
     : null;
   const hasActiveSubscription = Boolean(user?.profile?.mp_subscription_id);
+  const planMaxCabanas = getMaxCabanas(currentPlan);
 
   useEffect(() => {
     if (!user) return;
@@ -764,14 +769,14 @@ export default function SettingsPage() {
             <div>
               <h2 className="section-title mb-0">Tu plan</h2>
               <p className="text-sm text-slate-500">
-                Plan actual y renovación cada 30 días
+                Plan actual y renovación mensual
               </p>
             </div>
           </div>
 
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <span className="text-lg font-bold text-slate-900">
                     {planLabel}
@@ -788,67 +793,113 @@ export default function SettingsPage() {
                   )}
                 </div>
                 <p className="mt-1 text-sm text-slate-500">{planUsage}</p>
+                <div className="mt-2 max-w-xs">
+                  <div
+                    className="h-2 overflow-hidden rounded-full bg-slate-200"
+                    role="progressbar"
+                    aria-valuenow={Math.min(
+                      100,
+                      Math.round((cabanas.length / Math.max(planMaxCabanas, 1)) * 100)
+                    )}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-label={`Uso de alojamientos: ${cabanas.length} de ${planMaxCabanas}`}
+                  >
+                    <div
+                      className={`h-full rounded-full transition-all ${
+                        cabanas.length >= planMaxCabanas
+                          ? "bg-orange-500"
+                          : "bg-primary"
+                      }`}
+                      style={{
+                        width: `${Math.min(
+                          100,
+                          (cabanas.length / Math.max(planMaxCabanas, 1)) * 100
+                        )}%`,
+                      }}
+                    />
+                  </div>
+                </div>
                 {expiresLabel && currentPlan !== "gratis" && (
-                  <p className="mt-1 text-xs text-slate-400">
+                  <p className="mt-2 text-xs text-slate-400">
                     Vence el {expiresLabel}
                   </p>
                 )}
               </div>
               <div className="flex flex-col gap-2 sm:items-end">
                 {currentPlan === "gratis" && (
-                  <button
-                    type="button"
-                    disabled={checkoutLoading !== null}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-primary/20 transition-all duration-300 ease-in-out hover:bg-primary/90 disabled:opacity-60"
-                    onClick={() => void startCheckout("pro")}
-                  >
-                    {checkoutLoading === "pro" ? (
-                      <Loader2 size={16} className="animate-spin" />
-                    ) : (
-                      <Sparkles size={16} />
-                    )}
-                    Suscribirme a Pro · $9.900
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      disabled={checkoutLoading !== null}
+                      className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-bold text-white shadow-md transition-all duration-300 ease-in-out hover:bg-slate-800 disabled:opacity-60"
+                      onClick={() => void startCheckout("pro")}
+                    >
+                      {checkoutLoading === "pro" ? (
+                        <Loader2 size={16} className="animate-spin" />
+                      ) : (
+                        <ZenttMarkIcon size={16} className="text-white" />
+                      )}
+                      Suscribirme a Pro · {formatPlanPrice(9900)}
+                    </button>
+                    <p className="text-xs text-gray-500 sm:text-right">
+                      Pago seguro y automático vía Mercado Pago
+                    </p>
+                    <button
+                      type="button"
+                      disabled={checkoutLoading !== null}
+                      onClick={() => void startCheckout("complejo")}
+                      className="text-xs font-medium text-slate-500 underline-offset-2 transition-colors hover:text-slate-800 hover:underline disabled:opacity-60"
+                    >
+                      ¿Tenés más de 5 alojamientos? Conocé el plan Complejo
+                    </button>
+                  </>
                 )}
                 {currentPlan === "pro" && !hasActiveSubscription && (
-                  <button
-                    type="button"
-                    disabled={checkoutLoading !== null}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-bold text-slate-800 transition-all hover:bg-slate-50 disabled:opacity-60"
-                    onClick={() => void startCheckout("pro")}
-                  >
-                    {checkoutLoading === "pro" && (
-                      <Loader2 size={16} className="animate-spin" />
-                    )}
-                    Reactivar Pro · $9.900
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      disabled={checkoutLoading !== null}
+                      className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-bold text-slate-800 transition-all hover:bg-slate-50 disabled:opacity-60"
+                      onClick={() => void startCheckout("pro")}
+                    >
+                      {checkoutLoading === "pro" && (
+                        <Loader2 size={16} className="animate-spin" />
+                      )}
+                      Reactivar Pro · {formatPlanPrice(9900)}
+                    </button>
+                    <p className="text-xs text-gray-500 sm:text-right">
+                      Pago seguro y automático vía Mercado Pago
+                    </p>
+                  </>
                 )}
-                {currentPlan !== "complejo" && (
+                {currentPlan === "pro" && (
                   <button
                     type="button"
                     disabled={checkoutLoading !== null}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-bold text-slate-800 transition-all hover:bg-slate-50 disabled:opacity-60"
                     onClick={() => void startCheckout("complejo")}
+                    className="text-xs font-medium text-slate-500 underline-offset-2 transition-colors hover:text-slate-800 hover:underline disabled:opacity-60"
                   >
-                    {checkoutLoading === "complejo" ? (
-                      <Loader2 size={16} className="animate-spin" />
-                    ) : null}
-                    {currentPlan === "pro" ? "Cambiar a Complejo" : "Complejo"} ·
-                    $19.900
+                    ¿Tenés más de 5 alojamientos? Conocé el plan Complejo
                   </button>
                 )}
                 {currentPlan === "complejo" && !hasActiveSubscription && (
-                  <button
-                    type="button"
-                    disabled={checkoutLoading !== null}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-primary/20 transition-all hover:bg-primary/90 disabled:opacity-60"
-                    onClick={() => void startCheckout("complejo")}
-                  >
-                    {checkoutLoading === "complejo" && (
-                      <Loader2 size={16} className="animate-spin" />
-                    )}
-                    Reactivar Complejo · $19.900
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      disabled={checkoutLoading !== null}
+                      className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-bold text-white shadow-md transition-all hover:bg-slate-800 disabled:opacity-60"
+                      onClick={() => void startCheckout("complejo")}
+                    >
+                      {checkoutLoading === "complejo" && (
+                        <Loader2 size={16} className="animate-spin" />
+                      )}
+                      Reactivar Complejo · {formatPlanPrice(19900)}
+                    </button>
+                    <p className="text-xs text-gray-500 sm:text-right">
+                      Pago seguro y automático vía Mercado Pago
+                    </p>
+                  </>
                 )}
                 {hasActiveSubscription && currentPlan !== "gratis" && (
                   <button
@@ -892,8 +943,8 @@ export default function SettingsPage() {
           </div>
 
           <p className="mt-3 text-xs text-slate-400">
-            Los pagos se procesan de forma segura a través de MercadoPago.
-            Los planes pagos se renuevan cada 30 días. Podés cancelar la
+            Los pagos se procesan de forma segura a través de Mercado Pago.
+            Los planes pagos se renuevan cada mes. Podés cancelar la
             renovación cuando quieras; seguís con acceso hasta la fecha de
             vencimiento.
           </p>
