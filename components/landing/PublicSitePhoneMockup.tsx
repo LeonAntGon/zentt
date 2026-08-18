@@ -30,7 +30,7 @@ export function PublicSitePhoneMockup({
 }: PublicSitePhoneMockupProps) {
   return (
     <div
-      className={`relative ${compact ? "w-[148px]" : "w-[220px]"}`}
+      className={`relative ${compact ? "w-[148px]" : "w-[260px] sm:w-[280px]"}`}
       aria-hidden
     >
       {showBioChip ? (

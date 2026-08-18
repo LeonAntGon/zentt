@@ -86,7 +86,7 @@ export function AcmeHero() {
               <div className="relative w-full">
                 <div className="grid items-end gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-6">
                   <DashboardHeroMockup />
-                  <div className="mx-auto max-w-[220px] lg:-ml-16 lg:z-10">
+                  <div className="mx-auto max-w-[280px] lg:-ml-16 lg:z-10">
                     <PublicSitePhoneMockup />
                   </div>
                 </div>

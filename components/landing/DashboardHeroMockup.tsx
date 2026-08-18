@@ -97,20 +97,20 @@ export function DashboardHeroMockup() {
       aria-hidden
     >
       {/* Browser chrome */}
-      <div className="flex items-center gap-2 border-b border-slate-100 bg-slate-50 px-4 py-2.5">
-        <div className="flex gap-1.5">
+      <div className="flex items-center gap-2 border-b border-slate-100 bg-slate-50 px-3 py-2.5 sm:px-4">
+        <div className="flex shrink-0 gap-1.5">
           <span className="h-2.5 w-2.5 rounded-full bg-red-400/70" />
           <span className="h-2.5 w-2.5 rounded-full bg-yellow-400/70" />
           <span className="h-2.5 w-2.5 rounded-full bg-green-400/70" />
         </div>
-        <div className="mx-auto flex max-w-sm flex-1 items-center gap-2 rounded-full bg-white px-3 py-1 text-[10px] font-medium text-slate-400 shadow-inner">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-          panel.zentt.app / dashboard
+        <div className="mx-auto flex min-w-0 max-w-sm flex-1 items-center gap-2 rounded-full bg-white px-3 py-1 text-[10px] font-medium text-slate-400 shadow-inner">
+          <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400" />
+          <span className="truncate">panel.zentt.app / dashboard</span>
         </div>
       </div>
 
       {/* App layout */}
-      <div className="grid grid-cols-[140px_minmax(0,1fr)] sm:grid-cols-[180px_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 sm:grid-cols-[180px_minmax(0,1fr)]">
         {/* Sidebar */}
         <aside className="hidden flex-col gap-3 border-r border-slate-100 bg-white p-3 sm:flex">
           <div className="flex items-center gap-2 px-2 py-1">
@@ -144,7 +144,7 @@ export function DashboardHeroMockup() {
         </aside>
 
         {/* Main */}
-        <div className="flex flex-col gap-4 bg-slate-50 p-4 sm:p-5">
+        <div className="flex min-w-0 flex-col gap-3 bg-slate-50 p-3 sm:gap-4 sm:p-5">
           <div>
             <p className="text-[9px] font-bold uppercase tracking-widest text-primary">
               Inicio
@@ -154,16 +154,17 @@ export function DashboardHeroMockup() {
             </h3>
           </div>
 
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid min-w-0 grid-cols-3 gap-1.5 sm:gap-2">
             {kpis.map((k) => (
               <div
                 key={k.label}
-                className="rounded-xl border border-slate-100 bg-white p-2.5 shadow-sm"
+                className="min-w-0 rounded-xl border border-slate-100 bg-white p-2 shadow-sm sm:p-2.5"
               >
-                <div className="mb-1 flex items-center gap-1 text-[8px] font-semibold uppercase tracking-wider text-slate-400">
-                  <k.icon size={9} /> {k.label}
+                <div className="mb-1 flex min-w-0 items-center gap-1 text-[8px] font-semibold uppercase tracking-wider text-slate-400">
+                  <k.icon size={9} className="shrink-0" />
+                  <span className="truncate">{k.label}</span>
                 </div>
-                <p className="text-xs font-bold text-slate-900 sm:text-sm">
+                <p className="truncate text-xs font-bold text-slate-900 sm:text-sm">
                   {k.value}
                 </p>
               </div>
