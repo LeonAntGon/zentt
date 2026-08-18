@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { motion } from "motion/react";
 import { DashboardHeroMockup } from "@/components/landing/DashboardHeroMockup";
+import { PublicSitePhoneMockup } from "@/components/landing/PublicSitePhoneMockup";
 
 export function AcmeHero() {
   return (
@@ -17,22 +18,31 @@ export function AcmeHero() {
             transition={{ duration: 0.5 }}
           >
             <motion.h1
-              className="text-4xl font-heading font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl/none text-foreground"
+              className="max-w-4xl text-3xl font-heading font-bold tracking-tighter text-foreground sm:text-4xl md:text-5xl lg:text-6xl"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.5 }}
             >
-              Tu negocio, gestionado de{" "}
-              <span className="text-primary">forma inteligente</span>.
+              Más reservas directas.{" "}
+              <span className="text-primary">Cero comisiones.</span>
             </motion.h1>
             <motion.p
-              className="mx-auto max-w-2xl text-md sm:text-2xl text-muted-foreground"
+              className="mx-auto max-w-2xl text-md text-muted-foreground sm:text-xl"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.5 }}
             >
-              La plataforma todo-en-uno para recibir reservas 24/7, organizar tus
-              servicios y automatizar la comunicación con tus clientes.
+              Convertí el link de Instagram de tu alojamiento en una página
+              donde tus huéspedes ven disponibilidad y tarifas, y te escriben
+              por WhatsApp listos para cerrar.
+            </motion.p>
+            <motion.p
+              className="text-sm font-heading font-semibold tracking-wide text-foreground/70 sm:text-base"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35, duration: 0.5 }}
+            >
+              Airbnb + Booking + WhatsApp
             </motion.p>
             <motion.div
               className="flex flex-col sm:flex-row gap-4"
@@ -46,7 +56,7 @@ export function AcmeHero() {
                 size="lg"
                 asChild
               >
-                <Link href="/register">Comienza gratis</Link>
+                <Link href="/register">Empezá gratis</Link>
               </Button>
               <Button variant="hero-outline" className="rounded-xl" size="lg" asChild>
                 <Link href="/login">Iniciar sesión</Link>
@@ -59,17 +69,12 @@ export function AcmeHero() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5, duration: 0.5 }}
             >
-              <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm">
-                <span className="text-primary">Pagina web incluida</span>
-                <span className="text-muted-foreground/60">·</span>
-                <span className="text-muted-foreground/60">
-                  Panel de gestión
-                </span>
-                <span className="text-muted-foreground/60">·</span>
-                <span className="text-primary">Sin comisiones</span>
-              </div>
-              <p className="text-sm text-muted-foreground/60">
-                Configuración en minutos. Empieza gratis.
+              <p className="text-sm text-muted-foreground">
+                1 alojamiento
+                <span className="text-muted-foreground/60"> · </span>
+                Sin tarjeta
+                <span className="text-muted-foreground/60"> · </span>
+                Sin comisión por reserva
               </p>
             </motion.div>
             <motion.div
@@ -79,9 +84,17 @@ export function AcmeHero() {
               transition={{ delay: 0.6, duration: 0.8 }}
             >
               <div className="relative w-full">
-                <DashboardHeroMockup />
+                <div className="grid items-end gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-6">
+                  <DashboardHeroMockup />
+                  <div className="mx-auto max-w-[220px] lg:-ml-16 lg:z-10">
+                    <PublicSitePhoneMockup />
+                  </div>
+                </div>
                 <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[30%] bg-gradient-to-t from-white to-transparent" />
               </div>
+              <p className="relative z-10 mt-4 text-center text-xs text-muted-foreground">
+                Así se ve tu panel
+              </p>
             </motion.div>
           </motion.div>
         </section>

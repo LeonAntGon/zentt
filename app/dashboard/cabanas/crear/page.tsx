@@ -493,7 +493,7 @@ export default function CreateCabanaPage() {
           }`}
           body={
             upgradeRequired.message ||
-            "Para agregar otro alojamiento, pasate a un plan pago. Es un cobro único por 30 días, sin débito automático."
+            "Para agregar otro alojamiento, pasate a un plan pago. Cada pago cubre 30 días de servicio. Podés renovar cuando quieras. No hay débito automático."
           }
         />
       ) : (

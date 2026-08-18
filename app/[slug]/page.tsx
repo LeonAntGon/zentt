@@ -176,7 +176,9 @@ export default function LinktreePage() {
                 src={logoUrl}
                 alt={nombreParaMostrar}
                 fill
-                sizes="96px"
+                sizes="288px"
+                quality={100}
+                unoptimized
                 className="object-cover"
                 priority
               />

@@ -27,15 +27,17 @@ const plans: {
   {
     id: "gratis",
     name: "Gratis",
-    desc: "Ideal para empezar a recibir reservas directas sin inversión.",
+    desc: "Para empezar con tu primer alojamiento.",
     price: 0,
     priceLabel: "Gratis",
     highlight: "1 alojamiento",
     features: [
-      "Web pública profesional",
+      "Página pública profesional",
       "Calendario de disponibilidad",
-      "Botón directo a WhatsApp",
+      "WhatsApp directo",
+      "Sincronización con Airbnb y Booking",
       "Soporte por email",
+      "Powered by Zentt",
     ],
     cta: "Empezar Gratis",
     popular: false,
@@ -43,15 +45,15 @@ const plans: {
   {
     id: "pro",
     name: "Pro",
-    desc: "Para anfitriones que quieren crecer y profesionalizarse.",
+    desc: "Para administrar y hacer crecer varios alojamientos.",
     price: 9900,
     priceLabel: "$9.900",
     highlight: "Hasta 5 alojamientos",
     features: [
-      "Sincronización con Airbnb y Booking",
-      "Precios dinámicos por temporada",
-      "Analytics detalladas de tu web",
-      "Soporte prioritario por email",
+      "Todo lo de Gratis",
+      "Tarifas por fecha y temporada",
+      "Analytics avanzadas",
+      "Soporte prioritario",
     ],
     cta: "Empezar con Pro",
     popular: true,
@@ -63,12 +65,7 @@ const plans: {
     price: 19900,
     priceLabel: "$19.900",
     highlight: "Hasta 15 alojamientos",
-    features: [
-      "Todo lo de Pro",
-      "Hasta 15 alojamientos",
-      "Soporte prioritario 24/7",
-      "Multi-usuario (próximamente)",
-    ],
+    features: ["Todo lo de Pro", "Soporte prioritario"],
     cta: "Elegir Complejo",
     popular: false,
   },
@@ -147,8 +144,8 @@ const PricingSection = () => {
             Planes simples y transparentes
           </h2>
           <p className="text-muted-foreground text-lg">
-            Empezá gratis con 1 alojamiento. Escalá cuando cargues el segundo.
-            Lo que cobres a tus huéspedes es 100% tuyo.
+            Zentt no cobra comisión por tus reservas. Empezá gratis con 1
+            alojamiento. Escalá cuando cargues el segundo.
           </p>
         </div>
 
@@ -258,10 +255,18 @@ const PricingSection = () => {
         </div>
 
         <p className="text-center text-sm text-muted-foreground mt-8">
-          Empezá gratis con 1 alojamiento. Sin tarjeta. Escalá cuando cargues el
-          segundo. Los planes pagos son un cobro único por 30 días; se renuevan
-          desde esta sección.
+          Cada pago cubre 30 días de servicio. Podés renovar cuando quieras
+          desde tu cuenta. No hay débito automático.
         </p>
+
+        <div className="mt-16 text-center">
+          <h2 className="text-2xl font-bold text-foreground md:text-3xl">
+            ¿Listo para recibir reservas directas?
+          </h2>
+          <Button variant="hero" className="mt-6 rounded-xl" size="lg" asChild>
+            <Link href="/register">Creá tu página gratis</Link>
+          </Button>
+        </div>
       </div>
 
       <ConfirmActionModal

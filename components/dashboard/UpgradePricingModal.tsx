@@ -30,8 +30,9 @@ const PAID_PLANS: {
     price: 9900,
     highlight: "Hasta 5 alojamientos",
     features: [
-      "Sincronización con Airbnb y Booking",
-      "Analytics de tu web",
+      "Todo lo de Gratis",
+      "Tarifas por fecha y temporada",
+      "Analytics avanzadas",
       "Soporte prioritario",
     ],
   },
@@ -40,7 +41,7 @@ const PAID_PLANS: {
     name: "Complejo",
     price: 19900,
     highlight: "Hasta 15 alojamientos",
-    features: ["Todo lo de Pro", "Hasta 15 alojamientos", "Soporte 24/7"],
+    features: ["Todo lo de Pro", "Soporte prioritario"],
   },
 ];
 
@@ -48,7 +49,7 @@ export function UpgradePricingModal({
   open,
   onClose,
   title = "Pasate a Pro",
-  body = "Los planes pagos son un cobro único por 30 días. No hay débito automático.",
+  body = "Cada pago cubre 30 días de servicio. Podés renovar cuando quieras desde tu cuenta. No hay débito automático.",
 }: UpgradePricingModalProps) {
   const { user } = useAuth();
   const [checkoutLoading, setCheckoutLoading] = useState<PaidPlan | null>(null);

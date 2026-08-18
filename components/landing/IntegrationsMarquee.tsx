@@ -63,9 +63,9 @@ const INTEGRATIONS = [
   { label: "WhatsApp", Icon: () => <WhatsAppIcon className="text-[#25D366]" title="" /> },
   { label: "Airbnb", Icon: () => <AirbnbIcon className="text-[#FF385C]" title="" /> },
   { label: "Booking.com", Icon: () => <BookingIcon className="text-[#003580]" /> },
-  { label: "Google Calendar", Icon: GCal },
   { label: "Instagram", Icon: Instagram },
   { label: "Facebook", Icon: () => <FacebookIcon className="text-[#1877F2]" /> },
+  { label: "Google Calendar", Icon: GCal },
 ] as const;
 
 /** Repeticiones por track: asegura ancho > viewport y evita huecos en desktop. */

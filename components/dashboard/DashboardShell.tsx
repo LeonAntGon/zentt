@@ -378,7 +378,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         body={
           currentPlan === "gratis"
             ? "Tu plan gratis incluye 1 alojamiento. Escalá cuando cargues el segundo."
-            : "Los planes pagos son un cobro único por 30 días. No hay débito automático."
+            : "Cada pago cubre 30 días de servicio. Podés renovar cuando quieras desde tu cuenta. No hay débito automático."
         }
       />
     </div>

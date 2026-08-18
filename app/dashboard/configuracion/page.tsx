@@ -810,9 +810,9 @@ export default function SettingsPage() {
                 <ul className="grid gap-2 sm:grid-cols-2">
                   {[
                     "Hasta 5 alojamientos",
-                    "Sync Airbnb y Booking",
-                    "Precios dinámicos",
-                    "Analytics detalladas",
+                    "Tarifas por fecha y temporada",
+                    "Analytics avanzadas",
+                    "Soporte prioritario",
                   ].map((feature) => (
                     <li
                       key={feature}

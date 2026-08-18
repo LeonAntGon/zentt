@@ -1,271 +1,269 @@
-import {
-  Globe, CreditCard, CalendarCheck, User, Phone,
-  MousePointerClick, BarChart3, TrendingUp, Check
-} from "lucide-react";
+import Link from "next/link";
+import type { ReactNode } from "react";
+import { CalendarDays, Check, ChevronRight, Link2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
+import { AirbnbIcon } from "@/components/icons/AirbnbIcon";
+import { BookingIcon } from "@/components/icons/BookingIcon";
+import { PublicSitePhoneMockup } from "@/components/landing/PublicSitePhoneMockup";
+import { formatCurrencyCompact } from "@/lib/planLimits";
 
-/* ── Card visuals ── */
+function InstagramGlyph({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden>
+      <rect
+        x="2"
+        y="2"
+        width="20"
+        height="20"
+        rx="5"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+      <circle cx="12" cy="12" r="4.2" stroke="currentColor" strokeWidth="1.8" />
+      <circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" />
+    </svg>
+  );
+}
 
-const LeadCardVisual = () => (
-  <div className="mt-6 rounded-xl bg-gradient-to-br from-secondary/50 to-background border border-border/60 p-4 shadow-inner">
-    <div className="text-[9px] text-muted-foreground uppercase tracking-widest mb-2">
-      Panel de leads
+function LinkVisual() {
+  return (
+    <div className="mt-6 flex justify-center">
+      <PublicSitePhoneMockup compact showBioChip={false} />
     </div>
-    <div className="bg-card rounded-lg border border-border/60 shadow-sm p-3">
-      <div className="flex items-start gap-3 mb-3">
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shrink-0">
-          <User size={16} className="text-primary-foreground" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-heading font-bold text-foreground">Juan Pérez</span>
-            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-green-500/10 text-green-600 font-semibold">
-              Nuevo lead
-            </span>
-          </div>
-          <div className="text-[10px] text-muted-foreground mt-0.5">
-            Interesado en Servicio Premium
-          </div>
-          <div className="flex items-center gap-1.5 mt-1">
-            <Phone size={10} className="text-muted-foreground" />
-            <span className="text-[10px] font-mono text-muted-foreground">+34 612 345 678</span>
-          </div>
-        </div>
-      </div>
-      <button className="w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#20b358] transition-colors text-primary-foreground rounded-lg py-2 text-xs font-heading font-semibold shadow-sm">
-        <WhatsAppIcon className="w-3.5 h-3.5" />
-        Contactar por WhatsApp
-      </button>
-    </div>
-  </div>
-);
+  );
+}
 
-const BookingsVisual = () => (
-  <div className="mt-6 rounded-xl bg-gradient-to-br from-secondary/50 to-background border border-border/60 p-5 shadow-inner">
-    <div className="text-[9px] text-muted-foreground uppercase tracking-widest mb-3">
-      Próxima reserva
-    </div>
-    <div className="bg-card rounded-xl border border-border/60 shadow-sm p-4">
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <div className="min-w-0">
-          <div className="text-[10px] text-muted-foreground mb-1">Cliente VIP</div>
-          <div className="text-sm font-heading font-bold text-foreground truncate">
-            Alejandro Márquez
+function InquiryVisual() {
+  return (
+    <div className="mt-6 rounded-2xl bg-slate-50 p-4">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+            CR
           </div>
+          <p className="truncate text-sm font-bold text-slate-900">Camila R.</p>
         </div>
-        <span className="inline-flex items-center gap-1 text-[9px] px-2 py-0.5 rounded-full bg-green-500/10 text-green-600 font-semibold shrink-0">
-          <Check size={10} strokeWidth={3} />
-          Confirmado
+        <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+          WEB
         </span>
       </div>
-      <div className="flex items-center gap-2 pt-3 border-t border-border/60">
-        <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/15 flex flex-col items-center justify-center">
-          <span className="text-[7px] font-heading font-bold text-primary leading-none">AGO</span>
-          <span className="text-sm font-heading font-bold text-primary leading-none mt-0.5">15</span>
-        </div>
-        <div className="text-[10px] text-muted-foreground">
-          Viernes · 14:00 h
-        </div>
+      <p className="mt-2 truncate text-xs text-slate-500">
+        Alojamiento del Bosque · 12 oct – 14 oct · 3 noches
+      </p>
+      <p className="mt-1 truncate text-sm text-slate-600">
+        Hola, ¿tenés disponibilidad para esas fechas?
+      </p>
+      <div className="mt-3 flex items-end justify-between gap-3">
+        <p className="text-lg font-bold text-emerald-600">
+          {formatCurrencyCompact(252000)}
+        </p>
+        <p className="text-[11px] text-slate-400">hace 8 h</p>
       </div>
-    </div>
-    <div className="flex items-center justify-between mt-3 text-[9px] text-muted-foreground">
-      <span>3 reservas esta semana</span>
-      <span className="text-primary font-semibold">Ver agenda →</span>
-    </div>
-  </div>
-);
-
-const WebsiteVisual = () => (
-  <div className="mt-6 rounded-xl bg-gradient-to-br from-secondary/50 to-background border border-border/60 p-3 shadow-inner">
-    {/* Browser chrome */}
-    <div className="flex items-center gap-1.5 mb-2 px-1">
-      <span className="w-2 h-2 rounded-full bg-destructive/40" />
-      <span className="w-2 h-2 rounded-full bg-yellow-400/60" />
-      <span className="w-2 h-2 rounded-full bg-green-400/60" />
-      <div className="flex-1 h-3 rounded bg-muted mx-2" />
-    </div>
-    {/* Website preview */}
-    <div className="rounded-lg overflow-hidden bg-card border border-border/60">
-      <div className="bg-gradient-to-br from-primary via-navy to-accent p-3 relative">
-        <div className="text-[8px] text-primary-foreground/70 mb-1">tunegocio.zentt.com</div>
-        <div className="text-xs font-heading font-bold text-primary-foreground">
-          Servicios Premium
-        </div>
-        <div className="text-[9px] text-primary-foreground/80 mt-1">
-          Experiencia de clase mundial
-        </div>
-        <div className="mt-2 inline-block bg-primary-foreground text-primary text-[9px] font-heading font-bold px-2 py-1 rounded">
-          Reservar ahora
-        </div>
-      </div>
-      <div className="grid grid-cols-3 gap-1 p-1.5">
-        <div className="aspect-square rounded bg-muted" />
-        <div className="aspect-square rounded bg-muted" />
-        <div className="aspect-square rounded bg-muted" />
-      </div>
-    </div>
-  </div>
-);
-
-const PaymentVisual = () => (
-  <div className="mt-6 rounded-xl bg-gradient-to-br from-secondary/50 to-background border border-border/60 p-4 shadow-inner">
-    <div className="rounded-xl bg-gradient-to-br from-navy via-primary to-accent p-4 shadow-lg relative overflow-hidden">
-      <div className="absolute top-3 right-3 opacity-30">
-        <CreditCard size={40} className="text-primary-foreground" />
-      </div>
-      <div className="text-[9px] text-primary-foreground/60 uppercase tracking-widest">Link de pago</div>
-      <div className="text-xl font-heading font-bold text-primary-foreground mt-1">
-        $2,450<span className="text-xs text-primary-foreground/70 ml-1">USD</span>
-      </div>
-      <div className="text-[9px] text-primary-foreground/60 mt-2">Cliente: Acme Consulting</div>
-      <button className="mt-3 w-full bg-primary-foreground text-primary text-[10px] font-heading font-bold py-1.5 rounded-md flex items-center justify-center gap-1.5">
-        <MousePointerClick size={10} />
-        Copiar link de pago
-      </button>
-    </div>
-    <div className="flex items-center justify-between mt-2 text-[9px] text-muted-foreground">
-      <span>0% comisiones</span>
-      <span className="text-green-600 font-semibold">✓ Cobrado en 2 min</span>
-    </div>
-  </div>
-);
-
-const ReportsVisual = () => {
-  const bars = [42, 58, 50, 72, 65, 84, 95];
-  return (
-    <div className="mt-6 rounded-xl bg-gradient-to-br from-secondary/50 to-background border border-border/60 p-4 shadow-inner">
-      <div className="flex items-center justify-between mb-3">
-        <div>
-          <div className="text-[9px] text-muted-foreground uppercase tracking-widest">Ingresos</div>
-          <div className="text-sm font-heading font-bold text-foreground">$12,480 <span className="text-[10px] text-green-600 font-semibold ml-1">+24%</span></div>
-        </div>
-        <div className="flex items-center gap-1 text-[9px] font-semibold text-green-600 bg-green-500/10 px-2 py-1 rounded-md">
-          <TrendingUp size={10} /> Este mes
-        </div>
-      </div>
-      <div className="flex items-end gap-1.5 h-16">
-        {bars.map((h, i) => (
-          <div key={i} className="flex-1 flex flex-col items-center gap-1">
-            <div
-              className="w-full rounded-md bg-gradient-to-t from-primary to-accent/70"
-              style={{ height: `${h}%` }}
-            />
-            <span className="text-[8px] text-muted-foreground">{["L","M","X","J","V","S","D"][i]}</span>
-          </div>
-        ))}
+      <div className="mt-3 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-whatsapp text-sm font-bold text-whatsapp-foreground">
+        <WhatsAppIcon className="h-5 w-5" />
+        Responder por WhatsApp
       </div>
     </div>
   );
-};
+}
 
-/* ── Card definitions ── */
+function CalendarVisual() {
+  const days = [
+    { n: 10, blocked: false },
+    { n: 11, blocked: false },
+    { n: 12, blocked: true },
+    { n: 13, blocked: true },
+    { n: 14, blocked: true },
+    { n: 15, blocked: false },
+    { n: 16, blocked: false },
+  ];
+
+  return (
+    <div className="mt-6 rounded-xl border border-slate-100 bg-slate-50 p-4">
+      <div className="mb-3 flex items-center justify-between">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+          Octubre
+        </p>
+        <div className="flex items-center gap-1.5">
+          <AirbnbIcon className="h-3.5 w-3.5 text-airbnb" title="" />
+          <BookingIcon className="h-3.5 w-3.5 text-[#003580]" />
+        </div>
+      </div>
+      <div className="grid grid-cols-7 gap-1">
+        {["L", "M", "X", "J", "V", "S", "D"].map((d) => (
+          <span
+            key={d}
+            className="text-center text-[8px] font-bold uppercase text-slate-400"
+          >
+            {d}
+          </span>
+        ))}
+        {days.map((d) => (
+          <span
+            key={d.n}
+            className={`flex h-8 items-center justify-center rounded-md text-[11px] font-semibold ${
+              d.blocked
+                ? "bg-[repeating-linear-gradient(-45deg,theme(colors.slate.200),theme(colors.slate.200)_2px,theme(colors.slate.100)_2px,theme(colors.slate.100)_6px)] text-slate-400"
+                : "bg-white text-slate-700"
+            }`}
+          >
+            {d.n}
+          </span>
+        ))}
+      </div>
+      <p className="mt-3 text-[10px] text-slate-400">
+        Fechas ocupadas en Airbnb y Booking, reflejadas en Zentt.
+      </p>
+    </div>
+  );
+}
+
+const flowSteps: { label: string; icon: ReactNode }[] = [
+  {
+    label: "Instagram",
+    icon: <InstagramGlyph className="h-3.5 w-3.5 text-primary" />,
+  },
+  {
+    label: "Página",
+    icon: <Link2 size={14} className="text-primary" />,
+  },
+  {
+    label: "Fechas",
+    icon: <CalendarDays size={14} className="text-primary" />,
+  },
+  {
+    label: "WhatsApp",
+    icon: <WhatsAppIcon className="h-3.5 w-3.5 text-whatsapp" />,
+  },
+  {
+    label: "Consulta para cerrar",
+    icon: <Check size={14} className="text-primary" />,
+  },
+];
 
 const cards = [
   {
-    span: "lg:col-span-2",
     icons: (
-      <div className="flex -space-x-2">
-        <div className="w-10 h-10 rounded-xl bg-[#25D366]/10 border border-[#25D366]/20 flex items-center justify-center">
-          <WhatsAppIcon className="w-5 h-5 text-[#25D366]" />
-        </div>
-        <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
-          <User size={18} className="text-primary" />
-        </div>
+      <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-primary/20 bg-primary/10">
+        <Link2 size={20} className="text-primary" />
       </div>
     ),
-    title: "Tus clientes a un clic",
-    text: "Recibe los datos exactos de tus interesados en tu panel y contáctalos por WhatsApp directamente para cerrar la venta.",
-    visual: <LeadCardVisual />,
+    title: "Tu página en todas partes",
+    emphasizeFirst: false,
+    points: [
+      "El link de tu Instagram, convertido en página de reservas",
+      "Mostrá alojamientos, disponibilidad y tarifas",
+      "El huésped te escribe por WhatsApp",
+    ],
+    visual: <LinkVisual />,
   },
   {
-    span: "lg:col-span-1",
     icons: (
-      <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
-        <CalendarCheck size={20} className="text-primary" />
+      <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-primary/20 bg-primary/10">
+        <CalendarDays size={20} className="text-primary" />
       </div>
     ),
-    title: "Agenda Centralizada",
-    text: "Todas tus reservas en un solo lugar. Gestiona tu disponibilidad de forma intuitiva, organiza a tus clientes y opera tu negocio sin depender de plataformas externas.",
-    visual: <BookingsVisual />,
+    title: "Calendarios sincronizados",
+    emphasizeFirst: false,
+    points: [
+      "Conectá Airbnb y Booking y mantené la disponibilidad actualizada",
+      "Las fechas ocupadas en Airbnb y Booking se reflejan en tu calendario de Zentt",
+      "Reducí el riesgo de reservas dobles sin actualizar calendarios a mano",
+    ],
+    visual: <CalendarVisual />,
   },
   {
-    span: "lg:col-span-1",
     icons: (
-      <div className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center">
-        <Globe size={20} className="text-accent" />
+      <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-whatsapp/20 bg-whatsapp/10">
+        <WhatsAppIcon className="h-5 w-5 text-whatsapp" />
       </div>
     ),
-    title: "Tu propio sitio profesional",
-    text: "Un portal web autoadministrable incluido para que tus clientes vean tus servicios y soliciten disponibilidad directamente.",
-    visual: <WebsiteVisual />,
-  },
-  {
-    span: "lg:col-span-1",
-    icons: (
-      <div className="w-10 h-10 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center justify-center">
-        <CreditCard size={20} className="text-green-600" />
-      </div>
-    ),
-    title: "Finanzas claras",
-    text: "Genera links de pago rápidos o cobra por transferencia directa. Mantén el 100% de tus ganancias sin comisiones de la plataforma.",
-    visual: <PaymentVisual />,
-  },
-  {
-    span: "lg:col-span-1",
-    icons: (
-      <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
-        <BarChart3 size={20} className="text-primary" />
-      </div>
-    ),
-    title: "Decisiones con datos",
-    text: "Visualiza tus ingresos mensuales, los servicios más solicitados y el rendimiento general de tu negocio en tiempo real.",
-    visual: <ReportsVisual />,
+    title: "Mensajes listos para cerrar",
+    emphasizeFirst: true,
+    points: [
+      "Basta de responder solo por el precio",
+      "El huésped elige fechas y alojamiento en tu web",
+      "Recibís una consulta estructurada directo en WhatsApp",
+    ],
+    visual: <InquiryVisual />,
   },
 ];
 
 const FeaturesSection = () => {
   return (
-    <section id="funcionalidades" className="py-20 lg:py-28 bg-card relative">
-      {/* Ambient */}
-      <div className="absolute top-40 right-0 w-96 h-96 rounded-full bg-primary/[0.03] blur-3xl pointer-events-none" />
-      <div className="absolute bottom-20 left-0 w-96 h-96 rounded-full bg-accent/[0.03] blur-3xl pointer-events-none" />
+    <section id="funcionalidades" className="relative bg-card py-20 lg:py-28">
+      <div className="pointer-events-none absolute right-0 top-40 h-96 w-96 rounded-full bg-primary/[0.03] blur-3xl" />
+      <div className="pointer-events-none absolute bottom-20 left-0 h-96 w-96 rounded-full bg-accent/[0.03] blur-3xl" />
 
-      <div className="container mx-auto px-4 lg:px-8 relative">
-        <div className="text-center max-w-2xl mx-auto mb-16">
-          <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold font-heading tracking-wide mb-4">
-            EL SISTEMA
+      <div className="relative container mx-auto px-4 lg:px-8">
+        <div className="mx-auto mb-10 max-w-2xl text-center">
+          <span className="mb-4 inline-block rounded-full bg-primary/10 px-3 py-1 font-heading text-xs font-semibold tracking-wide text-primary">
+            CÓMO FUNCIONA
           </span>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4 leading-tight">
-            Un ecosistema. <span className="text-primary">Cero fricción.</span>
+          <h2 className="mb-4 text-3xl font-bold leading-tight text-foreground md:text-4xl lg:text-5xl">
+            Basta de responder solo por el precio.
           </h2>
-          <p className="text-muted-foreground text-lg">
-            Herramientas premium pensadas para operar tu negocio como una gran empresa,
-            sin la complejidad de un enterprise.
-          </p>
         </div>
 
-        {/* Bento asymmetric grid: 3 cols on desktop */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-          {cards.map((c, i) => (
-            <article
-              key={i}
-              className={`group relative p-8 rounded-2xl bg-background border border-border/60 hover:border-primary/30 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 overflow-hidden ${c.span}`}
-            >
-              {/* Hover glow */}
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.03] to-accent/[0.03] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+        <ol className="mx-auto mb-16 flex max-w-4xl flex-wrap items-center justify-center gap-y-3">
+          {flowSteps.map((step, index) => (
+            <li key={step.label} className="flex items-center">
+              <div className="flex items-center gap-2 rounded-full border border-border/60 bg-background px-3 py-1.5">
+                {step.icon}
+                <span className="text-xs font-semibold text-foreground sm:text-sm">
+                  {step.label}
+                </span>
+              </div>
+              {index < flowSteps.length - 1 ? (
+                <ChevronRight
+                  size={16}
+                  className="mx-1.5 shrink-0 text-muted-foreground/50 sm:mx-2"
+                  aria-hidden
+                />
+              ) : null}
+            </li>
+          ))}
+        </ol>
 
+        <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {cards.map((c) => (
+            <article
+              key={c.title}
+              className="group relative overflow-hidden rounded-2xl border border-border/60 bg-background p-8 transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-2xl"
+            >
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/[0.03] to-accent/[0.03] opacity-0 transition-opacity group-hover:opacity-100" />
               <div className="relative">
                 <div className="mb-5">{c.icons}</div>
-                <h3 className="text-xl font-heading font-bold text-foreground mb-2">
+                <h3 className="mb-2 font-heading text-xl font-bold text-foreground">
                   {c.title}
                 </h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">
-                  {c.text}
-                </p>
+                <ul className="space-y-2 text-sm leading-relaxed text-muted-foreground">
+                  {c.points.map((point, index) => (
+                    <li key={point} className="flex gap-2">
+                      <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-primary" />
+                      <span
+                        className={
+                          c.emphasizeFirst && index === 0
+                            ? "font-medium text-foreground"
+                            : undefined
+                        }
+                      >
+                        {point}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
                 {c.visual}
               </div>
             </article>
           ))}
+        </div>
+
+        <div className="mt-12 text-center">
+          <Button variant="hero" className="rounded-xl" size="lg" asChild>
+            <Link href="/register">Creá tu página gratis</Link>
+          </Button>
         </div>
       </div>
     </section>
