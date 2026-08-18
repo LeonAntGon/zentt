@@ -26,6 +26,7 @@ interface UserProfile {
   facebook_user?: string | null;
   plan?: "gratis" | "pro" | "complejo";
   plan_expires_at?: string | null;
+  mp_subscription_id?: string | null;
 }
 
 export interface User {

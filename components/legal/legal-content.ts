@@ -40,7 +40,7 @@ export const privacySections: LegalSection[] = [
     title: "5. Pagos y transacciones",
     paragraphs: [
       "Zentt facilita la recepción de consultas, pero no interviene en los acuerdos, ventas ni pagos entre el usuario y sus clientes finales. Esas operaciones se realizan por fuera de la Plataforma.",
-      "El pago por el uso de Zentt se gestiona mediante MercadoPago (Checkout Pro). Zentt no almacena datos completos de tarjetas; el procesamiento se rige por las políticas de MercadoPago.",
+      "El pago por el uso de Zentt se gestiona mediante Suscripciones de MercadoPago. Zentt no almacena datos completos de tarjetas; el procesamiento se rige por las políticas de MercadoPago.",
     ],
   },
   {
@@ -113,8 +113,9 @@ export const termsSections: LegalSection[] = [
   {
     title: "5. Planes y pagos",
     paragraphs: [
-      "El acceso a determinadas funciones requiere un plan pago. Los cobros se realizan mediante MercadoPago como un pago único que otorga 30 días de acceso al plan contratado. No hay renovación automática ni débito recurrente: el usuario renueva desde Configuración cuando lo desea.",
-      "Zentt puede enviar al correo registrado avisos de servicio: consultas o reservas de huéspedes, confirmación de pago y vencimiento del plan. Ante falta de pago o vencimiento, el usuario pasa al plan gratuito (1 alojamiento). Los alojamientos extra no se eliminan, pero pueden quedar sujetos a los límites del plan vigente. El plan gratuito no vence por el paso del tiempo.",
+      "El acceso a determinadas funciones requiere un plan pago. Los cobros se realizan mediante Suscripciones de MercadoPago con débito recurrente mensual: el usuario autoriza la tarjeta una vez y MercadoPago debita el ciclo siguiente de forma automática. Cada cobro acreditado otorga aproximadamente 30 días de acceso al plan contratado.",
+      "El usuario puede cancelar la renovación automática desde Configuración en cualquier momento. Tras cancelar, conserva el acceso al plan pago hasta la fecha de vencimiento del período ya abonado; no se realizan cobros posteriores.",
+      "Zentt puede enviar al correo registrado avisos de servicio: consultas o reservas de huéspedes, confirmación de pago y vencimiento del plan. Ante falta de pago, cancelación sin renovación o vencimiento, el usuario pasa al plan gratuito (1 alojamiento). Los alojamientos extra no se eliminan, pero pueden quedar sujetos a los límites del plan vigente. El plan gratuito no vence por el paso del tiempo.",
     ],
   },
   {

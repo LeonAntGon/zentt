@@ -49,7 +49,7 @@ export function UpgradePricingModal({
   open,
   onClose,
   title = "Pasate a Pro",
-  body = "Cada pago cubre 30 días de servicio. Podés renovar cuando quieras desde tu cuenta. No hay débito automático.",
+  body = "Se renueva cada 30 días con MercadoPago. Podés cancelar la renovación cuando quieras.",
 }: UpgradePricingModalProps) {
   const { user } = useAuth();
   const [checkoutLoading, setCheckoutLoading] = useState<PaidPlan | null>(null);
@@ -62,7 +62,7 @@ export function UpgradePricingModal({
         checkout_url?: string;
         init_point?: string;
         sandbox_init_point?: string;
-      }>("/payments/create-preference/", { plan });
+      }>("/payments/create-subscription/", { plan });
       const url =
         data.checkout_url || data.init_point || data.sandbox_init_point;
       if (!url) {

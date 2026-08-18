@@ -112,6 +112,7 @@ export default function SettingsPage() {
   const [checkoutLoading, setCheckoutLoading] = useState<"pro" | "complejo" | null>(
     null
   );
+  const [cancelLoading, setCancelLoading] = useState(false);
 
   useEffect(() => {
     const payment = new URLSearchParams(window.location.search).get("payment");
@@ -149,11 +150,11 @@ export default function SettingsPage() {
           checkout_url?: string;
           init_point?: string;
           sandbox_init_point?: string;
-        }>("/payments/create-preference/", { plan });
+        }>("/payments/create-subscription/", { plan });
         const url =
           data.checkout_url || data.init_point || data.sandbox_init_point;
         if (!url) {
-          toast.error("No pudimos iniciar el pago.");
+          toast.error("No pudimos iniciar la suscripción.");
           return;
         }
         window.location.href = url;
@@ -161,7 +162,7 @@ export default function SettingsPage() {
         if (axios.isAxiosError(err) && err.response?.status === 503) {
           toast.error("MercadoPago todavía no está configurado.");
         } else {
-          toast.error("No pudimos iniciar el pago. Probá de nuevo.");
+          toast.error("No pudimos iniciar la suscripción. Probá de nuevo.");
         }
       } finally {
         setCheckoutLoading(null);
@@ -174,6 +175,28 @@ export default function SettingsPage() {
       });
     } else {
       void run();
+    }
+  };
+
+  const cancelRenewal = async () => {
+    setCancelLoading(true);
+    try {
+      const { data } = await api.post<{ detail?: string }>(
+        "/payments/cancel-subscription/"
+      );
+      await checkCurrentUser();
+      toast.success(
+        data.detail ||
+          "Renovación cancelada. Seguís con acceso hasta la fecha de vencimiento."
+      );
+    } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.data?.detail) {
+        toast.error(String(err.response.data.detail));
+      } else {
+        toast.error("No pudimos cancelar la renovación. Probá de nuevo.");
+      }
+    } finally {
+      setCancelLoading(false);
     }
   };
 
@@ -194,6 +217,7 @@ export default function SettingsPage() {
   const expiresLabel = user?.profile?.plan_expires_at
     ? new Date(user.profile.plan_expires_at).toLocaleDateString("es-AR")
     : null;
+  const hasActiveSubscription = Boolean(user?.profile?.mp_subscription_id);
 
   useEffect(() => {
     if (!user) return;
@@ -771,7 +795,7 @@ export default function SettingsPage() {
                 )}
               </div>
               <div className="flex flex-col gap-2 sm:items-end">
-                {currentPlan !== "pro" && currentPlan !== "complejo" && (
+                {currentPlan === "gratis" && (
                   <button
                     type="button"
                     disabled={checkoutLoading !== null}
@@ -783,10 +807,10 @@ export default function SettingsPage() {
                     ) : (
                       <Sparkles size={16} />
                     )}
-                    Actualizar a Pro · $9.900
+                    Suscribirme a Pro · $9.900
                   </button>
                 )}
-                {currentPlan === "pro" && (
+                {currentPlan === "pro" && !hasActiveSubscription && (
                   <button
                     type="button"
                     disabled={checkoutLoading !== null}
@@ -796,7 +820,7 @@ export default function SettingsPage() {
                     {checkoutLoading === "pro" && (
                       <Loader2 size={16} className="animate-spin" />
                     )}
-                    Renovar Pro · $9.900
+                    Reactivar Pro · $9.900
                   </button>
                 )}
                 {currentPlan !== "complejo" && (
@@ -809,10 +833,11 @@ export default function SettingsPage() {
                     {checkoutLoading === "complejo" ? (
                       <Loader2 size={16} className="animate-spin" />
                     ) : null}
-                    {currentPlan === "pro" ? "Pasar a Complejo" : "Complejo"} · $19.900
+                    {currentPlan === "pro" ? "Cambiar a Complejo" : "Complejo"} ·
+                    $19.900
                   </button>
                 )}
-                {currentPlan === "complejo" && (
+                {currentPlan === "complejo" && !hasActiveSubscription && (
                   <button
                     type="button"
                     disabled={checkoutLoading !== null}
@@ -822,7 +847,20 @@ export default function SettingsPage() {
                     {checkoutLoading === "complejo" && (
                       <Loader2 size={16} className="animate-spin" />
                     )}
-                    Renovar Complejo · $19.900
+                    Reactivar Complejo · $19.900
+                  </button>
+                )}
+                {hasActiveSubscription && currentPlan !== "gratis" && (
+                  <button
+                    type="button"
+                    disabled={cancelLoading || checkoutLoading !== null}
+                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-red-200 bg-white px-5 py-2.5 text-sm font-bold text-red-600 transition-all hover:bg-red-50 disabled:opacity-60"
+                    onClick={() => void cancelRenewal()}
+                  >
+                    {cancelLoading && (
+                      <Loader2 size={16} className="animate-spin" />
+                    )}
+                    Cancelar renovación
                   </button>
                 )}
               </div>
@@ -855,8 +893,9 @@ export default function SettingsPage() {
 
           <p className="mt-3 text-xs text-slate-400">
             Los pagos se procesan de forma segura a través de MercadoPago.
-            Cada plan pago cubre 30 días y se renueva de forma manual desde
-            esta pantalla. No hay débito automático.
+            Los planes pagos se renuevan cada 30 días. Podés cancelar la
+            renovación cuando quieras; seguís con acceso hasta la fecha de
+            vencimiento.
           </p>
         </section>
 

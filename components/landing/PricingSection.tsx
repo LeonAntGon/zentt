@@ -55,7 +55,7 @@ const plans: {
       "Analytics avanzadas",
       "Soporte prioritario",
     ],
-    cta: "Empezar con Pro",
+    cta: "Suscribirme a Pro",
     popular: true,
   },
   {
@@ -66,7 +66,7 @@ const plans: {
     priceLabel: "$19.900",
     highlight: "Hasta 15 alojamientos",
     features: ["Todo lo de Pro", "Soporte prioritario"],
-    cta: "Elegir Complejo",
+    cta: "Suscribirme a Complejo",
     popular: false,
   },
 ];
@@ -102,7 +102,7 @@ const PricingSection = () => {
         checkout_url?: string;
         init_point?: string;
         sandbox_init_point?: string;
-      }>("/payments/create-preference/", { plan });
+      }>("/payments/create-subscription/", { plan });
       const url =
         data.checkout_url || data.init_point || data.sandbox_init_point;
       if (!url) {
@@ -255,8 +255,8 @@ const PricingSection = () => {
         </div>
 
         <p className="text-center text-sm text-muted-foreground mt-8">
-          Cada pago cubre 30 días de servicio. Podés renovar cuando quieras
-          desde tu cuenta. No hay débito automático.
+          Se renueva cada 30 días con MercadoPago. Podés cancelar la renovación
+          cuando quieras desde tu cuenta.
         </p>
 
         <div className="mt-16 text-center">

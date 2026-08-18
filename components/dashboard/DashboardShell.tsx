@@ -378,7 +378,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         body={
           currentPlan === "gratis"
             ? "Tu plan gratis incluye 1 alojamiento. Escalá cuando cargues el segundo."
-            : "Cada pago cubre 30 días de servicio. Podés renovar cuando quieras desde tu cuenta. No hay débito automático."
+            : "Se renueva cada 30 días con MercadoPago. Podés cancelar la renovación cuando quieras."
         }
       />
     </div>
