@@ -11,7 +11,7 @@ import { UpgradePricingModal } from "@/components/dashboard/UpgradePricingModal"
 import { EmailVerifyBanner } from "@/components/dashboard/EmailVerify";
 import { ZenttLogo } from "@/components/landing/ZenttLogo";
 import { normalizePlan } from "@/lib/planLimits";
-import { ZenttMarkIcon } from "@/components/icons/ZenttMarkIcon";
+//import { ZenttMarkIcon } from "@/components/icons/ZenttMarkIcon";
 import {
   Home,
   Mail,
@@ -146,10 +146,10 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
   const panelZenttMark = (
     <div className="flex items-center gap-1.5" aria-label="Panel Zentt">
-      <span className="text-[10px] font-bold tracking-widest text-[#184E77]">
-        panel
+      <span className="text-[16px] font-semibold tracking-wide text-[#184E77]">
+        Panel
       </span>
-      <ZenttLogo className="aspect-[290/130] h-4 w-auto -translate-x-[9px] -translate-y-px" />
+      <ZenttLogo className="aspect-[290/130] h-6 w-auto -translate-x-[9px] -translate-y-[2px]" />
     </div>
   );
 
@@ -173,19 +173,32 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     </div>
   );
 
-  const planBadge = (
-    <button
-      type="button"
-      onClick={() => setUpgradeOpen(true)}
-      className="inline-flex shrink-0 items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-bold text-slate-800 transition-colors hover:bg-slate-100"
-      aria-label={
-        currentPlan === "gratis" ? "Actualizar a Pro" : `Plan ${planBadgeLabel}`
-      }
-    >
-      <ZenttMarkIcon size={12} className="text-primary" />
-      {planBadgeLabel}
-    </button>
-  );
+  const planBadge =
+    currentPlan === "gratis" ? (
+      <button
+        type="button"
+        onClick={() => setUpgradeOpen(true)}
+        className="group relative inline-flex shrink-0 items-center gap-1.5 rounded-full bg-gradient-to-r from-[#184E77] to-[#1f6296] px-3 py-1.5 shadow-sm transition-all hover:scale-105 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#184E77] focus:ring-offset-2"
+        aria-label="Actualizar a Pro"
+      >
+        <span className="absolute -right-0.5 -top-0.5 flex h-3 w-3">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-400 opacity-75" />
+          <span className="relative inline-flex h-3 w-3 rounded-full border border-white bg-sky-500" />
+        </span>
+        <span className="text-[13px] font-bold tracking-wide text-white drop-shadow-sm">
+          ✨ Actualizar a Pro
+        </span>
+      </button>
+    ) : (
+      <div
+        className="inline-flex shrink-0 items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 shadow-inner"
+        aria-label={`Plan ${planBadgeLabel}`}
+      >
+        <span className="text-[12px] font-bold uppercase tracking-wider text-[#184E77]">
+          {planBadgeLabel}
+        </span>
+      </div>
+    );
 
   const renderNavLink = (item: NavItem) => {
     const Icon = item.icon;

@@ -14,6 +14,10 @@ import {
 } from "@/lib/planLimits";
 import { ZenttMarkIcon } from "@/components/icons/ZenttMarkIcon";
 import { useEmailVerify } from "@/components/dashboard/EmailVerify";
+import {
+  PlanQuotaChip,
+  UpgradeProButton,
+} from "@/components/billing/PlanConversionUi";
 
 type PaidPlan = "pro" | "complejo";
 
@@ -145,7 +149,9 @@ export function UpgradePricingModal({
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-sm font-bold text-slate-900">{plan.name}</p>
-                    <p className="text-xs text-slate-500">{plan.highlight}</p>
+                    <PlanQuotaChip className="mt-1.5 text-xs" emphasized>
+                      {plan.highlight}
+                    </PlanQuotaChip>
                   </div>
                   <p className="text-sm font-black text-slate-900">
                     {formatPlanPrice(plan.price)}
@@ -165,20 +171,15 @@ export function UpgradePricingModal({
                     </li>
                   ))}
                 </ul>
-                <button
-                  type="button"
+                <UpgradeProButton
+                  className="mt-3 h-11 w-full"
+                  showPulse={!isCurrent}
+                  loading={isBusy}
                   disabled={checkoutLoading !== null || isCurrent}
                   onClick={() => void startCheckout(plan.id)}
-                  className="mt-3 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-slate-900 text-sm font-bold text-white transition-colors hover:bg-slate-800 disabled:opacity-60"
                 >
-                  {isBusy ? (
-                    <Loader2 size={16} className="animate-spin" />
-                  ) : isCurrent ? (
-                    "Tu plan actual"
-                  ) : (
-                    "Suscribirme con Mercado Pago"
-                  )}
-                </button>
+                  {isCurrent ? "Tu plan actual" : "Suscribirme con Mercado Pago"}
+                </UpgradeProButton>
                 <p className="mt-2 text-center text-xs text-gray-500">
                   Pago seguro y automático vía Mercado Pago
                 </p>
@@ -196,7 +197,9 @@ export function UpgradePricingModal({
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-sm font-bold text-slate-900">{plan.name}</p>
-                    <p className="text-xs text-slate-500">{plan.highlight}</p>
+                    <PlanQuotaChip className="mt-1.5 text-xs">
+                      {plan.highlight}
+                    </PlanQuotaChip>
                   </div>
                   <p className="text-sm font-black text-slate-900">
                     {formatPlanPrice(plan.price)}

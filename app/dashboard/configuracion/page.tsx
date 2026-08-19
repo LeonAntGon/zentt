@@ -20,7 +20,10 @@ import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { TikTokIcon } from "@/components/icons/TikTokIcon";
 import { YouTubeIcon } from "@/components/icons/YouTubeIcon";
 import { FacebookIcon } from "@/components/icons/FacebookIcon";
-import { ZenttMarkIcon } from "@/components/icons/ZenttMarkIcon";
+import {
+  PlanQuotaChip,
+  UpgradeProButton,
+} from "@/components/billing/PlanConversionUi";
 import { toast } from "sonner";
 import axios from "axios";
 import type { Cabana } from "@/types/cabin";
@@ -793,18 +796,18 @@ export default function SettingsPage() {
                   <span className="text-lg font-bold text-slate-900">
                     {planLabel}
                   </span>
-                  {currentPlan === "gratis" && (
-                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700">
-                      1 alojamiento
-                    </span>
-                  )}
                   {currentPlan === "pro" && (
                     <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
                       Popular
                     </span>
                   )}
                 </div>
-                <p className="mt-1 text-sm text-slate-500">{planUsage}</p>
+                <PlanQuotaChip
+                  className="mt-2 max-w-xs"
+                  emphasized={currentPlan === "pro"}
+                >
+                  {planUsage}
+                </PlanQuotaChip>
                 <div className="mt-2 max-w-xs">
                   <div
                     className="h-2 overflow-hidden rounded-full bg-slate-200"
@@ -841,19 +844,14 @@ export default function SettingsPage() {
               <div className="flex flex-col gap-2 sm:items-end">
                 {currentPlan === "gratis" && (
                   <>
-                    <button
-                      type="button"
+                    <UpgradeProButton
+                      showPulse
+                      loading={checkoutLoading === "pro"}
                       disabled={checkoutLoading !== null}
-                      className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-sm font-bold text-white shadow-md transition-all duration-300 ease-in-out hover:bg-slate-800 disabled:opacity-60"
                       onClick={() => void startCheckout("pro")}
                     >
-                      {checkoutLoading === "pro" ? (
-                        <Loader2 size={16} className="animate-spin" />
-                      ) : (
-                        <ZenttMarkIcon size={16} className="text-white" />
-                      )}
                       Suscribirme a Pro · {formatPlanPrice(PLAN_LIMITS.pro.priceArs)}
-                    </button>
+                    </UpgradeProButton>
                     <p className="text-xs text-gray-500 sm:text-right">
                       Pago seguro y automático vía Mercado Pago
                     </p>
@@ -962,8 +960,11 @@ export default function SettingsPage() {
           </p>
         </section>
 
-        {/* Spacer for sticky button */}
-        <div className="h-4" aria-hidden />
+        {/* Spacer so the sticky save bar does not cover plan copy */}
+        <div
+          className="h-[calc(5.5rem+env(safe-area-inset-bottom,0px))] md:h-28"
+          aria-hidden
+        />
       </form>
       )}
 

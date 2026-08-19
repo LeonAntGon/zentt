@@ -7,6 +7,10 @@ import axios from "axios";
 import { toast } from "sonner";
 import { Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  PlanQuotaChip,
+  UpgradeProButton,
+} from "@/components/billing/PlanConversionUi";
 import { ConfirmActionModal } from "@/components/dashboard/ConfirmActionModal";
 import { useAuth } from "@/contexts/AuthContext";
 import api from "@/lib/api";
@@ -210,15 +214,9 @@ const PricingSection = () => {
                   )}
                 </div>
 
-                <div
-                  className={`mb-5 px-3 py-2 rounded-lg text-sm font-semibold text-center ${
-                    plan.popular
-                      ? "bg-primary/10 text-primary"
-                      : "bg-muted text-foreground"
-                  }`}
-                >
+                <PlanQuotaChip className="mb-5" emphasized={plan.popular}>
                   {plan.highlight}
-                </div>
+                </PlanQuotaChip>
 
                 <ul className="space-y-2.5 mb-6">
                   {plan.features.map((f) => (
@@ -243,16 +241,26 @@ const PricingSection = () => {
                   </Button>
                 ) : plan.id === "gratis" && !isAuthenticated && !loading ? (
                   <Button
-                    variant={plan.popular ? "hero" : "hero-outline"}
+                    variant="hero-outline"
                     className="w-full"
                     size="lg"
                     asChild
                   >
                     <Link href="/register">{plan.cta}</Link>
                   </Button>
+                ) : plan.popular ? (
+                  <UpgradeProButton
+                    className="h-12 w-full"
+                    showPulse
+                    loading={isBusy}
+                    disabled={loading || checkoutLoading !== null}
+                    onClick={() => handlePlanClick(plan.id)}
+                  >
+                    {plan.cta}
+                  </UpgradeProButton>
                 ) : (
                   <Button
-                    variant={plan.popular ? "hero" : "hero-outline"}
+                    variant="hero-outline"
                     className="w-full"
                     size="lg"
                     disabled={loading || checkoutLoading !== null}
