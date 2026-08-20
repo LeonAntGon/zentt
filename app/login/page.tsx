@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useState, useEffect, useMemo } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
 import { ZenttLogo } from "@/components/landing/ZenttLogo";
@@ -30,10 +30,6 @@ function safeNextPath(next: string | null): string {
   return "/dashboard";
 }
 
-function goToNext(path: string) {
-  window.location.assign(path);
-}
-
 function LoginForm() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -41,6 +37,7 @@ function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const { login, user } = useAuth();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const nextPath = useMemo(
     () => safeNextPath(searchParams.get("next")),
@@ -48,10 +45,10 @@ function LoginForm() {
   );
 
   useEffect(() => {
-    if (user) {
-      goToNext(nextPath);
+    if (user && !loading) {
+      router.replace(nextPath);
     }
-  }, [user, nextPath]);
+  }, [user, nextPath, loading, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,10 +57,9 @@ function LoginForm() {
 
     try {
       await login(username, password);
-      goToNext(nextPath);
+      router.replace(nextPath);
     } catch {
       setError("Credenciales inválidas. Verificá tu usuario y contraseña.");
-    } finally {
       setLoading(false);
     }
   };
@@ -165,9 +161,13 @@ function LoginForm() {
               type="submit"
               className="w-full h-12 text-base font-bold bg-slate-900 hover:bg-slate-800"
               disabled={loading}
+              aria-busy={loading}
             >
               {loading ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
+                <span className="inline-flex items-center gap-2">
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  Ingresando...
+                </span>
               ) : (
                 "Iniciar sesión"
               )}

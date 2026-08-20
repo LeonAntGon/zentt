@@ -5,9 +5,9 @@ export const PLAN_LIMITS: Record<
   { maxCabanas: number; priceArs: number; label: string }
 > = {
   gratis: { maxCabanas: 1, priceArs: 0, label: "Gratis" },
-  // TEST prod: 10 ARS — restaurar 9900 / 19900 antes de lanzar
-  pro: { maxCabanas: 5, priceArs: 10, label: "Pro" },
-  complejo: { maxCabanas: 15, priceArs: 10, label: "Complejo" },
+  // TEST prod: 15 / 20 ARS — restaurar 9900 / 19900 antes de lanzar
+  pro: { maxCabanas: 5, priceArs: 15, label: "Pro" },
+  complejo: { maxCabanas: 15, priceArs: 20, label: "Complejo" },
 };
 
 export function normalizePlan(plan?: string | null): PlanId {
