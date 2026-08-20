@@ -66,47 +66,46 @@ function LoginForm() {
 
   return (
     <div className="auth-shell flex min-h-screen">
-      <div className="hidden lg:flex lg:w-1/2 relative">
+      <div className="relative hidden lg:flex lg:w-1/2">
         <img
-          src="/assets/cabin-hero.jpg"
-          alt="Alojamiento en el bosque"
-          className="absolute inset-0 w-full h-full object-cover"
+          src="/assets/img-para-inicio-de-sesion.jpg"
+          alt="Alojamiento en el bosque al atardecer"
+          decoding="async"
+          className="absolute inset-0 h-full w-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-900/80 to-slate-900/20" />
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-900/70 via-slate-900/20 to-transparent" />
         <div className="relative z-10 flex flex-col justify-end p-12">
-          <h2
-            className="font-heading text-4xl font-bold text-white mb-3"
-          >
+          <h2 className="font-heading mb-3 text-3xl font-bold text-white">
             Gestioná tu complejo de alojamientos
           </h2>
-          <p className="text-white/80 text-lg max-w-md">
+          <p className="max-w-md text-base text-white/80">
             Controlá tus reservas, actualizá tus precios y conectate con tus
             huéspedes desde un solo lugar.
           </p>
         </div>
       </div>
 
-      <div className="flex-1 flex items-center justify-center p-8 bg-white">
-        <div className="w-full max-w-md space-y-8">
+      <div className="flex flex-1 items-center justify-center bg-white p-8">
+        <div className="w-full max-w-md space-y-6">
           <div className="text-center">
             <Link
               href="/"
               aria-label="Zentt"
-              className="mb-6 inline-flex h-10 shrink-0 items-center justify-center leading-none"
+              className="mb-5 inline-flex h-10 shrink-0 items-center justify-center leading-none"
             >
-              <ZenttLogo className="h-10 w-auto aspect-[290/130]" />
+              <ZenttLogo className="aspect-[290/130] h-10 w-auto" />
             </Link>
-            <h1 className="page-title text-2xl sm:text-3xl md:text-3xl">
+            <h1 className="font-heading text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
               Bienvenido de vuelta
             </h1>
-            <p className="page-subtitle mt-2">
+            <p className="mt-1.5 text-sm text-slate-500">
               Ingresá tus credenciales para acceder a tu panel
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="username" className="ui-label">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="space-y-1.5">
+              <Label htmlFor="username" className="ui-label text-[11px]">
                 Usuario o email
               </Label>
               <Input
@@ -117,8 +116,8 @@ function LoginForm() {
                 className="field-auth"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password" className="ui-label">
+            <div className="space-y-1.5">
+              <Label htmlFor="password" className="ui-label text-[11px]">
                 Contraseña
               </Label>
               <div className="relative">
@@ -173,7 +172,7 @@ function LoginForm() {
               )}
             </Button>
 
-            <p className="text-center text-sm font-medium text-slate-500 pt-4">
+            <p className="text-center text-sm font-medium text-slate-500">
               ¿No tenés una cuenta?{" "}
               <Link
                 href="/register"

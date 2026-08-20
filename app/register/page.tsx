@@ -110,60 +110,84 @@ export default function RegisterPage() {
     }
   };
 
-  const inputClass = "field-auth";
+  const inputClass = "field-auth h-10";
+  const labelClass = "ui-label text-[11px]";
 
   return (
-    <div className="auth-shell flex min-h-screen">
-      <div className="hidden lg:flex lg:w-1/2 relative">
+    <div className="auth-shell flex min-h-dvh lg:h-dvh lg:overflow-hidden">
+      <div className="relative hidden lg:flex lg:w-1/2">
         <img
-          src="/assets/cabin-hero.jpg"
-          alt="Bosque y alojamiento"
-          className="absolute inset-0 w-full h-full object-cover"
+          src="/assets/img-para-registro.jpg"
+          alt="Alojamiento entre montañas"
+          decoding="async"
+          className="absolute inset-0 h-full w-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-900/80 to-slate-900/20" />
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-900/70 via-slate-900/20 to-transparent" />
         <div className="relative z-10 flex flex-col justify-end p-12">
-          <h2 className="font-heading text-4xl font-bold text-white mb-3">
+          <h2 className="font-heading mb-3 text-3xl font-bold text-white">
             Empezá a gestionar tu alojamiento como un profesional
           </h2>
-          <p className="text-white/80 text-lg max-w-md">
+          <p className="max-w-md text-base text-white/80">
             Creá tu web, centralizá tus fotos, ajustá precios y recibí consultas
             de huéspedes desde un solo lugar.
           </p>
         </div>
       </div>
 
-      <div className="flex-1 flex items-center justify-center p-8 bg-white">
-        <div className="w-full max-w-md space-y-8">
-          <div className="text-center">
+      <div className="flex flex-1 justify-center overflow-y-auto bg-white px-6 py-4 max-lg:min-h-dvh lg:items-center lg:overflow-y-auto lg:py-6 max-[700px]:items-start">
+        <div className="w-full max-w-md">
+          <div className="mb-4 text-center">
             <Link
               href="/"
               aria-label="Zentt"
-              className="mb-6 inline-flex h-10 shrink-0 items-center justify-center leading-none"
+              className="mb-3 inline-flex h-8 shrink-0 items-center justify-center leading-none"
             >
-              <ZenttLogo className="h-10 w-auto aspect-[290/130]" />
+              <ZenttLogo className="aspect-[290/130] h-8 w-auto" />
             </Link>
-            <h1 className="page-title text-2xl sm:text-3xl md:text-3xl">
+            <h1 className="font-heading text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
               Creá tu cuenta gratuita
             </h1>
-            <p className="page-subtitle mt-2">
-              Ingresá tus datos para acceder a tu panel de control.
+            <p className="mt-1 text-sm text-slate-500">
+              Completá tus datos para entrar al panel
             </p>
           </div>
 
-           <form onSubmit={handleSubmit} className="space-y-6">
-             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-               <div className="space-y-2">
-                 <Label htmlFor="firstName" className="ui-label">Nombre</Label>
-                 <Input id="firstName" name="firstName" value={formData.firstName} onChange={handleChange} placeholder="Tu nombre" autoComplete="given-name" required className={inputClass} />
-               </div>
-               <div className="space-y-2">
-                 <Label htmlFor="lastName" className="ui-label">Apellido</Label>
-                 <Input id="lastName" name="lastName" value={formData.lastName} onChange={handleChange} placeholder="Tu apellido" autoComplete="family-name" required className={inputClass} />
-               </div>
-             </div>
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label htmlFor="firstName" className={labelClass}>
+                  Nombre
+                </Label>
+                <Input
+                  id="firstName"
+                  name="firstName"
+                  value={formData.firstName}
+                  onChange={handleChange}
+                  placeholder="Tu nombre"
+                  autoComplete="given-name"
+                  required
+                  className={inputClass}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="lastName" className={labelClass}>
+                  Apellido
+                </Label>
+                <Input
+                  id="lastName"
+                  name="lastName"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  placeholder="Tu apellido"
+                  autoComplete="family-name"
+                  required
+                  className={inputClass}
+                />
+              </div>
+            </div>
 
-             <div className="space-y-2">
-              <Label htmlFor="username" className="ui-label">
+            <div className="space-y-1">
+              <Label htmlFor="username" className={labelClass}>
                 Nombre de usuario
               </Label>
               <Input
@@ -176,16 +200,16 @@ export default function RegisterPage() {
                 required
                 className={inputClass}
               />
-              <p className="text-xs text-slate-400">
-                Esta será la URL de tu sitio:{" "}
+              <p className="truncate text-xs text-slate-400">
+                URL:{" "}
                 <span className="font-medium text-slate-600">
                   zentt.app/{normalizeUsername(formData.username) || "tu-usuario"}
                 </span>
               </p>
-             </div>
+            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="email" className="ui-label">
+            <div className="space-y-1">
+              <Label htmlFor="email" className={labelClass}>
                 Correo electrónico
               </Label>
               <Input
@@ -200,13 +224,9 @@ export default function RegisterPage() {
               />
             </div>
 
-            <p className="-mt-3 text-xs text-slate-400">
-              Usá al menos 8 caracteres, una mayúscula y un número.
-            </p>
-
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="password" className="ui-label">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label htmlFor="password" className={labelClass}>
                   Contraseña
                 </Label>
                 <div className="relative">
@@ -224,17 +244,21 @@ export default function RegisterPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword((visible) => !visible)}
-                    aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                    aria-label={
+                      showPassword ? "Ocultar contraseña" : "Mostrar contraseña"
+                    }
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
                   >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
+                <p className="text-[10px] leading-tight text-slate-400">
+                  8+ caracteres, 1 mayúscula y 1 número
+                </p>
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword" className="ui-label">
-                  Confirmar contraseña
+              <div className="space-y-1">
+                <Label htmlFor="confirmPassword" className={labelClass}>
+                  Confirmar
                 </Label>
                 <div className="relative">
                   <Input
@@ -250,42 +274,74 @@ export default function RegisterPage() {
                   />
                   <button
                     type="button"
-                    onClick={() => setShowConfirmPassword((visible) => !visible)}
-                    aria-label={showConfirmPassword ? "Ocultar confirmación" : "Mostrar confirmación"}
+                    onClick={() =>
+                      setShowConfirmPassword((visible) => !visible)
+                    }
+                    aria-label={
+                      showConfirmPassword
+                        ? "Ocultar confirmación"
+                        : "Mostrar confirmación"
+                    }
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
                   >
-                    {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    {showConfirmPassword ? (
+                      <EyeOff size={16} />
+                    ) : (
+                      <Eye size={16} />
+                    )}
                   </button>
                 </div>
               </div>
             </div>
 
             {error && (
-              <p className="rounded-lg bg-red-50 py-2 text-center text-sm font-bold text-red-500">
+              <p className="rounded-lg bg-red-50 py-1.5 text-center text-sm font-bold text-red-500">
                 {error}
               </p>
             )}
 
+            <label className="flex items-start gap-2.5 text-xs leading-snug text-slate-600">
+              <input
+                type="checkbox"
+                checked={acceptLegal}
+                onChange={(event) => setAcceptLegal(event.target.checked)}
+                required
+                className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-slate-900 focus:ring-slate-900"
+              />
+              <span>
+                Acepto los{" "}
+                <Link
+                  href="/terms"
+                  target="_blank"
+                  className="font-semibold text-slate-900 underline"
+                >
+                  Términos y Condiciones
+                </Link>{" "}
+                y la{" "}
+                <Link
+                  href="/privacy"
+                  target="_blank"
+                  className="font-semibold text-slate-900 underline"
+                >
+                  Política de Privacidad
+                </Link>
+                .
+              </span>
+            </label>
+
             <Button
               type="submit"
-              className="w-full h-12 text-base font-bold bg-slate-900 hover:bg-slate-800"
+              className="h-10 w-full text-sm font-bold bg-slate-900 hover:bg-slate-800"
               disabled={loading}
             >
               {loading ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 "Crear cuenta"
               )}
-             </Button>
+            </Button>
 
-             <label className="flex items-start gap-3 text-sm text-slate-600">
-               <input type="checkbox" checked={acceptLegal} onChange={(event) => setAcceptLegal(event.target.checked)} required className="mt-1 h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900" />
-               <span>
-                 Acepto los <Link href="/terms" target="_blank" className="font-semibold text-slate-900 underline">Términos y Condiciones</Link> y la <Link href="/privacy" target="_blank" className="font-semibold text-slate-900 underline">Política de Privacidad</Link> de Zentt.
-               </span>
-             </label>
-
-             <p className="pt-4 text-center text-sm font-medium text-slate-500">
+            <p className="text-center text-sm font-medium text-slate-500">
               ¿Ya tenés una cuenta?{" "}
               <Link
                 href="/login"
@@ -297,7 +353,6 @@ export default function RegisterPage() {
           </form>
         </div>
       </div>
-
     </div>
   );
 }
