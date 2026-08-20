@@ -60,7 +60,7 @@ const plans: {
       "Analytics avanzadas",
       "Soporte prioritario",
     ],
-    cta: "Suscribirme a Pro",
+    cta: "Pagar Pro 1 mes",
     popular: true,
   },
   {
@@ -71,7 +71,7 @@ const plans: {
     priceLabel: formatPlanPrice(PLAN_LIMITS.complejo.priceArs),
     highlight: "Hasta 15 alojamientos",
     features: ["Todo lo de Pro", "Soporte prioritario"],
-    cta: "Suscribirme a Complejo",
+    cta: "Pagar Complejo 1 mes",
     popular: false,
   },
 ];
@@ -103,7 +103,7 @@ const PricingSection = () => {
   const startCheckout = async (plan: "pro" | "complejo") => {
     if (!user?.email_verified) {
       toast.error(
-        "Verificá tu email desde el panel antes de suscribirte."
+        "Verificá tu email desde el panel antes de pagar."
       );
       router.push("/dashboard");
       return;
@@ -114,7 +114,7 @@ const PricingSection = () => {
         checkout_url?: string;
         init_point?: string;
         sandbox_init_point?: string;
-      }>("/payments/create-subscription/", { plan });
+      }>("/payments/create-preference/", { plan });
       const url =
         data.checkout_url || data.init_point || data.sandbox_init_point;
       if (!url) {
@@ -127,7 +127,7 @@ const PricingSection = () => {
         toast.error(
           String(
             err.response.data?.detail ||
-              "Verificá tu email desde el panel antes de suscribirte."
+              "Verificá tu email desde el panel antes de pagar."
           )
         );
         router.push("/dashboard");
@@ -230,14 +230,38 @@ const PricingSection = () => {
                   ))}
                 </ul>
 
-                {isCurrent ? (
+                {isCurrent && plan.id === "gratis" ? (
                   <Button
-                    variant={plan.popular ? "hero" : "hero-outline"}
+                    variant="hero-outline"
                     className="w-full"
                     size="lg"
                     disabled
                   >
                     Tu plan actual
+                  </Button>
+                ) : isCurrent && plan.popular ? (
+                  <UpgradeProButton
+                    className="h-12 w-full"
+                    showPulse
+                    loading={isBusy}
+                    disabled={loading || checkoutLoading !== null}
+                    onClick={() => handlePlanClick(plan.id)}
+                  >
+                    {isBusy ? "Procesando..." : "Renovar 1 mes"}
+                  </UpgradeProButton>
+                ) : isCurrent ? (
+                  <Button
+                    variant="hero-outline"
+                    className="w-full"
+                    size="lg"
+                    disabled={loading || checkoutLoading !== null}
+                    onClick={() => handlePlanClick(plan.id)}
+                  >
+                    {isBusy ? (
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : (
+                      "Renovar 1 mes"
+                    )}
                   </Button>
                 ) : plan.id === "gratis" && !isAuthenticated && !loading ? (
                   <Button
@@ -275,7 +299,7 @@ const PricingSection = () => {
                 )}
                 {plan.price > 0 && (
                   <p className="mt-2 text-center text-xs text-gray-500">
-                    Pago seguro y automático vía Mercado Pago
+                    Pago único por 30 días vía Mercado Pago
                   </p>
                 )}
               </div>
@@ -284,8 +308,8 @@ const PricingSection = () => {
         </div>
 
         <p className="text-center text-sm text-muted-foreground mt-8">
-          Se renueva cada mes con Mercado Pago. Podés cancelar la renovación
-          cuando quieras desde tu cuenta.
+          Pago único por 30 días con Mercado Pago. Al vencer, volvé a pagar
+          para seguir con el plan.
         </p>
 
         <div className="mt-16 text-center">

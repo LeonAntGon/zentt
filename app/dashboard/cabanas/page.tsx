@@ -134,7 +134,7 @@ export default function CabanasPage() {
         title={`Tu plan incluye ${maxCabanas} ${
           maxCabanas === 1 ? "alojamiento" : "alojamientos"
         }`}
-        body="Para agregar otro alojamiento, pasate a un plan pago. Se renueva cada mes con Mercado Pago. Podés cancelar la renovación cuando quieras."
+        body="Para agregar otro alojamiento, pasate a un plan pago. Cada pago otorga 30 días de acceso. Al vencer, volvé a pagar para seguir con el plan."
       />
     </div>
   );

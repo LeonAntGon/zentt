@@ -122,7 +122,6 @@ export default function SettingsPage() {
   const [checkoutLoading, setCheckoutLoading] = useState<"pro" | "complejo" | null>(
     null
   );
-  const [cancelLoading, setCancelLoading] = useState(false);
 
   useEffect(() => {
     const payment = new URLSearchParams(window.location.search).get("payment");
@@ -161,11 +160,11 @@ export default function SettingsPage() {
           checkout_url?: string;
           init_point?: string;
           sandbox_init_point?: string;
-        }>("/payments/create-subscription/", { plan });
+        }>("/payments/create-preference/", { plan });
         const url =
           data.checkout_url || data.init_point || data.sandbox_init_point;
         if (!url) {
-          toast.error("No pudimos iniciar la suscripción.");
+          toast.error("No pudimos iniciar el pago.");
           return;
         }
         window.location.href = url;
@@ -174,14 +173,14 @@ export default function SettingsPage() {
           toast.error(
             String(
               err.response.data?.detail ||
-                "Verificá tu email para suscribirte."
+                "Verificá tu email para pagar."
             )
           );
           requireEmailVerified();
         } else if (axios.isAxiosError(err) && err.response?.status === 503) {
           toast.error("MercadoPago todavía no está configurado.");
         } else {
-          toast.error("No pudimos iniciar la suscripción. Probá de nuevo.");
+          toast.error("No pudimos iniciar el pago. Probá de nuevo.");
         }
       } finally {
         setCheckoutLoading(null);
@@ -194,28 +193,6 @@ export default function SettingsPage() {
       });
     } else {
       void run();
-    }
-  };
-
-  const cancelRenewal = async () => {
-    setCancelLoading(true);
-    try {
-      const { data } = await api.post<{ detail?: string }>(
-        "/payments/cancel-subscription/"
-      );
-      await checkCurrentUser();
-      toast.success(
-        data.detail ||
-          "Renovación cancelada. Seguís con acceso hasta la fecha de vencimiento."
-      );
-    } catch (err) {
-      if (axios.isAxiosError(err) && err.response?.data?.detail) {
-        toast.error(String(err.response.data.detail));
-      } else {
-        toast.error("No pudimos cancelar la renovación. Probá de nuevo.");
-      }
-    } finally {
-      setCancelLoading(false);
     }
   };
 
@@ -236,7 +213,6 @@ export default function SettingsPage() {
   const expiresLabel = user?.profile?.plan_expires_at
     ? new Date(user.profile.plan_expires_at).toLocaleDateString("es-AR")
     : null;
-  const hasActiveSubscription = Boolean(user?.profile?.mp_subscription_id);
   const planMaxCabanas = getMaxCabanas(currentPlan);
 
   useEffect(() => {
@@ -784,7 +760,7 @@ export default function SettingsPage() {
             <div>
               <h2 className="section-title mb-0">Tu plan</h2>
               <p className="text-sm text-slate-500">
-                Plan actual y renovación mensual
+                Plan actual y acceso por 30 días
               </p>
             </div>
           </div>
@@ -850,10 +826,10 @@ export default function SettingsPage() {
                       disabled={checkoutLoading !== null}
                       onClick={() => void startCheckout("pro")}
                     >
-                      Suscribirme a Pro · {formatPlanPrice(PLAN_LIMITS.pro.priceArs)}
+                      Pagar Pro · {formatPlanPrice(PLAN_LIMITS.pro.priceArs)}
                     </UpgradeProButton>
                     <p className="text-xs text-gray-500 sm:text-right">
-                      Pago seguro y automático vía Mercado Pago
+                      Pago único por 30 días vía Mercado Pago
                     </p>
                     <button
                       type="button"
@@ -865,7 +841,7 @@ export default function SettingsPage() {
                     </button>
                   </>
                 )}
-                {currentPlan === "pro" && !hasActiveSubscription && (
+                {currentPlan === "pro" && (
                   <>
                     <button
                       type="button"
@@ -876,24 +852,22 @@ export default function SettingsPage() {
                       {checkoutLoading === "pro" && (
                         <Loader2 size={16} className="animate-spin" />
                       )}
-                      Reactivar Pro · {formatPlanPrice(PLAN_LIMITS.pro.priceArs)}
+                      Renovar Pro · {formatPlanPrice(PLAN_LIMITS.pro.priceArs)}
                     </button>
                     <p className="text-xs text-gray-500 sm:text-right">
-                      Pago seguro y automático vía Mercado Pago
+                      Pago único por 30 días vía Mercado Pago
                     </p>
+                    <button
+                      type="button"
+                      disabled={checkoutLoading !== null}
+                      onClick={() => void startCheckout("complejo")}
+                      className="text-xs font-medium text-slate-500 underline-offset-2 transition-colors hover:text-slate-800 hover:underline disabled:opacity-60"
+                    >
+                      ¿Tenés más de 5 alojamientos? Conocé el plan Complejo
+                    </button>
                   </>
                 )}
-                {currentPlan === "pro" && (
-                  <button
-                    type="button"
-                    disabled={checkoutLoading !== null}
-                    onClick={() => void startCheckout("complejo")}
-                    className="text-xs font-medium text-slate-500 underline-offset-2 transition-colors hover:text-slate-800 hover:underline disabled:opacity-60"
-                  >
-                    ¿Tenés más de 5 alojamientos? Conocé el plan Complejo
-                  </button>
-                )}
-                {currentPlan === "complejo" && !hasActiveSubscription && (
+                {currentPlan === "complejo" && (
                   <>
                     <button
                       type="button"
@@ -904,25 +878,12 @@ export default function SettingsPage() {
                       {checkoutLoading === "complejo" && (
                         <Loader2 size={16} className="animate-spin" />
                       )}
-                      Reactivar Complejo · {formatPlanPrice(PLAN_LIMITS.complejo.priceArs)}
+                      Renovar Complejo · {formatPlanPrice(PLAN_LIMITS.complejo.priceArs)}
                     </button>
                     <p className="text-xs text-gray-500 sm:text-right">
-                      Pago seguro y automático vía Mercado Pago
+                      Pago único por 30 días vía Mercado Pago
                     </p>
                   </>
-                )}
-                {hasActiveSubscription && currentPlan !== "gratis" && (
-                  <button
-                    type="button"
-                    disabled={cancelLoading || checkoutLoading !== null}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-red-200 bg-white px-5 py-2.5 text-sm font-bold text-red-600 transition-all hover:bg-red-50 disabled:opacity-60"
-                    onClick={() => void cancelRenewal()}
-                  >
-                    {cancelLoading && (
-                      <Loader2 size={16} className="animate-spin" />
-                    )}
-                    Cancelar renovación
-                  </button>
                 )}
               </div>
             </div>
@@ -954,9 +915,8 @@ export default function SettingsPage() {
 
           <p className="mt-3 text-xs text-slate-400">
             Los pagos se procesan de forma segura a través de Mercado Pago.
-            Los planes pagos se renuevan cada mes. Podés cancelar la
-            renovación cuando quieras; seguís con acceso hasta la fecha de
-            vencimiento.
+            Cada pago otorga 30 días de acceso. Al vencer, volvé a pagar para
+            seguir con el plan.
           </p>
         </section>
 

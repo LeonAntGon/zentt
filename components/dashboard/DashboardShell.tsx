@@ -393,7 +393,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         body={
           currentPlan === "gratis"
             ? undefined
-            : "Se renueva cada mes con Mercado Pago. Podés cancelar la renovación cuando quieras."
+            : "Pago único por 30 días. Al vencer, volvé a pagar para seguir con el plan."
         }
       />
     </div>

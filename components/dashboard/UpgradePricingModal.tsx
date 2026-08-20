@@ -61,7 +61,7 @@ export function UpgradePricingModal({
   open,
   onClose,
   title = "Escalá tus reservas con Zentt Pro",
-  body = `Agregá más alojamientos, quitá la marca de agua y sincronizá precios dinámicos por ${formatPlanPrice(PLAN_LIMITS.pro.priceArs)} / mes.`,
+  body = `Agregá más alojamientos, quitá la marca de agua y sincronizá precios dinámicos. Cada pago otorga 30 días de acceso.`,
 }: UpgradePricingModalProps) {
   const { user } = useAuth();
   const { requireEmailVerified } = useEmailVerify();
@@ -76,7 +76,7 @@ export function UpgradePricingModal({
         checkout_url?: string;
         init_point?: string;
         sandbox_init_point?: string;
-      }>("/payments/create-subscription/", { plan });
+      }>("/payments/create-preference/", { plan });
       const url =
         data.checkout_url || data.init_point || data.sandbox_init_point;
       if (!url) {
@@ -87,7 +87,7 @@ export function UpgradePricingModal({
     } catch (err) {
       if (axios.isAxiosError(err) && err.response?.status === 403) {
         toast.error(
-          String(err.response.data?.detail || "Verificá tu email para suscribirte.")
+          String(err.response.data?.detail || "Verificá tu email para pagar.")
         );
         requireEmailVerified();
       } else if (axios.isAxiosError(err) && err.response?.status === 503) {
@@ -173,15 +173,15 @@ export function UpgradePricingModal({
                 </ul>
                 <UpgradeProButton
                   className="mt-3 h-11 w-full"
-                  showPulse={!isCurrent}
+                  showPulse
                   loading={isBusy}
-                  disabled={checkoutLoading !== null || isCurrent}
+                  disabled={checkoutLoading !== null}
                   onClick={() => void startCheckout(plan.id)}
                 >
-                  {isCurrent ? "Tu plan actual" : "Suscribirme con Mercado Pago"}
+                  {isCurrent ? "Renovar 1 mes" : "Pagar 1 mes"}
                 </UpgradeProButton>
                 <p className="mt-2 text-center text-xs text-gray-500">
-                  Pago seguro y automático vía Mercado Pago
+                  Pago único por 30 días vía Mercado Pago
                 </p>
               </div>
             );
@@ -221,18 +221,18 @@ export function UpgradePricingModal({
                 </ul>
                 <button
                   type="button"
-                  disabled={checkoutLoading !== null || isCurrent}
+                  disabled={checkoutLoading !== null}
                   onClick={() => void startCheckout(plan.id)}
                   className="mt-3 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-slate-900 bg-transparent text-sm font-bold text-slate-900 transition-colors hover:bg-slate-50 disabled:opacity-60"
                 >
                   {isBusy ? (
                     <Loader2 size={16} className="animate-spin" />
                   ) : isCurrent ? (
-                    "Tu plan actual"
+                    "Renovar Complejo"
                   ) : currentPlan === "pro" ? (
                     "Pasar a Complejo"
                   ) : (
-                    `Elegir ${plan.name}`
+                    `Pagar ${plan.name}`
                   )}
                 </button>
               </div>
