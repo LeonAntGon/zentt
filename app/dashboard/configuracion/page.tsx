@@ -98,7 +98,7 @@ function InstagramIcon({ className }: { className?: string }) {
 }
 
 export default function SettingsPage() {
-  const { user, checkCurrentUser, setUser } = useAuth();
+  const { user, checkCurrentUser, waitForPlan, setUser } = useAuth();
   const { requireEmailVerified } = useEmailVerify();
   const [loading, setLoading] = useState(false);
   const [hydrated, setHydrated] = useState(false);
@@ -124,18 +124,44 @@ export default function SettingsPage() {
   );
 
   useEffect(() => {
-    const payment = new URLSearchParams(window.location.search).get("payment");
+    const params = new URLSearchParams(window.location.search);
+    const payment = params.get("payment");
     if (!payment) return;
+
+    const planParam = params.get("plan");
+    const expectedPlan =
+      planParam === "pro" || planParam === "complejo" ? planParam : null;
+    let cancelled = false;
+
     if (payment === "success") {
-      toast.success("Pago recibido. Actualizamos tu plan en unos segundos.");
-      void checkCurrentUser();
+      toast.success("Pago recibido. Confirmando la activación del plan...");
+      if (expectedPlan) {
+        void waitForPlan(expectedPlan).then((activated) => {
+          if (cancelled) return;
+          if (activated) {
+            toast.success(
+              `${expectedPlan === "pro" ? "Plan Pro" : "Plan Complejo"} activado.`
+            );
+          } else {
+            toast.message(
+              "El pago fue recibido. La acreditación puede tardar unos segundos; actualizá esta página si todavía ves el plan Gratis."
+            );
+          }
+        });
+      } else {
+        void checkCurrentUser();
+      }
     } else if (payment === "failure") {
       toast.error("El pago no se completó. Podés intentar de nuevo.");
     } else if (payment === "pending") {
       toast.message("El pago quedó pendiente. Te avisamos cuando se acredite.");
     }
     window.history.replaceState({}, "", `${window.location.pathname}#planes`);
-  }, [checkCurrentUser]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [checkCurrentUser, waitForPlan]);
 
   useEffect(() => {
     const loadCabanas = async () => {

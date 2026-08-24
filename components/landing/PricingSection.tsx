@@ -77,7 +77,7 @@ const plans: {
 ];
 
 const PricingSection = () => {
-  const { isAuthenticated, user, loading, checkCurrentUser } = useAuth();
+  const { isAuthenticated, user, loading, checkCurrentUser, waitForPlan } = useAuth();
   const router = useRouter();
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState<PlanId | null>(null);
@@ -88,9 +88,30 @@ const PricingSection = () => {
     const params = new URLSearchParams(window.location.search);
     const payment = params.get("payment");
     if (!payment) return;
+
+    const planParam = params.get("plan");
+    const expectedPlan =
+      planParam === "pro" || planParam === "complejo" ? planParam : null;
+    let cancelled = false;
+
     if (payment === "success") {
-      toast.success("Pago recibido. Actualizamos tu plan en unos segundos.");
-      void checkCurrentUser();
+      toast.success("Pago recibido. Confirmando la activación del plan...");
+      if (expectedPlan) {
+        void waitForPlan(expectedPlan).then((activated) => {
+          if (cancelled) return;
+          if (activated) {
+            toast.success(
+              `${expectedPlan === "pro" ? "Plan Pro" : "Plan Complejo"} activado.`
+            );
+          } else {
+            toast.message(
+              "El pago fue recibido. La acreditación puede tardar unos segundos; actualizá esta página si todavía ves el plan Gratis."
+            );
+          }
+        });
+      } else {
+        void checkCurrentUser();
+      }
     } else if (payment === "failure") {
       toast.error("El pago no se completó. Podés intentar de nuevo.");
     } else if (payment === "pending") {
@@ -98,7 +119,11 @@ const PricingSection = () => {
     }
     window.history.replaceState({}, "", `${window.location.pathname}#precios`);
     document.getElementById("precios")?.scrollIntoView({ behavior: "smooth" });
-  }, [checkCurrentUser]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [checkCurrentUser, waitForPlan]);
 
   const startCheckout = async (plan: "pro" | "complejo") => {
     if (!user?.email_verified) {

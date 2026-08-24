@@ -29,6 +29,8 @@ interface UserProfile {
   mp_subscription_id?: string | null;
 }
 
+type PaidPlan = "pro" | "complejo";
+
 export interface User {
   id: number;
   username: string;
@@ -47,6 +49,7 @@ interface AuthContextType {
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
   checkCurrentUser: () => Promise<User | null>;
+  waitForPlan: (plan: PaidPlan, attempts?: number) => Promise<boolean>;
   setUser: (user: User | null) => void;
 }
 
@@ -88,6 +91,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
+  const waitForPlan = useCallback(
+    async (plan: PaidPlan, attempts = 15): Promise<boolean> => {
+      const totalAttempts = Math.max(1, attempts);
+
+      for (let attempt = 0; attempt < totalAttempts; attempt += 1) {
+        if (attempt > 0) {
+          await new Promise((resolve) => setTimeout(resolve, 2_000));
+        }
+
+        const latest = await checkCurrentUser();
+        if (latest?.profile?.plan === plan) return true;
+      }
+
+      return false;
+    },
+    [checkCurrentUser]
+  );
+
   useEffect(() => {
     checkCurrentUser();
   }, [checkCurrentUser]);
@@ -121,6 +142,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         login,
         logout,
         checkCurrentUser,
+        waitForPlan,
         setUser,
       }}
     >
