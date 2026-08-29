@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { InstagramIcon } from "@/components/icons/InstagramIcon";
 
 const Footer = () => (
   <footer className="py-10 bg-card border-t border-border/50">
@@ -18,6 +19,15 @@ const Footer = () => (
           className="hover:text-foreground transition-colors"
         >
           Contacto
+        </a>
+        <a
+          href="https://www.instagram.com/somoszentt/"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Instagram de Zentt"
+          className="hover:text-foreground transition-colors"
+        >
+          <InstagramIcon className="h-5 w-5" />
         </a>
       </div>
     </div>
