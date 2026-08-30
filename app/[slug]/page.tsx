@@ -169,7 +169,7 @@ export default async function LinktreePage({
 
   const cabanasCount = siteData.cabanas.length;
   const sectionLabel =
-    cabanasCount === 1 ? "Nuestro alojamiento" : "Nuestras cabañas";
+    cabanasCount === 1 ? "Nuestro alojamiento" : "Nuestros alojamientos";
 
   return (
     <div className="flex flex-1 flex-col bg-gradient-to-b from-slate-50 to-white font-public">

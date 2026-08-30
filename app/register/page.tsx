@@ -14,7 +14,7 @@ import { normalizeUsername, normalizeUsernameLive } from "@/lib/username";
 import { toast } from "sonner";
 import { useAuth, AuthProvider } from "@/contexts/AuthContext";
 
-export default function RegisterPage() {
+function RegisterForm() {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -114,8 +114,7 @@ export default function RegisterPage() {
   const labelClass = "ui-label text-[11px]";
 
   return (
-    <AuthProvider>
-      <div className="auth-shell flex min-h-dvh lg:h-dvh lg:overflow-hidden">
+    <div className="auth-shell flex min-h-dvh lg:h-dvh lg:overflow-hidden">
       <div className="relative hidden lg:flex lg:w-1/2">
         <img
           src="/assets/img-para-registro.jpg"
@@ -355,6 +354,13 @@ export default function RegisterPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <AuthProvider>
+      <RegisterForm />
     </AuthProvider>
   );
 }
