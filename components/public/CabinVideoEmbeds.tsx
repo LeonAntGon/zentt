@@ -35,13 +35,19 @@ export function CabinVideoEmbeds({
       <h2 className="mb-4 text-xl font-bold tracking-tight text-slate-900 md:text-2xl">
         Mirá el alojamiento en video
       </h2>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6">
         {embeds.map((item) => (
           <div
             key={item.id}
             className="overflow-hidden rounded-2xl border border-slate-100 bg-slate-50"
           >
-            <div className="aspect-video w-full">
+            <div
+              className={
+                item.provider === "instagram"
+                  ? "mx-auto h-[560px] max-h-[80vh] w-full max-w-md"
+                  : "aspect-video w-full"
+              }
+            >
               <iframe
                 src={item.embedUrl}
                 title={`Video ${item.provider}`}
