@@ -1,14 +1,9 @@
-"use client";
-
-import React, { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import api from "@/lib/api";
+import type { ReactNode } from "react";
 import { getMediaUrl } from "@/lib/media";
 import { Cabana } from "@/types/cabin";
-import { toast } from "sonner";
-import { MapPin, Loader2, Building2 } from "lucide-react";
+import { MapPin, Building2, CloudOff } from "lucide-react";
 import { CabinLinkCard } from "@/components/public/CabinLinkCard";
 import { SocialIconButton } from "@/components/public/SocialIconButton";
 import { TikTokIcon } from "@/components/icons/TikTokIcon";
@@ -16,6 +11,8 @@ import { YouTubeIcon } from "@/components/icons/YouTubeIcon";
 import { FacebookIcon } from "@/components/icons/FacebookIcon";
 import { PublicSiteFooter } from "@/components/public/PublicSiteFooter";
 import { socialHref } from "@/lib/socialLinks";
+
+export const dynamic = "force-dynamic";
 
 interface PublicWebsiteData {
   nombre_negocio: string | null;
@@ -52,63 +49,71 @@ function InstagramIcon({ className }: { className?: string }) {
   );
 }
 
-export default function LinktreePage() {
-  const params = useParams<{ slug: string }>();
-  const slug = params.slug;
+function SitePanel({
+  icon,
+  title,
+  message,
+}: {
+  icon: ReactNode;
+  title: string;
+  message: string;
+}) {
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-slate-50 to-white text-center px-6">
+      {icon}
+      <h1 className="text-2xl font-bold text-slate-900 mb-2">{title}</h1>
+      <p className="text-slate-500 mb-8 text-sm">{message}</p>
+      <Link
+        href="/"
+        className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-xs font-bold uppercase tracking-widest text-white transition-colors hover:bg-primary/90"
+      >
+        Volver a Zentt
+      </Link>
+    </div>
+  );
+}
 
-  const [siteData, setSiteData] = useState<PublicWebsiteData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [errorNotFound, setErrorNotFound] = useState(false);
+export default async function LinktreePage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
 
-  useEffect(() => {
-    const fetchPublicData = async () => {
-      try {
-        setLoading(true);
-        const response = await api.get<PublicWebsiteData>(`/public/${slug}/`);
-        setSiteData(response.data);
-      } catch (err) {
-        const error = err as { response?: { status?: number } };
-        if (error.response?.status === 404) {
-          setErrorNotFound(true);
-        } else {
-          toast.error("Hubo un problema al cargar el sitio.");
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
+  const apiUrl =
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
-    if (slug) fetchPublicData();
-  }, [slug]);
+  let siteData: PublicWebsiteData | null = null;
+  let status = 0;
+  try {
+    const response = await fetch(`${apiUrl}/public/${slug}/`, {
+      cache: "no-store",
+    });
+    status = response.status;
+    if (response.ok) {
+      siteData = (await response.json()) as PublicWebsiteData;
+    }
+  } catch {
+    // Error de red o de parseo; se muestra un panel genérico abajo.
+  }
 
-  if (loading) {
+  if (status === 404 || (!siteData && status > 0 && status !== 500)) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-slate-50 to-white gap-4">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="text-slate-400 text-xs font-medium uppercase tracking-widest">
-          Cargando...
-        </p>
-      </div>
+      <SitePanel
+        icon={<Building2 size={56} className="text-slate-200 mb-6" />}
+        title="Sitio no encontrado"
+        message="La página web que buscas no existe o ha sido dada de baja."
+      />
     );
   }
 
-  if (errorNotFound || !siteData) {
+  if (!siteData) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-slate-50 to-white text-center px-6">
-        <Building2 size={56} className="text-slate-200 mb-6" />
-        <h1 className="text-2xl font-bold text-slate-900 mb-2">
-          Sitio no encontrado
-        </h1>
-        <p className="text-slate-500 mb-8 text-sm">
-          La página web que buscas no existe o ha sido dada de baja.
-        </p>
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-xs font-bold uppercase tracking-widest text-white transition-colors hover:bg-primary/90"
-        >
-          Volver a Zentt
-        </Link>
-      </div>
+      <SitePanel
+        icon={<CloudOff size={56} className="text-slate-200 mb-6" />}
+        title="No pudimos cargar el sitio"
+        message="Hubo un problema inesperado. Volvé a intentar en unos minutos."
+      />
     );
   }
 

@@ -1,7 +1,6 @@
 "use client";
 
 import { ThemeProvider } from "next-themes";
-import { AuthProvider } from "@/contexts/AuthContext";
 import { Toaster } from "sonner";
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -12,10 +11,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
       forcedTheme="light"
       enableSystem={false}
     >
-      <AuthProvider>
-        {children}
-        <Toaster richColors position="top-right" />
-      </AuthProvider>
+      {children}
+      <Toaster richColors position="top-right" />
     </ThemeProvider>
   );
 }
