@@ -48,6 +48,8 @@ function isImageFile(file: File): boolean {
   return Boolean(file.type && file.type.startsWith("image/"));
 }
 
+const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
+
 type ImageConfirmState = {
   title: string;
   body: string;
@@ -212,16 +214,32 @@ export default function CreateCabanaPage() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
     const filesArray = Array.from(e.target.files);
-    const images = filesArray.filter(isImageFile);
-    if (images.length < filesArray.length) {
-      toast.error("Solo se permiten imágenes (JPG, PNG, WebP…).");
+    const accepted: File[] = [];
+
+    for (const file of filesArray) {
+      if (!isImageFile(file)) {
+        toast.error(
+          `El archivo "${file.name}" no es una imagen compatible. Solo se aceptan JPG, PNG y WebP.`,
+        );
+        continue;
+      }
+      if (file.size > MAX_IMAGE_SIZE_BYTES) {
+        const mb = (file.size / (1024 * 1024)).toFixed(1);
+        toast.error(
+          `El archivo "${file.name}" pesa ${mb} MB. El tamaño máximo es 10 MB.`,
+        );
+        continue;
+      }
+      accepted.push(file);
     }
-    if (images.length === 0) {
+
+    if (accepted.length === 0) {
       e.target.value = "";
       return;
     }
-    setSelectedFiles((prev) => [...prev, ...images]);
-    const newPreviews = images.map((file) => URL.createObjectURL(file));
+
+    setSelectedFiles((prev) => [...prev, ...accepted]);
+    const newPreviews = accepted.map((file) => URL.createObjectURL(file));
     setPreviews((prev) => [...prev, ...newPreviews]);
     e.target.value = "";
   };
@@ -389,11 +407,24 @@ export default function CreateCabanaPage() {
       }
 
       if (selectedFiles.length > 0) {
+        const failedImages: string[] = [];
         for (let i = 0; i < selectedFiles.length; i++) {
           setStatusText(`Subiendo foto ${i + 1} de ${selectedFiles.length}...`);
           const imgData = new FormData();
           imgData.append("imagen", selectedFiles[i]);
-          await api.post(`/cabanas/${slug}/subir_imagen/`, imgData);
+          try {
+            await api.post(`/cabanas/${slug}/subir_imagen/`, imgData);
+          } catch {
+            const fileName = selectedFiles[i].name;
+            failedImages.push(fileName);
+          }
+        }
+        if (failedImages.length > 0) {
+          const detail =
+            failedImages.length === selectedFiles.length
+              ? "Ninguna imagen se pudo subir."
+              : `No se pudieron subir: ${failedImages.join(", ")}.`;
+          toast.error(`${detail} Revisá el formato o el tamaño.`);
         }
       }
 

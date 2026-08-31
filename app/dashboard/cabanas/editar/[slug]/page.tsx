@@ -324,12 +324,25 @@ export default function EditCabanaPage() {
     }
   };
 
+  const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
+
   const handleSubirImagen = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !cabana) return;
 
     if (!file.type || !file.type.startsWith("image/")) {
-      toast.error("Solo se permiten imágenes (JPG, PNG, WebP…).");
+      toast.error(
+        `El archivo "${file.name}" no es una imagen compatible. Solo se aceptan JPG, PNG y WebP.`,
+      );
+      e.target.value = "";
+      return;
+    }
+
+    if (file.size > MAX_IMAGE_SIZE_BYTES) {
+      const mb = (file.size / (1024 * 1024)).toFixed(1);
+      toast.error(
+        `El archivo "${file.name}" pesa ${mb} MB. El tamaño máximo es 10 MB.`,
+      );
       e.target.value = "";
       return;
     }
@@ -347,7 +360,12 @@ export default function EditCabanaPage() {
       toast.success("Imagen subida con éxito");
     } catch (error) {
       console.error("Error subiendo imagen", error);
-      toast.error("No se pudo subir la imagen. Verificá el formato.");
+      const msg =
+        axios.isAxiosError(error) &&
+        error.response?.data?.error;
+      toast.error(
+        msg || "No se pudo subir la imagen. Probá con otra imagen o un tamaño menor.",
+      );
     } finally {
       e.target.value = "";
     }
