@@ -9,8 +9,8 @@ export const metadata: Metadata = {
   description:
     "Plataforma SaaS para dueños de complejos de alojamientos: sitio público, reservas y mensajes.",
   icons: {
-    icon: [{ url: "/assets/t-logotipo.png", type: "image/png" }],
-    apple: [{ url: "/assets/t-logotipo.png", type: "image/png" }],
+    icon: [{ url: "/assets/logo-for-ico.png", type: "image/png" }],
+    apple: [{ url: "/assets/logo-for-ico.png", type: "image/png" }],
   },
   openGraph: {
     type: "website",
