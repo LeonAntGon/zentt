@@ -161,7 +161,15 @@ export default function CabinDetailPublicPage() {
       if (cabana.metodo_contacto === "WA") {
         const waNum = cabana.telefono_whatsapp?.replace(/[^0-9]/g, "") || "";
         if (waNum) {
-          const text = `Hola! Vi el alojamiento ${cabana.nombre}. Soy ${formData.nombre_turista}. Noches: ${fechaDesde} a ${toISODate(to)} (${nights} noches). ${formData.contenido}`;
+          const text = [
+            `Hola! Vi el alojamiento *${cabana.nombre}*.`,
+            ``,
+            `Soy *${formData.nombre_turista}*.`,
+            `📅 ${fechaDesde} a ${toISODate(to)} (${nights} ${nights === 1 ? "noche" : "noches"})`,
+            estimado > 0 ? `💰 ${formatMoneyARS(estimado)} estimado` : null,
+            ``,
+            formData.contenido,
+          ].filter(Boolean).join("\n");
           window.open(
             `https://wa.me/${waNum}?text=${encodeURIComponent(text)}`,
             "_blank"
