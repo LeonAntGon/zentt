@@ -8,7 +8,7 @@ import { useState } from "react";
 
 const navLinks = [
   { label: "Funcionalidades", href: "#funcionalidades" },
-  { label: "Precios", href: "#precios" },
+  // { label: "Precios", href: "#precios" },
 ];
 
 export function Navbar() {
