@@ -12,7 +12,7 @@ import { ZenttLogo } from "@/components/landing/ZenttLogo";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { normalizeUsername, normalizeUsernameLive } from "@/lib/username";
 import { toast } from "sonner";
-import { useAuth, AuthProvider } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 function RegisterForm() {
   const [formData, setFormData] = useState({
@@ -358,9 +358,5 @@ function RegisterForm() {
 }
 
 export default function RegisterPage() {
-  return (
-    <AuthProvider>
-      <RegisterForm />
-    </AuthProvider>
-  );
+  return <RegisterForm />;
 }

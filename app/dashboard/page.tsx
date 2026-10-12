@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
-import api from "@/lib/api";
+import api, { dedupedGet } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   Home,
@@ -176,10 +176,10 @@ export default function OverviewPage() {
       try {
         const [resCabanas, resMensajes, resGeneral, resReservas] =
           await Promise.all([
-            api.get<Cabana[]>("/cabanas/"),
-            api.get<Mensaje[]>("/mensajes/"),
-            api.get<Mensaje[]>("/contacto/"),
-            api.get<Reserva[]>("/booking/gestion-reservas/").catch(() => ({
+            dedupedGet<Cabana[]>("/cabanas/"),
+            dedupedGet<Mensaje[]>("/mensajes/"),
+            dedupedGet<Mensaje[]>("/contacto/"),
+            dedupedGet<Reserva[]>("/booking/gestion-reservas/").catch(() => ({
               data: [] as Reserva[],
             })),
           ]);
@@ -229,20 +229,35 @@ export default function OverviewPage() {
   }, []);
 
   useEffect(() => {
+    let cancelled = false;
     const loadVisits = async () => {
       try {
         const { data } = await api.get<{
           summary?: { sessions?: number };
         }>("/analytics/web-performance/");
+        if (cancelled) return;
         const sessions = data?.summary?.sessions;
         setVisitsLabel(
           typeof sessions === "number" ? String(sessions) : "—"
         );
       } catch {
-        setVisitsLabel("—");
+        if (!cancelled) setVisitsLabel("—");
       }
     };
-    void loadVisits();
+
+    const schedule =
+      typeof window !== "undefined" && "requestIdleCallback" in window
+        ? window.requestIdleCallback(() => void loadVisits(), { timeout: 2500 })
+        : setTimeout(() => void loadVisits(), 1200);
+
+    return () => {
+      cancelled = true;
+      if (typeof window !== "undefined" && "cancelIdleCallback" in window) {
+        window.cancelIdleCallback(schedule as number);
+      } else {
+        clearTimeout(schedule as ReturnType<typeof setTimeout>);
+      }
+    };
   }, []);
 
   const copyToClipboard = () => {

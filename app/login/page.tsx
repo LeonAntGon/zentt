@@ -3,7 +3,7 @@
 import { Suspense, useState, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { useAuth, AuthProvider } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { ZenttLogo } from "@/components/landing/ZenttLogo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -197,9 +197,7 @@ export default function LoginPage() {
         </div>
       }
     >
-      <AuthProvider>
-        <LoginForm />
-      </AuthProvider>
+      <LoginForm />
     </Suspense>
   );
 }

@@ -1,4 +1,9 @@
-import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
+import axios, {
+  AxiosError,
+  AxiosRequestConfig,
+  AxiosResponse,
+  InternalAxiosRequestConfig,
+} from "axios";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
@@ -6,6 +11,24 @@ const API_URL =
 const api = axios.create({
   baseURL: API_URL,
 });
+
+const inflightGets = new Map<string, Promise<AxiosResponse>>();
+
+export function dedupedGet<T = unknown>(
+  url: string,
+  config?: AxiosRequestConfig
+): Promise<AxiosResponse<T>> {
+  const key = `${url}?${JSON.stringify(config?.params ?? {})}`;
+  const existing = inflightGets.get(key);
+  if (existing) {
+    return existing as Promise<AxiosResponse<T>>;
+  }
+  const request = api.get<T>(url, config).finally(() => {
+    inflightGets.delete(key);
+  });
+  inflightGets.set(key, request);
+  return request;
+}
 
 interface FailedRequest {
   resolve: (token: string) => void;

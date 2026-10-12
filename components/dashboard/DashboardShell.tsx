@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import api from "@/lib/api";
+import { dedupedGet } from "@/lib/api";
 import { BusinessAvatar } from "@/components/dashboard/BusinessAvatar";
 import { UserAvatar } from "@/components/dashboard/UserAvatar";
 import { UpgradePricingModal } from "@/components/dashboard/UpgradePricingModal";
@@ -120,8 +120,8 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     const loadUnread = async () => {
       try {
         const [mensajes, contacto] = await Promise.all([
-          api.get<{ leido: boolean }[]>("/mensajes/"),
-          api.get<{ leido: boolean }[]>("/contacto/"),
+          dedupedGet<{ leido: boolean }[]>("/mensajes/"),
+          dedupedGet<{ leido: boolean }[]>("/contacto/"),
         ]);
         const count = [...(mensajes.data || []), ...(contacto.data || [])].filter(
           (m) => !m.leido
