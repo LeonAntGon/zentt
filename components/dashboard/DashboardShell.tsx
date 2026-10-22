@@ -20,7 +20,7 @@ import {
   CalendarDays,
   BarChart3,
   Globe,
-  User,
+  Palette,
 } from "lucide-react";
 
 type NavItem = {
@@ -57,10 +57,10 @@ const PRIMARY_NAV: NavItem[] = [
     exact: true,
   },
   {
-    href: "/dashboard/perfil",
-    label: "Cuenta",
-    icon: User,
-    prefix: "/dashboard/perfil",
+    href: "/dashboard/diseno",
+    label: "Mi web",
+    icon: Palette,
+    prefix: "/dashboard/diseno",
   },
 ];
 
@@ -80,9 +80,9 @@ const MORE_NAV: NavItem[] = [
 ];
 
 function navItemActive(pathname: string, item: NavItem) {
-  if (item.href === "/dashboard/perfil") {
+  if (item.href === "/dashboard/diseno") {
     return (
-      pathname.startsWith("/dashboard/perfil") ||
+      pathname.startsWith("/dashboard/diseno") ||
       pathname.startsWith("/dashboard/configuracion")
     );
   }
@@ -314,8 +314,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           <Link
             href="/dashboard/perfil"
             className={`group flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-slate-50 ${
-              pathname.startsWith("/dashboard/perfil") ||
-              pathname.startsWith("/dashboard/configuracion")
+              pathname.startsWith("/dashboard/perfil")
                 ? "text-primary"
                 : ""
             }`}

@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { CSSProperties, ReactNode } from "react";
+import type { ReactNode } from "react";
 import { getMediaUrl } from "@/lib/media";
 import { Cabana } from "@/types/cabin";
 import { MapPin, Building2, CloudOff } from "lucide-react";
@@ -11,8 +11,12 @@ import { YouTubeIcon } from "@/components/icons/YouTubeIcon";
 import { FacebookIcon } from "@/components/icons/FacebookIcon";
 import { PublicSiteFooter } from "@/components/public/PublicSiteFooter";
 import { socialHref } from "@/lib/socialLinks";
+import { getDesign, type DesignKey } from "@/lib/designs";
 
 export const dynamic = "force-dynamic";
+
+const DEFAULT_COVER_IMAGE =
+  "https://images.unsplash.com/photo-1542718610-a1d656d1884c?w=1200&q=85";
 
 interface PublicWebsiteData {
   nombre_negocio: string | null;
@@ -29,16 +33,7 @@ interface PublicWebsiteData {
   youtube_user?: string | null;
   facebook_user?: string | null;
   ubicacion?: string | null;
-  theme?: {
-    primary_color?: string;
-    accent_color?: string;
-    font?: "sans" | "serif" | "display";
-    layout?: "stack" | "grid";
-  };
-}
-
-function safeThemeColor(value: string | undefined, fallback: string) {
-  return value && /^#[0-9a-f]{6}$/i.test(value) ? value : fallback;
+  design?: DesignKey;
 }
 
 function InstagramIcon({ className }: { className?: string }) {
@@ -131,17 +126,10 @@ export default async function LinktreePage({
     siteData.nombre_negocio || `${siteData.first_name}'s Place`;
   const logoUrl = getMediaUrl(siteData.foto_perfil);
   const ubicacion = siteData.ubicacion || null;
-  const theme = siteData.theme || {};
-  const themeStyle = {
-    "--site-primary": safeThemeColor(theme.primary_color, "#0f172a"),
-    "--site-accent": safeThemeColor(theme.accent_color, "#f59e0b"),
-  } as CSSProperties;
-  const fontClass =
-    theme.font === "serif"
-      ? "font-serif"
-      : theme.font === "display"
-        ? "font-heading"
-        : "font-public";
+  const design = getDesign(siteData.design);
+  const coverImage =
+    getMediaUrl(siteData.cabanas[0]?.imagen_portada) || DEFAULT_COVER_IMAGE;
+  const fontClass = design.id === "elegante" ? "font-serif" : "font-public";
 
   const igHref = socialHref(siteData.instagram_user, "instagram");
   const fbHref = socialHref(siteData.facebook_user, "facebook");
@@ -193,7 +181,17 @@ export default async function LinktreePage({
     cabanasCount === 1 ? "Nuestro alojamiento" : "Nuestros alojamientos";
 
   return (
-    <div style={themeStyle} className={`site-theme flex flex-1 flex-col bg-gradient-to-b from-slate-50 to-white ${fontClass}`}>
+    <div data-design={design.id} className={`site-theme flex flex-1 flex-col ${fontClass}`}>
+      {design.id === "atardecer" && (
+        <div className="relative isolate h-48 overflow-hidden sm:h-60">
+          <img src={coverImage} alt="" className="absolute inset-0 h-full w-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 mx-auto max-w-md px-5 pb-6 text-white">
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em]">Tu próximo descanso</p>
+            <p className="mt-1 text-2xl font-bold">Viví el momento</p>
+          </div>
+        </div>
+      )}
       <div className="mx-auto w-full max-w-md flex-1 px-5 py-10 sm:py-16">
         {/* Avatar / Logo */}
         <div className="flex flex-col items-center">
@@ -243,8 +241,8 @@ export default async function LinktreePage({
             {sectionLabel}
           </p>
 
-          {cabanasCount > 0 ? (
-            <div className={theme.layout === "grid" ? "grid grid-cols-2 gap-3" : "space-y-3"}>
+           {cabanasCount > 0 ? (
+             <div className={design.id === "atardecer" ? "grid gap-3 sm:grid-cols-2" : "space-y-3"}>
               {siteData.cabanas.map((c) => (
                 <CabinLinkCard
                   key={c.id}

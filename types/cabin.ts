@@ -39,6 +39,7 @@ export interface Cabana {
   ical_url?: string | null;
   ical_url_booking?: string | null;
   imagen_portada: string | null;
+  design?: "claro" | "oscuro" | "elegante" | "atardecer";
   imagenes: CabanaImagen[];
   videos?: CabanaVideo[];
   precios_especiales: PrecioEspecial[];

@@ -26,10 +26,7 @@ interface UserProfile {
   tiktok_user?: string | null;
   youtube_user?: string | null;
   facebook_user?: string | null;
-  theme_primary_color?: string;
-  theme_accent_color?: string;
-  theme_font?: "sans" | "serif" | "display";
-  theme_layout?: "stack" | "grid";
+  design?: "claro" | "oscuro" | "elegante" | "atardecer";
   plan?: "gratis" | "pro" | "complejo";
   plan_expires_at?: string | null;
   mp_subscription_id?: string | null;

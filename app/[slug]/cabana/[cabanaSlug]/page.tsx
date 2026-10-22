@@ -32,6 +32,7 @@ import { PublicSiteFooter } from "@/components/public/PublicSiteFooter";
 import { resolveAmenities } from "@/lib/amenities";
 import { toast } from "sonner";
 import { eachDayOfInterval, parseISO, startOfDay } from "date-fns";
+import { getDesign } from "@/lib/designs";
 
 function occupiedMatchers(ranges: FechaOcupada[]) {
   const blocked = new Set<string>();
@@ -287,9 +288,10 @@ export default function CabinDetailPublicPage() {
     })),
   ];
   const cabinAmenities = resolveAmenities(cabana.amenities);
+  const design = getDesign(cabana.design);
 
   return (
-    <div className="flex flex-1 flex-col bg-white font-public text-slate-900">
+    <div data-design={design.id} className={`site-theme flex flex-1 flex-col font-public ${design.id === "elegante" ? "font-serif" : ""}`}>
       {/* Simplified Navbar */}
       <nav className="sticky top-0 z-50 border-b border-slate-100 bg-white/95 backdrop-blur-lg">
         <div className="mx-auto flex h-14 max-w-4xl items-center px-4">
@@ -377,8 +379,7 @@ export default function CabinDetailPublicPage() {
                     disabled={[{ before: startOfDay(new Date()) }, isDisabled]}
                     modifiers={{ occupied: isDisabled }}
                     modifiersClassNames={{
-                      occupied:
-                        "!bg-slate-200 !text-slate-400 line-through opacity-80",
+                      occupied: "site-occupied-day line-through opacity-80",
                     }}
                     components={{ DayButton: PriceDayButton }}
                     numberOfMonths={1}

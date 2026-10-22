@@ -117,10 +117,6 @@ export default function SettingsPage() {
   const [facebookUser, setFacebookUser] = useState("");
   const [publicUsername, setPublicUsername] = useState("");
   const [usernameError, setUsernameError] = useState("");
-  const [themePrimaryColor, setThemePrimaryColor] = useState("#0f172a");
-  const [themeAccentColor, setThemeAccentColor] = useState("#f59e0b");
-  const [themeFont, setThemeFont] = useState<"sans" | "serif" | "display">("sans");
-  const [themeLayout, setThemeLayout] = useState<"stack" | "grid">("stack");
 
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [logoSaving, setLogoSaving] = useState(false);
@@ -274,10 +270,6 @@ export default function SettingsPage() {
     setTiktokUser(user.profile?.tiktok_user || "");
     setYoutubeUser(user.profile?.youtube_user || "");
     setFacebookUser(user.profile?.facebook_user || "");
-    setThemePrimaryColor(user.profile?.theme_primary_color || "#0f172a");
-    setThemeAccentColor(user.profile?.theme_accent_color || "#f59e0b");
-    setThemeFont(user.profile?.theme_font || "sans");
-    setThemeLayout(user.profile?.theme_layout || "stack");
     setPublicUsername(user.profile?.slug || user.username || "");
     setUsernameError("");
     setPreviewUrl(getMediaUrl(user.profile?.foto_perfil));
@@ -310,11 +302,7 @@ export default function SettingsPage() {
       normalizeSocialValue(facebookUser) !==
         (user?.profile?.facebook_user || "") ||
       normalizeUsername(publicUsername) !==
-        normalizeUsername(savedPublicUsername) ||
-      themePrimaryColor !== (user?.profile?.theme_primary_color || "#0f172a") ||
-      themeAccentColor !== (user?.profile?.theme_accent_color || "#f59e0b") ||
-      themeFont !== (user?.profile?.theme_font || "sans") ||
-      themeLayout !== (user?.profile?.theme_layout || "stack"));
+        normalizeUsername(savedPublicUsername));
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -362,10 +350,6 @@ export default function SettingsPage() {
     tiktok_user: normalizeSocialValue(tiktokUser),
     youtube_user: normalizeSocialValue(youtubeUser),
     facebook_user: normalizeSocialValue(facebookUser),
-    theme_primary_color: themePrimaryColor,
-    theme_accent_color: themeAccentColor,
-    theme_font: themeFont,
-    theme_layout: themeLayout,
   });
 
   const persist = async (): Promise<boolean> => {
@@ -399,10 +383,6 @@ export default function SettingsPage() {
       tiktok_user: payload.tiktok_user || null,
       youtube_user: payload.youtube_user || null,
       facebook_user: payload.facebook_user || null,
-      theme_primary_color: payload.theme_primary_color,
-      theme_accent_color: payload.theme_accent_color,
-      theme_font: payload.theme_font,
-      theme_layout: payload.theme_layout,
     };
 
     const body: { profile: typeof profileBody; username?: string } = {
@@ -432,10 +412,6 @@ export default function SettingsPage() {
       setTiktokUser(updatedUser.profile?.tiktok_user || "");
       setYoutubeUser(updatedUser.profile?.youtube_user || "");
       setFacebookUser(updatedUser.profile?.facebook_user || "");
-      setThemePrimaryColor(updatedUser.profile?.theme_primary_color || "#0f172a");
-      setThemeAccentColor(updatedUser.profile?.theme_accent_color || "#f59e0b");
-      setThemeFont(updatedUser.profile?.theme_font || "sans");
-      setThemeLayout(updatedUser.profile?.theme_layout || "stack");
       setPublicUsername(updatedUser.profile?.slug || updatedUser.username);
       setUsernameError("");
 
@@ -818,65 +794,26 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        {/* —— Tarjeta 4: Apariencia —— */}
+        {/* —— Tarjeta 4: Diseño —— */}
         <section className="rounded-2xl bg-white p-6 shadow-sm">
-          <h2 className="section-title mb-2">Apariencia de tu web</h2>
+          <h2 className="section-title mb-2">Diseño de tu web</h2>
           <p className="mb-5 text-sm text-slate-500">
-            Elegí una combinación segura de colores, tipografía y distribución.
-            Los cambios se aplican al sitio público.
+            Elegí uno de nuestros diseños listos para usar. Todos están optimizados
+            para que tu web se vea bien en cualquier dispositivo.
           </p>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="space-y-2 text-sm font-semibold text-slate-700">
-              Color principal
-              <span className="flex items-center gap-3 rounded-xl border border-slate-200 px-3 py-2">
-                <input
-                  type="color"
-                  value={themePrimaryColor}
-                  onChange={(event) => setThemePrimaryColor(event.target.value)}
-                  className="h-9 w-12 cursor-pointer rounded border-0 bg-transparent p-0"
-                />
-                <span className="font-mono text-xs font-normal text-slate-500">
-                  {themePrimaryColor}
-                </span>
-              </span>
-            </label>
-            <label className="space-y-2 text-sm font-semibold text-slate-700">
-              Color de acento
-              <span className="flex items-center gap-3 rounded-xl border border-slate-200 px-3 py-2">
-                <input
-                  type="color"
-                  value={themeAccentColor}
-                  onChange={(event) => setThemeAccentColor(event.target.value)}
-                  className="h-9 w-12 cursor-pointer rounded border-0 bg-transparent p-0"
-                />
-                <span className="font-mono text-xs font-normal text-slate-500">
-                  {themeAccentColor}
-                </span>
-              </span>
-            </label>
-            <label className="space-y-2 text-sm font-semibold text-slate-700">
-              Tipografía
-              <select
-                value={themeFont}
-                onChange={(event) => setThemeFont(event.target.value as typeof themeFont)}
-                className={inputBase}
-              >
-                <option value="sans">Sans · moderna</option>
-                <option value="serif">Serif · cálida</option>
-                <option value="display">Display · editorial</option>
-              </select>
-            </label>
-            <label className="space-y-2 text-sm font-semibold text-slate-700">
-              Distribución de alojamientos
-              <select
-                value={themeLayout}
-                onChange={(event) => setThemeLayout(event.target.value as typeof themeLayout)}
-                className={inputBase}
-              >
-                <option value="stack">Lista · enfocada</option>
-                <option value="grid">Grilla · visual</option>
-              </select>
-            </label>
+          <div className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="font-semibold text-slate-900">
+                Diseño actual: {user?.profile?.design === "oscuro" ? "Oscuro" : user?.profile?.design === "elegante" ? "Elegante" : user?.profile?.design === "atardecer" ? "Atardecer" : "Claro"}
+              </p>
+              <p className="mt-1 text-sm text-slate-500">Podés cambiarlo cuando quieras.</p>
+            </div>
+            <Link
+              href="/dashboard/diseno"
+              className="inline-flex min-h-11 items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-primary/90"
+            >
+              Cambiar diseño
+            </Link>
           </div>
         </section>
 
