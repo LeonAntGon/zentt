@@ -40,13 +40,13 @@ export const privacySections: LegalSection[] = [
     title: "5. Pagos y transacciones",
     paragraphs: [
       "Zentt facilita la recepción de consultas, pero no interviene en los acuerdos, ventas ni pagos entre el usuario y sus clientes finales. Esas operaciones se realizan por fuera de la Plataforma.",
-      "El pago por el uso de Zentt se gestiona mediante Checkout Pro de MercadoPago (pago único). Zentt no almacena datos completos de tarjetas; el procesamiento se rige por las políticas de MercadoPago.",
+      "El pago por el uso de Zentt se puede gestionar mediante Checkout Pro de MercadoPago (ARS) o Polar (checkout internacional en USD). En ambos casos es un pago único por 30 días. Zentt no almacena datos completos de tarjetas; cada proveedor procesa el pago bajo sus propias políticas.",
     ],
   },
   {
     title: "6. Proveedores e infraestructura",
     paragraphs: [
-      "Para operar el servicio podemos utilizar proveedores especializados, incluyendo Render para el backend, Vercel para el frontend, Supabase/PostgreSQL para base de datos y almacenamiento, Brevo para correos transaccionales, MercadoPago para cobros de planes, y Google Analytics/Google Cloud para analíticas. Podrán intervenir AWS, Cloudflare, Airbnb u otros proveedores cuando formen parte de la configuración activa del servicio.",
+      "Para operar el servicio podemos utilizar proveedores especializados, incluyendo Render para el backend, Vercel para el frontend, Supabase/PostgreSQL para base de datos y almacenamiento, Brevo para correos transaccionales, MercadoPago y Polar para cobros de planes, y Google Analytics/Google Cloud para analíticas. Podrán intervenir AWS, Cloudflare, Airbnb u otros proveedores cuando formen parte de la configuración activa del servicio.",
       "Estos proveedores pueden alojar, procesar o transferir información en servidores ubicados fuera de Argentina y cuentan con sus propias condiciones y políticas de seguridad y privacidad.",
     ],
   },
@@ -113,7 +113,7 @@ export const termsSections: LegalSection[] = [
   {
     title: "5. Planes y pagos",
     paragraphs: [
-      "El acceso a determinadas funciones requiere un plan pago. Los cobros se realizan mediante Checkout Pro de MercadoPago: el usuario paga un mes por adelantado (pago único). Cada cobro acreditado otorga 30 días de acceso al plan contratado.",
+      "El acceso a determinadas funciones requiere un plan pago. Los cobros se realizan mediante Checkout Pro de MercadoPago en pesos argentinos o Polar en USD para compras internacionales. El usuario paga un mes por adelantado (pago único) y cada cobro acreditado otorga 30 días de acceso al plan contratado.",
       "No hay renovación automática. Al vencer el período abonado, el usuario debe volver a pagar desde Configuración o la página de precios para conservar el plan. Si no lo hace, pasa al plan gratuito (1 alojamiento).",
       "Zentt puede enviar al correo registrado avisos de servicio: consultas o reservas de huéspedes, confirmación de pago y vencimiento del plan. Ante falta de pago o vencimiento, el usuario pasa al plan gratuito (1 alojamiento). Los alojamientos extra no se eliminan, pero pueden quedar sujetos a los límites del plan vigente. El plan gratuito no vence por el paso del tiempo.",
     ],
@@ -121,7 +121,7 @@ export const termsSections: LegalSection[] = [
   {
     title: "6. Disponibilidad y servicios de terceros",
     paragraphs: [
-      "El funcionamiento puede depender de Render, Vercel, Supabase, Brevo, MercadoPago, Google Analytics, servicios de almacenamiento, APIs de Airbnb/iCal y otros procesadores de pago. Cambios, caídas, límites, bloqueos o errores de dichos servicios pueden afectar la Plataforma.",
+      "El funcionamiento puede depender de Render, Vercel, Supabase, Brevo, MercadoPago, Polar, Google Analytics, servicios de almacenamiento, APIs de Airbnb/iCal y otros procesadores de pago. Cambios, caídas, límites, bloqueos o errores de dichos servicios pueden afectar la Plataforma.",
       "Zentt procurará restablecer el servicio razonablemente, pero no garantiza disponibilidad permanente ni sincronización ininterrumpida. Los calendarios iCal pueden presentar demoras o errores ajenos a Zentt.",
     ],
   },

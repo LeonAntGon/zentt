@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import api from "@/lib/api";
 import { Cabana, Mensaje, Reserva } from "@/types/cabin";
-import { nightsCount, toISODate } from "@/lib/pricing";
+import { effectiveNightPrice, nightsCount, toISODate } from "@/lib/pricing";
 import {
   eachDayOfInterval,
   parseISO,
@@ -465,6 +465,17 @@ export default function CalendarioPage() {
               showSyncIcal={selectedCabanaId !== "all"}
               syncingIcal={syncingIcal}
               onSyncIcal={handleSyncIcal}
+              priceForDate={
+                selectedCabana
+                  ? (date) =>
+                      effectiveNightPrice(
+                        date,
+                        selectedCabana.precio,
+                        selectedCabana.precios_especiales,
+                        selectedCabana.precios_por_fecha
+                      ).precio
+                  : undefined
+              }
             />
           </div>
 

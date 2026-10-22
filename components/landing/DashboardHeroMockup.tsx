@@ -105,7 +105,7 @@ export function DashboardHeroMockup() {
         </div>
         <div className="mx-auto flex min-w-0 max-w-sm flex-1 items-center gap-2 rounded-full bg-white px-3 py-1 text-[10px] font-medium text-slate-400 shadow-inner">
           <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400" />
-          <span className="truncate">panel.zentt.app / dashboard</span>
+          <span className="truncate">zentt.agency / dashboard</span>
         </div>
       </div>
 

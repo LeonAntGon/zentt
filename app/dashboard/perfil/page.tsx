@@ -138,10 +138,10 @@ export default function PerfilPage() {
   const planLabel =
     plan === "complejo" ? "Complejo" : plan === "pro" ? "Pro" : "Gratis";
   const publicPath = user?.profile?.slug
-    ? `zentt.app/${user.profile.slug}`
+    ? `zentt.agency/${user.profile.slug}`
     : user?.username
-      ? `zentt.app/${user.username}`
-      : "zentt.app/tu-usuario";
+      ? `zentt.agency/${user.username}`
+      : "zentt.agency/tu-usuario";
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();

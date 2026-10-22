@@ -1,6 +1,19 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  transpilePackages: ["@zentt/ui"],
+  turbopack: {
+    resolveAlias: {
+      "react-native": "react-native-web",
+    },
+  },
+  webpack(config) {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      "react-native$": require.resolve("react-native-web"),
+    };
+    return config;
+  },
   async redirects() {
     return [
       {

@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { getMediaUrl } from "@/lib/media";
 import { Cabana } from "@/types/cabin";
 import { MapPin, Building2, CloudOff } from "lucide-react";
@@ -29,6 +29,16 @@ interface PublicWebsiteData {
   youtube_user?: string | null;
   facebook_user?: string | null;
   ubicacion?: string | null;
+  theme?: {
+    primary_color?: string;
+    accent_color?: string;
+    font?: "sans" | "serif" | "display";
+    layout?: "stack" | "grid";
+  };
+}
+
+function safeThemeColor(value: string | undefined, fallback: string) {
+  return value && /^#[0-9a-f]{6}$/i.test(value) ? value : fallback;
 }
 
 function InstagramIcon({ className }: { className?: string }) {
@@ -121,6 +131,17 @@ export default async function LinktreePage({
     siteData.nombre_negocio || `${siteData.first_name}'s Place`;
   const logoUrl = getMediaUrl(siteData.foto_perfil);
   const ubicacion = siteData.ubicacion || null;
+  const theme = siteData.theme || {};
+  const themeStyle = {
+    "--site-primary": safeThemeColor(theme.primary_color, "#0f172a"),
+    "--site-accent": safeThemeColor(theme.accent_color, "#f59e0b"),
+  } as CSSProperties;
+  const fontClass =
+    theme.font === "serif"
+      ? "font-serif"
+      : theme.font === "display"
+        ? "font-heading"
+        : "font-public";
 
   const igHref = socialHref(siteData.instagram_user, "instagram");
   const fbHref = socialHref(siteData.facebook_user, "facebook");
@@ -172,7 +193,7 @@ export default async function LinktreePage({
     cabanasCount === 1 ? "Nuestro alojamiento" : "Nuestros alojamientos";
 
   return (
-    <div className="flex flex-1 flex-col bg-gradient-to-b from-slate-50 to-white font-public">
+    <div style={themeStyle} className={`site-theme flex flex-1 flex-col bg-gradient-to-b from-slate-50 to-white ${fontClass}`}>
       <div className="mx-auto w-full max-w-md flex-1 px-5 py-10 sm:py-16">
         {/* Avatar / Logo */}
         <div className="flex flex-col items-center">
@@ -190,7 +211,7 @@ export default async function LinktreePage({
               />
             </div>
           ) : (
-            <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-slate-900 text-3xl font-bold text-white shadow-lg">
+              <div className="site-theme-primary flex h-24 w-24 items-center justify-center rounded-2xl text-3xl font-bold text-white shadow-lg">
               {nombreParaMostrar.charAt(0).toUpperCase()}
             </div>
           )}
@@ -218,12 +239,12 @@ export default async function LinktreePage({
 
         {/* Cabanas Section */}
         <div className="mt-10">
-          <p className="mb-4 text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">
+           <p className="site-theme-accent mb-4 text-center text-[11px] font-semibold uppercase tracking-[0.2em]">
             {sectionLabel}
           </p>
 
           {cabanasCount > 0 ? (
-            <div className="space-y-3">
+            <div className={theme.layout === "grid" ? "grid grid-cols-2 gap-3" : "space-y-3"}>
               {siteData.cabanas.map((c) => (
                 <CabinLinkCard
                   key={c.id}

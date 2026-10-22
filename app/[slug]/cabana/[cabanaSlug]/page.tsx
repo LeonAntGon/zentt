@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { type DateRange } from "react-day-picker";
+import { type DateRange, type DayButtonProps } from "react-day-picker";
 import api from "@/lib/api";
 import { getMediaUrl } from "@/lib/media";
 import {
@@ -12,6 +12,7 @@ import {
   nightsCountInclusive,
   toExclusiveCheckout,
   toISODate,
+  effectiveNightPrice,
 } from "@/lib/pricing";
 import { Cabana, FechaOcupada } from "@/types/cabin";
 import { Calendar } from "@/components/ui/calendar";
@@ -45,6 +46,36 @@ function occupiedMatchers(ranges: FechaOcupada[]) {
     for (const d of days) blocked.add(toISODate(d));
   }
   return (date: Date) => blocked.has(toISODate(date));
+}
+
+function compactPrice(value: number) {
+  if (!Number.isFinite(value)) return "";
+  if (value >= 1000000) return `$${Math.round(value / 1000000)}M`;
+  if (value >= 1000) return `$${Math.round(value / 1000)}k`;
+  return `$${Math.round(value)}`;
+}
+
+function PublicPriceDayButton({
+  day,
+  modifiers,
+  getPrice,
+  ...buttonProps
+}: DayButtonProps & { getPrice: (date: Date) => number }) {
+  const ref = React.useRef<HTMLButtonElement>(null);
+  React.useEffect(() => {
+    if (modifiers.focused) ref.current?.focus();
+  }, [modifiers.focused]);
+
+  return (
+    <button ref={ref} {...buttonProps} className={`${buttonProps.className || ""} relative`}>
+      <span className="flex h-full w-full flex-col items-center justify-center leading-none">
+        <span>{buttonProps.children}</span>
+        <span className="mt-0.5 max-w-full truncate text-[9px] font-medium text-slate-400">
+          {compactPrice(getPrice(day.date))}
+        </span>
+      </span>
+    </button>
+  );
 }
 
 export default function CabinDetailPublicPage() {
@@ -90,6 +121,28 @@ export default function CabinDetailPublicPage() {
   }, [slug, cabanaSlug]);
 
   const isDisabled = useMemo(() => occupiedMatchers(ocupadas), [ocupadas]);
+
+  const getPriceForDay = useMemo(
+    () => (date: Date) =>
+      effectiveNightPrice(
+        date,
+        cabana?.precio || "0",
+        cabana?.precios_especiales || [],
+        cabana?.precios_por_fecha || []
+      ).precio,
+    [cabana]
+  );
+
+  const PriceDayButton = useMemo(
+    () => {
+      const Button = (props: DayButtonProps) => (
+        <PublicPriceDayButton {...props} getPrice={getPriceForDay} />
+      );
+      Button.displayName = "PublicPriceDayButton";
+      return Button;
+    },
+    [getPriceForDay]
+  );
 
   const lastNight = range?.from ? (range.to ?? range.from) : undefined;
 
@@ -322,19 +375,28 @@ export default function CabinDetailPublicPage() {
                     selected={range}
                     onSelect={setRange}
                     disabled={[{ before: startOfDay(new Date()) }, isDisabled]}
+                    modifiers={{ occupied: isDisabled }}
+                    modifiersClassNames={{
+                      occupied:
+                        "!bg-slate-200 !text-slate-400 line-through opacity-80",
+                    }}
+                    components={{ DayButton: PriceDayButton }}
                     numberOfMonths={1}
                     className="w-full p-0"
                   />
                 </div>
                 <div className="mt-2 flex gap-3 px-1 text-[10px] text-slate-500">
                   <span className="flex items-center gap-1">
-                    <span className="h-2 w-2 rounded-sm bg-slate-300" /> Ocupado
+                    <span className="h-2 w-2 rounded-sm bg-slate-300" /> No disponible
                   </span>
                   <span className="flex items-center gap-1">
                     <span className="h-2 w-2 rounded-sm bg-primary" /> Tu
                     selección
                   </span>
                 </div>
+                <p className="mt-2 px-1 text-[10px] text-slate-400">
+                  El valor debajo de cada día es la tarifa estimada de esa noche.
+                </p>
 
                 {rangeHasConflict && (
                   <div className="mt-3 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700">

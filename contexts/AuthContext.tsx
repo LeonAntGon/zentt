@@ -6,8 +6,10 @@ import {
   useState,
   useCallback,
   useEffect,
+  useRef,
   type ReactNode,
 } from "react";
+import { usePathname } from "next/navigation";
 import api from "@/lib/api";
 import { normalizeUsername } from "@/lib/username";
 
@@ -24,6 +26,10 @@ interface UserProfile {
   tiktok_user?: string | null;
   youtube_user?: string | null;
   facebook_user?: string | null;
+  theme_primary_color?: string;
+  theme_accent_color?: string;
+  theme_font?: "sans" | "serif" | "display";
+  theme_layout?: "stack" | "grid";
   plan?: "gratis" | "pro" | "complejo";
   plan_expires_at?: string | null;
   mp_subscription_id?: string | null;
@@ -62,11 +68,22 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const pathname = usePathname();
+  const isHarnessRoute = pathname?.startsWith("/dev/components") ?? false;
+  const isHarnessRouteRef = useRef(isHarnessRoute);
+  isHarnessRouteRef.current = isHarnessRoute;
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   const checkCurrentUser = useCallback(async (): Promise<User | null> => {
+    if (isHarnessRouteRef.current) {
+      setLoading(false);
+      setIsAuthenticated(false);
+      setUser(null);
+      return null;
+    }
+
     const token = localStorage.getItem("access_token");
     if (!token) {
       setLoading(false);
@@ -110,8 +127,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   );
 
   useEffect(() => {
-    checkCurrentUser();
-  }, [checkCurrentUser]);
+    if (isHarnessRoute) {
+      setLoading(false);
+      setIsAuthenticated(false);
+      setUser(null);
+      return;
+    }
+    void checkCurrentUser();
+  }, [checkCurrentUser, isHarnessRoute]);
 
   const login = useCallback(
     async (username: string, password: string) => {

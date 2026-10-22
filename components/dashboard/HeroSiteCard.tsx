@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CheckCircle2, Copy, ExternalLink, Eye, Home } from "lucide-react";
+import { CheckCircle2, Copy, ExternalLink, Eye, Home, Pencil } from "lucide-react";
 
 type HeroSiteCardProps = {
   slug?: string | null;
@@ -67,6 +67,14 @@ export function HeroSiteCard({
               >
                 <ExternalLink size={16} />
               </a>
+              <Link
+                href="/dashboard/configuracion"
+                aria-label="Editar web"
+                className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+              >
+                <Pencil size={14} />
+                <span className="hidden sm:inline">Editar web</span>
+              </Link>
             </>
           ) : (
             <Link

@@ -258,6 +258,21 @@
   vertical-align: middle;
 }
 
+/* Safe public-site theme tokens. Values are validated by the API and are
+   applied only to customer-facing pages. */
+.site-theme-primary {
+  background-color: var(--site-primary, #0f172a);
+}
+
+.site-theme-accent {
+  color: var(--site-accent, #f59e0b);
+}
+
+.site-theme .text-primary,
+.site-theme a:hover {
+  color: var(--site-primary, #0f172a);
+}
+
 .rdp-zentt .rdp-day_button {
   margin-inline: auto;
   width: min(var(--rdp-day_button-width), 100%);

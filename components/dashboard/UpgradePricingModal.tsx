@@ -8,9 +8,11 @@ import api from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   formatPlanPrice,
+  formatPlanPriceUSD,
   normalizePlan,
   PLAN_LIMITS,
   PLAN_PRICE_PERIOD,
+  POLAR_PRICES_USD,
 } from "@/lib/planLimits";
 import { ZenttMarkIcon } from "@/components/icons/ZenttMarkIcon";
 import { useEmailVerify } from "@/components/dashboard/EmailVerify";
@@ -18,6 +20,10 @@ import {
   PlanQuotaChip,
   UpgradeProButton,
 } from "@/components/billing/PlanConversionUi";
+import {
+  isPolarCheckoutEnabled,
+  PolarCheckoutButton,
+} from "@/components/billing/PolarCheckoutButton";
 
 type PaidPlan = "pro" | "complejo";
 
@@ -181,8 +187,21 @@ export function UpgradePricingModal({
                   {isCurrent ? "Renovar 1 mes" : "Pagar 1 mes"}
                 </UpgradeProButton>
                 <p className="mt-2 text-center text-xs text-gray-500">
-                  Pago único por 30 días vía Mercado Pago
+                  Pago único por 30 días vía Mercado Pago (ARS)
                 </p>
+                {isPolarCheckoutEnabled ? (
+                  <>
+                    <PolarCheckoutButton
+                      plan="pro"
+                      className="mt-2 h-11 w-full"
+                      disabled={checkoutLoading !== null}
+                      onLoadingChange={(busy) => setCheckoutLoading(busy ? "pro" : null)}
+                    />
+                    <p className="mt-1 text-center text-xs text-slate-500">
+                      Checkout en USD · {formatPlanPriceUSD(POLAR_PRICES_USD.pro)}
+                    </p>
+                  </>
+                ) : null}
               </div>
             );
           })()}
@@ -235,6 +254,19 @@ export function UpgradePricingModal({
                     `Pagar ${plan.name}`
                   )}
                 </button>
+                {isPolarCheckoutEnabled ? (
+                  <>
+                    <PolarCheckoutButton
+                      plan="complejo"
+                      className="mt-2 h-11 w-full"
+                      disabled={checkoutLoading !== null}
+                      onLoadingChange={(busy) => setCheckoutLoading(busy ? "complejo" : null)}
+                    />
+                    <p className="mt-1 text-center text-xs text-slate-500">
+                      Checkout en USD · {formatPlanPriceUSD(POLAR_PRICES_USD.complejo)}
+                    </p>
+                  </>
+                ) : null}
               </div>
             );
           })()}

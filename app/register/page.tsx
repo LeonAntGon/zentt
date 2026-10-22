@@ -203,7 +203,7 @@ function RegisterForm() {
               <p className="truncate text-xs text-slate-400">
                 URL:{" "}
                 <span className="font-medium text-slate-600">
-                  zentt.app/{normalizeUsername(formData.username) || "tu-usuario"}
+                  zentt.agency/{normalizeUsername(formData.username) || "tu-usuario"}
                 </span>
               </p>
             </div>

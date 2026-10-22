@@ -11,10 +11,20 @@ import {
   PlanQuotaChip,
   UpgradeProButton,
 } from "@/components/billing/PlanConversionUi";
+import {
+  isPolarCheckoutEnabled,
+  PolarCheckoutButton,
+} from "@/components/billing/PolarCheckoutButton";
 import { ConfirmActionModal } from "@/components/dashboard/ConfirmActionModal";
 import { useAuth } from "@/contexts/AuthContext";
 import api from "@/lib/api";
-import { formatPlanPrice, PLAN_LIMITS, PLAN_PRICE_PERIOD } from "@/lib/planLimits";
+import {
+  formatPlanPrice,
+  formatPlanPriceUSD,
+  PLAN_LIMITS,
+  PLAN_PRICE_PERIOD,
+  POLAR_PRICES_USD,
+} from "@/lib/planLimits";
 
 type PlanId = "gratis" | "pro" | "complejo";
 
@@ -81,8 +91,32 @@ const PricingSection = () => {
   const router = useRouter();
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState<PlanId | null>(null);
+  const [polarPrices, setPolarPrices] = useState(POLAR_PRICES_USD);
 
   const currentPlan = user?.profile?.plan || "gratis";
+
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .get<{ plans?: Array<{ id: string; price_usd?: string | number }> }>(
+        "/payments/plans/"
+      )
+      .then(({ data }) => {
+        if (cancelled) return;
+        const next = { ...POLAR_PRICES_USD };
+        for (const plan of data.plans || []) {
+          if (plan.id === "pro" || plan.id === "complejo") {
+            const price = Number(plan.price_usd);
+            if (Number.isFinite(price) && price > 0) next[plan.id] = price;
+          }
+        }
+        setPolarPrices(next);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -92,10 +126,15 @@ const PricingSection = () => {
     const planParam = params.get("plan");
     const expectedPlan =
       planParam === "pro" || planParam === "complejo" ? planParam : null;
+    const provider = params.get("provider");
     let cancelled = false;
 
     if (payment === "success") {
-      toast.success("Pago recibido. Confirmando la activación del plan...");
+      toast.success(
+        provider === "polar"
+          ? "Pago internacional recibido. Confirmando la activación del plan..."
+          : "Pago recibido. Confirmando la activación del plan...",
+      );
       if (expectedPlan) {
         void waitForPlan(expectedPlan).then((activated) => {
           if (cancelled) return;
@@ -322,9 +361,25 @@ const PricingSection = () => {
                     )}
                   </Button>
                 )}
+                {isPolarCheckoutEnabled &&
+                (plan.id === "pro" || plan.id === "complejo") &&
+                isAuthenticated &&
+                !loading ? (
+                  <div className="mt-2 space-y-1">
+                    <PolarCheckoutButton
+                      plan={plan.id}
+                      className="h-11 w-full"
+                      disabled={checkoutLoading !== null}
+                      onLoadingChange={(busy) => setCheckoutLoading(busy ? plan.id : null)}
+                    />
+                    <p className="text-center text-xs text-slate-500">
+                      Checkout en USD · {formatPlanPriceUSD(polarPrices[plan.id])}
+                    </p>
+                  </div>
+                ) : null}
                 {plan.price > 0 && (
                   <p className="mt-2 text-center text-xs text-gray-500">
-                    Pago único por 30 días vía Mercado Pago
+                    Pago único por 30 días · Mercado Pago en ARS
                   </p>
                 )}
               </div>
@@ -333,8 +388,8 @@ const PricingSection = () => {
         </div>
 
         <p className="text-center text-sm text-muted-foreground mt-8">
-          Pago único por 30 días con Mercado Pago. Al vencer, volvé a pagar
-          para seguir con el plan.
+          Pago único por 30 días: Mercado Pago en ARS o checkout internacional
+          en USD con Polar. Al vencer, volvé a pagar para seguir con el plan.
         </p>
 
         <div className="mt-16 text-center">

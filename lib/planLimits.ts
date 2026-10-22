@@ -1,5 +1,12 @@
 export type PlanId = "gratis" | "pro" | "complejo";
 
+export const POLAR_PRICES_USD: Record<Exclude<PlanId, "gratis">, number> = {
+  // Fallback shown while the public plans endpoint is loading. The backend is
+  // the source of truth and returns its configured Polar product prices.
+  pro: Number(process.env.NEXT_PUBLIC_POLAR_PRICE_PRO_USD || "9.99"),
+  complejo: Number(process.env.NEXT_PUBLIC_POLAR_PRICE_COMPLEJO_USD || "19.99"),
+};
+
 export const PLAN_LIMITS: Record<
   PlanId,
   { maxCabanas: number; priceArs: number; label: string }
@@ -37,6 +44,17 @@ export function formatPlanPrice(ars: number): string {
   }).format(abs);
   const label = `$${amount} ARS`;
   return ars < 0 ? `-${label}` : label;
+}
+
+export function formatPlanPriceUSD(value: number | string): string {
+  const amount = Number(value);
+  if (!Number.isFinite(amount) || amount <= 0) return "USD";
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
 }
 
 export function formatCurrencyCompact(value: number): string {

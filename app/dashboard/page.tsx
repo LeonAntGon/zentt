@@ -25,6 +25,7 @@ import { HeroSiteCard } from "@/components/dashboard/HeroSiteCard";
 import { InquiryPreviewCard } from "@/components/dashboard/InquiryPreviewCard";
 import type { MessageOrigen } from "@/types/cabin";
 import { formatCurrencyCompact, getMaxCabanas } from "@/lib/planLimits";
+import { getPublicSiteUrl } from "@/lib/publicSite";
 
 interface Mensaje {
   id: number;
@@ -162,8 +163,7 @@ export default function OverviewPage() {
   const slug = user?.profile?.slug;
 
   const publicUrl = useMemo(() => {
-    if (typeof window === "undefined") return "";
-    return slug ? `${window.location.origin}/${slug}` : "";
+    return getPublicSiteUrl(slug);
   }, [slug]);
 
   const businessProfile = useMemo(

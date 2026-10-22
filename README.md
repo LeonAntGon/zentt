@@ -1,54 +1,39 @@
-# Zentt — new-web (Next.js)
+# Zentt Web — Next.js
 
-Frontend Next.js (App Router) del SaaS Zentt. Clon funcional de `react/web` (Vite), con landing basada en AcmeHero.
+Frontend web del SaaS Zentt (Next.js App Router). El repo contiene `packages/ui`, origen de los componentes compartidos con `mobile`, y el harness web.
 
-## Requisitos
+## Desarrollo
 
-- Node.js 18+
-- Backend Django en `http://localhost:8000` (`django/1st-proyect`)
-
-## Arranque
+- Node.js 22+
+- Backend Django: `../backend` dentro del workspace local.
 
 ```bash
-cd react/new-web
+cd web/frontend
 npm install
 npm run dev
 ```
 
-App en [http://localhost:3000](http://localhost:3000).
+La app queda en [http://localhost:3000](http://localhost:3000). Configurá `.env.local` usando `.env.example`.
 
-Variables en `.env.local`:
+## Harness sin backend
 
-```env
-NEXT_PUBLIC_API_URL=http://localhost:8000/api
-NEXT_PUBLIC_MEDIA_URL=http://localhost:8000
-```
+Abrí [http://localhost:3000/dev/components](http://localhost:3000/dev/components). El catálogo usa fixtures de `packages/ui/src/harness/fixtures.ts`, no importa `lib/api` y permite alternar estados de carga, error, vacío, validación y disabled.
 
-## Rutas
+## Pagos
 
-| Ruta | Descripción |
-|------|-------------|
-| `/` | Landing (AcmeHero / Zentt) |
-| `/login` | Login JWT |
-| `/register` | Registro de dueños |
-| `/dashboard` | Panel (Overview) |
-| `/dashboard/cabanas` | Listado de alojamientos |
-| `/dashboard/cabanas/crear` | Crear alojamiento |
-| `/dashboard/cabanas/editar/[slug]` | Editar alojamiento |
-| `/dashboard/mensajes` | Inbox |
-| `/dashboard/configuracion` | Perfil / negocio |
-| `/[slug]` | Sitio público del complejo |
-| `/[slug]/cabana/[cabanaSlug]` | Detalle público de alojamiento |
+- Mercado Pago conserva el checkout en ARS para Argentina.
+- Polar inicia el checkout en Django mediante `POST /api/payments/create-polar-checkout/`; el navegador nunca recibe el token secreto.
+- El botón Polar solo se muestra si `NEXT_PUBLIC_POLAR_CHECKOUT_ENABLED=true`. Ver `../backend/DEPLOYMENT.md` para configurar sandbox y producción.
+
+## UI compartida con React Native
+
+`packages/ui` usa primitivas de React Native y `react-native-web` para el render web. En este workspace local, `mobile` referencia el paquete con `file:../web/frontend/packages/ui`. Antes de compilar el repo móvil desde un checkout independiente, publicar una versión en el registro elegido (privado si corresponde) y reemplazar esa dependencia `file:` por una versión publicada.
 
 ## Scripts
 
 - `npm run dev` — desarrollo
-- `npm run build` — build producción
-- `npm run start` — servir build
+- `npm run build` — build de producción
+- `npm run start` — servir el build
 - `npm run lint` — ESLint
 
-## Notas
-
-- El frontend Vite original (`react/web`) sigue intacto.
-- Auth: JWT en `localStorage` (`access_token` / `refresh_token`).
-- CORS del backend ya permite `http://localhost:3000`.
+La autenticación web conserva JWT en `localStorage`; la app nativa usa `expo-secure-store`.
