@@ -10,6 +10,7 @@ import { TikTokIcon } from "@/components/icons/TikTokIcon";
 import { YouTubeIcon } from "@/components/icons/YouTubeIcon";
 import { FacebookIcon } from "@/components/icons/FacebookIcon";
 import { PublicSiteFooter } from "@/components/public/PublicSiteFooter";
+import { RetryButton } from "@/components/public/RetryButton";
 import { socialHref } from "@/lib/socialLinks";
 import { getDesign, type DesignKey } from "@/lib/designs";
 
@@ -58,22 +59,36 @@ function SitePanel({
   icon,
   title,
   message,
+  showRetry,
 }: {
   icon: ReactNode;
   title: string;
   message: string;
+  showRetry?: boolean;
 }) {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-slate-50 to-white text-center px-6">
-      {icon}
-      <h1 className="text-2xl font-bold text-slate-900 mb-2">{title}</h1>
-      <p className="text-slate-500 mb-8 text-sm">{message}</p>
-      <Link
-        href="/"
-        className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-xs font-bold uppercase tracking-widest text-white transition-colors hover:bg-primary/90"
-      >
-        Volver a Zentt
-      </Link>
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-slate-50 to-white px-6 text-center">
+      <div className="max-w-md">
+        {icon}
+        <p className="mt-6 font-heading text-[10px] font-bold uppercase tracking-[0.3em] text-primary">
+          Sitio público
+        </p>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+          {title}
+        </h1>
+        <p className="mt-4 text-base leading-relaxed text-slate-500">{message}</p>
+        <div className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:flex-row">
+          <Link
+            href="/"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary/90"
+          >
+            Volver a Zentt
+          </Link>
+          {showRetry && (
+            <RetryButton />
+          )}
+        </div>
+      </div>
     </div>
   );
 }
@@ -102,12 +117,12 @@ export default async function LinktreePage({
     // Error de red o de parseo; se muestra un panel genérico abajo.
   }
 
-  if (status === 404 || (!siteData && status > 0 && status !== 500)) {
+  if (status === 404) {
     return (
       <SitePanel
-        icon={<Building2 size={56} className="text-slate-200 mb-6" />}
+        icon={<Building2 size={56} className="mb-6 text-slate-200" />}
         title="Sitio no encontrado"
-        message="La página web que buscas no existe o ha sido dada de baja."
+        message="La página web que buscás no existe o fue dada de baja. Revisá la dirección o volvé más tarde."
       />
     );
   }
@@ -115,9 +130,10 @@ export default async function LinktreePage({
   if (!siteData) {
     return (
       <SitePanel
-        icon={<CloudOff size={56} className="text-slate-200 mb-6" />}
+        icon={<CloudOff size={56} className="mb-6 text-slate-200" />}
         title="No pudimos cargar el sitio"
-        message="Hubo un problema inesperado. Volvé a intentar en unos minutos."
+        message="Estamos teniendo problemas para contactar al servidor. Esto suele durar unos segundos."
+        showRetry
       />
     );
   }

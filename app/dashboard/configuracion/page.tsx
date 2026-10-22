@@ -5,11 +5,10 @@ import Link from "next/link";
 import { useAuth, type User } from "@/contexts/AuthContext";
 import api from "@/lib/api";
 import { getMediaUrl } from "@/lib/media";
-import { BusinessAvatar } from "@/components/dashboard/BusinessAvatar";
+import { ImageUploader } from "@/components/dashboard/ImageUploader";
 import { Label } from "@/components/ui/label";
 import {
   Building2,
-  Camera,
   Check,
   CreditCard,
   Loader2,
@@ -304,11 +303,7 @@ export default function SettingsPage() {
       normalizeUsername(publicUsername) !==
         normalizeUsername(savedPublicUsername));
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (!file) return;
-
+  const handleLogoChange = async (file: File) => {
     const localPreview = URL.createObjectURL(file);
     setPreviewUrl(localPreview);
     setLogoSaving(true);
@@ -326,6 +321,22 @@ export default function SettingsPage() {
       toast.error("No se pudo guardar el logo");
     } finally {
       URL.revokeObjectURL(localPreview);
+      setLogoSaving(false);
+    }
+  };
+
+  const handleLogoRemove = async () => {
+    setLogoSaving(true);
+    try {
+      const { data } = await api.patch<User>("/accounts/me/", {
+        profile: { foto_perfil: null },
+      });
+      setUser(data);
+      setPreviewUrl(null);
+      toast.success("Logo eliminado");
+    } catch {
+      toast.error("No se pudo eliminar el logo");
+    } finally {
       setLogoSaving(false);
     }
   };
@@ -487,46 +498,18 @@ export default function SettingsPage() {
             Identidad pública
           </h2>
 
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
-            <div className="relative h-28 w-28 shrink-0">
-              <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-xl bg-slate-100">
-                {previewUrl ? (
-                  <img
-                    src={previewUrl}
-                    alt="Logo del negocio"
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <BusinessAvatar
-                    fotoPerfil={null}
-                    nombreNegocio={nombre}
-                    size="sm"
-                    className="h-28 w-28 rounded-xl border-0 shadow-none"
-                  />
-                )}
-              </div>
-              <label
-                className={`absolute -bottom-1 -right-1 flex h-9 w-9 items-center justify-center rounded-full bg-primary text-white shadow-md shadow-primary/20 transition-all duration-300 ease-in-out hover:bg-primary/90 ${
-                  logoSaving
-                    ? "pointer-events-none opacity-70"
-                    : "cursor-pointer"
-                }`}
-                title="Subir logo"
-              >
-                {logoSaving ? (
-                  <Loader2 size={16} className="animate-spin" />
-                ) : (
-                  <Camera size={16} />
-                )}
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  disabled={logoSaving}
-                  onChange={handleFileChange}
-                />
-              </label>
-            </div>
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
+            <ImageUploader
+              value={previewUrl}
+              onChange={handleLogoChange}
+              onRemove={handleLogoRemove}
+              uploading={logoSaving}
+              onError={(message) => toast.error(message)}
+              aspect="square"
+              placeholder="Subir logo"
+              fallbackInitial={nombre || user?.first_name || undefined}
+              className="h-28 w-28 shrink-0"
+            />
 
             <div className="flex-1 space-y-2">
               <Label

@@ -258,17 +258,26 @@ export default function CabinDetailPublicPage() {
 
   if (!cabana)
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-white px-6 text-center">
-        <Building2 size={48} className="text-slate-200" />
-        <p className="text-sm font-medium text-slate-500">
-          No pudimos encontrar este alojamiento.
-        </p>
-        <button
-          onClick={() => router.push(`/${slug}`)}
-          className="rounded-full bg-primary px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-white transition-colors hover:bg-primary/90"
-        >
-          Volver
-        </button>
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-gradient-to-b from-slate-50 to-white px-6 text-center">
+        <div className="max-w-md">
+          <Building2 size={56} className="mx-auto mb-6 text-slate-200" />
+          <p className="font-heading text-[10px] font-bold uppercase tracking-[0.3em] text-primary">
+            Alojamiento
+          </p>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
+            No encontramos este alojamiento
+          </h1>
+          <p className="mt-4 text-base text-slate-500">
+            Puede que se haya movido o que la dirección no sea correcta.
+          </p>
+          <button
+            onClick={() => router.push(`/${slug}`)}
+            className="mt-8 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary/90"
+          >
+            <ArrowLeft size={17} />
+            Volver al sitio
+          </button>
+        </div>
       </div>
     );
 

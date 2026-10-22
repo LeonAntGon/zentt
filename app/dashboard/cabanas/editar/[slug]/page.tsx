@@ -15,8 +15,8 @@ import {
   cabanaPriceInputClass,
   cabanaSectionClass,
   cabanaTextareaClass,
-  cabanaUploadButtonClass,
 } from "@/components/dashboard/cabana-form-styles";
+import { ImageUploadButton } from "@/components/dashboard/ImageUploader";
 import { normalizeAmenities } from "@/lib/amenities";
 import {
   Save,
@@ -84,6 +84,7 @@ export default function EditCabanaPage() {
   }>({ open: false, method: "WA" });
   const [imageConfirm, setImageConfirm] = useState<ImageConfirmState>(null);
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [savingPrecios, setSavingPrecios] = useState(false);
 
   const hasPhone = Boolean(user?.profile?.telefono?.trim());
@@ -326,15 +327,14 @@ export default function EditCabanaPage() {
 
   const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 
-  const handleSubirImagen = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleSubirImagen = async (files: FileList) => {
+    const file = files[0];
     if (!file || !cabana) return;
 
     if (!file.type || !file.type.startsWith("image/")) {
       toast.error(
         `El archivo "${file.name}" no es una imagen compatible. Solo se aceptan JPG, PNG y WebP.`,
       );
-      e.target.value = "";
       return;
     }
 
@@ -343,10 +343,10 @@ export default function EditCabanaPage() {
       toast.error(
         `El archivo "${file.name}" pesa ${mb} MB. El tamaño máximo es 10 MB.`,
       );
-      e.target.value = "";
       return;
     }
 
+    setUploadingImage(true);
     const imgData = new FormData();
     imgData.append("imagen", file);
 
@@ -360,14 +360,12 @@ export default function EditCabanaPage() {
       toast.success("Imagen subida con éxito");
     } catch (error) {
       console.error("Error subiendo imagen", error);
-      const msg =
-        axios.isAxiosError(error) &&
-        error.response?.data?.error;
+      const msg = axios.isAxiosError(error) && error.response?.data?.error;
       toast.error(
         msg || "No se pudo subir la imagen. Probá con otra imagen o un tamaño menor.",
       );
     } finally {
-      e.target.value = "";
+      setUploadingImage(false);
     }
   };
 
@@ -759,15 +757,13 @@ export default function EditCabanaPage() {
                 >
                   <ImageIcon size={20} className="text-primary" /> Galería
                 </h2>
-                <label className={cabanaUploadButtonClass}>
+                <ImageUploadButton
+                  onChange={handleSubirImagen}
+                  uploading={uploadingImage}
+                  accept="image/*"
+                >
                   <UploadCloud size={16} /> Subir Foto
-                  <input
-                    type="file"
-                    className="hidden"
-                    accept="image/*"
-                    onChange={handleSubirImagen}
-                  />
-                </label>
+                </ImageUploadButton>
               </div>
               <p className="-mt-3 mb-4 text-xs text-slate-400">
                 Solo imágenes (JPG, PNG, WebP…)

@@ -7,6 +7,12 @@ export const MEDIA_BASE_URL =
 
 export function getMediaUrl(url?: string | null): string | null {
   if (!url) return null;
-  if (url.startsWith("http")) return url;
+  if (
+    url.startsWith("http") ||
+    url.startsWith("blob:") ||
+    url.startsWith("data:")
+  ) {
+    return url;
+  }
   return `${MEDIA_BASE_URL}${url}`;
 }

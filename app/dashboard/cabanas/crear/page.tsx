@@ -29,8 +29,8 @@ import {
   cabanaPriceInputClass,
   cabanaSectionClass,
   cabanaTextareaClass,
-  cabanaUploadButtonClass,
 } from "@/components/dashboard/cabana-form-styles";
+import { ImageUploadButton } from "@/components/dashboard/ImageUploader";
 import type { Cabana, PrecioPorFecha } from "@/types/cabin";
 import {
   ArrowLeft,
@@ -211,9 +211,8 @@ export default function CreateCabanaPage() {
     [errors, formData.nombre, formData.precio, formData.capacidad]
   );
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files) return;
-    const filesArray = Array.from(e.target.files);
+  const handleImageChange = (files: FileList) => {
+    const filesArray = Array.from(files);
     const accepted: File[] = [];
 
     for (const file of filesArray) {
@@ -233,15 +232,11 @@ export default function CreateCabanaPage() {
       accepted.push(file);
     }
 
-    if (accepted.length === 0) {
-      e.target.value = "";
-      return;
-    }
+    if (accepted.length === 0) return;
 
     setSelectedFiles((prev) => [...prev, ...accepted]);
     const newPreviews = accepted.map((file) => URL.createObjectURL(file));
     setPreviews((prev) => [...prev, ...newPreviews]);
-    e.target.value = "";
   };
 
   const removeImage = (index: number) => {
@@ -720,16 +715,13 @@ export default function CreateCabanaPage() {
                 >
                   <ImageIcon size={20} className="text-primary" /> Galería de fotos
                 </h2>
-                <label className={cabanaUploadButtonClass}>
+                <ImageUploadButton
+                  onChange={handleImageChange}
+                  accept="image/*"
+                  multiple
+                >
                   <UploadCloud size={16} /> Seleccionar
-                  <input
-                    type="file"
-                    multiple
-                    className="hidden"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                  />
-                </label>
+                </ImageUploadButton>
               </div>
               <p className="-mt-3 mb-4 text-xs text-slate-400">
                 Solo imágenes (JPG, PNG, WebP…)
