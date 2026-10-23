@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type CSSProperties } from "react";
 import Link from "next/link";
-import { Check, ExternalLink, Monitor, Palette, Smartphone } from "lucide-react";
+import { Check, ExternalLink, Palette } from "lucide-react";
 import { toast } from "sonner";
 import api from "@/lib/api";
 import { useAuth, type User } from "@/contexts/AuthContext";
@@ -17,13 +17,11 @@ function DesignPreview({
   businessName,
   cabanas,
   logo,
-  device,
 }: {
   design: DesignKey;
   businessName: string;
   cabanas: Cabana[];
   logo: string | null;
-  device: "phone" | "desktop";
 }) {
   const definition = getDesign(design);
   const style: PreviewStyle = {
@@ -43,7 +41,7 @@ function DesignPreview({
     <div
       data-design={design}
       style={style}
-      className={`site-theme overflow-hidden rounded-[1.25rem] border border-[var(--site-border)] bg-[var(--site-bg)] text-[var(--site-text)] shadow-inner transition-all duration-200 ${device === "phone" ? "mx-auto max-w-[350px]" : "w-full"}`}
+      className="site-theme mx-auto w-full max-w-[350px] overflow-hidden rounded-[1.25rem] border border-[var(--site-border)] bg-[var(--site-bg)] text-[var(--site-text)] shadow-inner transition-all duration-200"
     >
       <div className="site-preview-hero relative min-h-36 overflow-hidden px-5 py-6">
         {design === "atardecer" && firstCabana?.imagen_portada ? (
@@ -95,7 +93,6 @@ export default function DesignPage() {
   const { user, setUser } = useAuth();
   const currentDesign = (user?.profile?.design || "claro") as DesignKey;
   const [selected, setSelected] = useState<DesignKey>(currentDesign);
-  const [device, setDevice] = useState<"phone" | "desktop">("phone");
   const [saving, setSaving] = useState(false);
   const [cabanas, setCabanas] = useState<Cabana[]>([]);
 
@@ -104,6 +101,7 @@ export default function DesignPage() {
   }, []);
 
   const definition = getDesign(selected);
+  const isPublished = selected === currentDesign;
   const publicUrl = user?.profile?.slug ? `/${user.profile.slug}` : "/dashboard/configuracion";
   const businessName = user?.profile?.nombre_negocio || "Tu alojamiento";
   const logo = getMediaUrl(user?.profile?.foto_perfil);
@@ -166,7 +164,7 @@ export default function DesignPage() {
             <p className="mt-0.5 font-bold text-slate-900">{getDesign(currentDesign).name}</p>
           </div>
         </div>
-        <p className="text-sm text-slate-600">La vista previa no cambia tu web hasta que publiques.</p>
+        <p className="text-sm text-slate-600">El diseño que elijas se aplica recién cuando lo publiques.</p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.85fr)]">
@@ -186,7 +184,12 @@ export default function DesignPage() {
                   className={`group rounded-2xl border bg-white p-3 text-left transition duration-200 hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${isSelected ? "border-primary ring-2 ring-primary/20" : "border-slate-200"}`}
                 >
                   <div className="pointer-events-none mb-3">
-                    <DesignPreview design={design.id} businessName={businessName} cabanas={cabanas} logo={logo} device="phone" />
+                    <DesignPreview
+                      design={design.id}
+                      businessName={businessName}
+                      cabanas={cabanas}
+                      logo={logo}
+                    />
                   </div>
                   <div className="flex items-start justify-between gap-3 px-1">
                     <div>
@@ -207,22 +210,105 @@ export default function DesignPage() {
           </div>
         </section>
 
-        <section className="lg:sticky lg:top-6 lg:self-start" aria-labelledby="preview-title">
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-            <div className="mb-4 flex items-center justify-between gap-3">
+        <section
+          className="lg:sticky lg:top-6 lg:self-start"
+          aria-labelledby="summary-title"
+        >
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="page-eyebrow">Vista previa</p>
-                <h2 id="preview-title" className="mt-1 text-xl font-bold text-slate-900">{definition.name}</h2>
+                <p className="page-eyebrow">Diseño seleccionado</p>
+                <h2
+                  id="summary-title"
+                  className="mt-1 text-xl font-bold text-slate-900"
+                >
+                  {definition.name}
+                </h2>
               </div>
-              <div className="flex rounded-xl border border-slate-200 p-1" aria-label="Tamaño de vista previa">
-                <button type="button" onClick={() => setDevice("phone")} aria-label="Vista celular" aria-pressed={device === "phone"} className={`rounded-lg p-2 ${device === "phone" ? "bg-slate-100 text-primary" : "text-slate-400"}`}><Smartphone size={17} /></button>
-                <button type="button" onClick={() => setDevice("desktop")} aria-label="Vista computadora" aria-pressed={device === "desktop"} className={`rounded-lg p-2 ${device === "desktop" ? "bg-slate-100 text-primary" : "text-slate-400"}`}><Monitor size={17} /></button>
+              <span
+                className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${
+                  isPublished
+                    ? "bg-emerald-100 text-emerald-700"
+                    : "bg-primary/10 text-primary"
+                }`}
+              >
+                {isPublished ? "Publicado" : "Sin publicar"}
+              </span>
+            </div>
+
+            <p className="mt-3 text-sm leading-6 text-slate-600">
+              {definition.description}
+            </p>
+            <p className="mt-2 text-xs font-semibold text-primary">
+              Ideal para: {definition.idealFor}
+            </p>
+
+            <div className="mt-5 rounded-xl border border-slate-100 bg-slate-50 p-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                Paleta
+              </p>
+              <div className="mt-3 flex items-center gap-2">
+                {[
+                  { label: "Fondo", color: definition.tokens.bg },
+                  { label: "Principal", color: definition.tokens.primary },
+                  { label: "Acento", color: definition.tokens.accent },
+                ].map(({ label, color }) => (
+                  <span
+                    key={label}
+                    role="img"
+                    aria-label={label}
+                    title={label}
+                    className="h-8 w-8 rounded-full border border-black/10 shadow-sm"
+                    style={{ backgroundColor: color }}
+                  />
+                ))}
               </div>
             </div>
-            <DesignPreview design={selected} businessName={businessName} cabanas={cabanas} logo={logo} device={device} />
-            <button type="button" onClick={() => void publish()} disabled={saving || selected === currentDesign} className="mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50">
-              {saving ? "Publicando…" : selected === currentDesign ? "Este diseño ya está publicado" : `Publicar ${definition.name}`}
-            </button>
+
+            <ul className="mt-5 space-y-2.5 text-sm text-slate-600">
+              <li className="flex gap-2">
+                <Check size={16} className="mt-0.5 shrink-0 text-primary" />
+                <span>Misma información, nueva identidad visual.</span>
+              </li>
+              <li className="flex gap-2">
+                <Check size={16} className="mt-0.5 shrink-0 text-primary" />
+                <span>Se aplica a tu web pública y a cada alojamiento.</span>
+              </li>
+              <li className="flex gap-2">
+                <Check size={16} className="mt-0.5 shrink-0 text-primary" />
+                <span>Podés volver al diseño anterior cuando quieras.</span>
+              </li>
+            </ul>
+
+            <div className="mt-6 space-y-3">
+              <button
+                type="button"
+                onClick={() => void publish()}
+                disabled={saving || isPublished}
+                className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {saving
+                  ? "Publicando…"
+                  : isPublished
+                    ? "Este diseño ya está publicado"
+                    : `Publicar ${definition.name}`}
+              </button>
+              {user?.profile?.slug ? (
+                <Link
+                  href={publicUrl}
+                  target="_blank"
+                  className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-primary hover:text-primary"
+                >
+                  Ver mi web actual <ExternalLink size={16} />
+                </Link>
+              ) : null}
+            </div>
+
+            {!isPublished && (
+              <p className="mt-3 text-center text-xs text-slate-400">
+                Los cambios se aplican recién al publicar.
+              </p>
+            )}
           </div>
         </section>
       </div>
