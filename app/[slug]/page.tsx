@@ -195,6 +195,8 @@ export default async function LinktreePage({
   const cabanasCount = siteData.cabanas.length;
   const sectionLabel =
     cabanasCount === 1 ? "Nuestro alojamiento" : "Nuestros alojamientos";
+  const isAtardecer = design.id === "atardecer";
+  const useWideAtardecerLayout = isAtardecer && cabanasCount > 1;
 
   return (
     <div data-design={design.id} className={`site-theme flex flex-1 flex-col ${fontClass}`}>
@@ -208,57 +210,80 @@ export default async function LinktreePage({
           </div>
         </div>
       )}
-      <div className="mx-auto w-full max-w-md flex-1 px-5 py-10 sm:py-16">
-        {/* Avatar / Logo */}
-        <div className="flex flex-col items-center">
-          {logoUrl ? (
-            <div className="relative h-24 w-24 overflow-hidden rounded-2xl shadow-lg ring-1 ring-slate-100">
-              <Image
-                src={logoUrl}
-                alt={nombreParaMostrar}
-                fill
-                sizes="288px"
-                quality={100}
-                unoptimized
-                className="object-cover"
-                priority
-              />
-            </div>
-          ) : (
+      <div
+        className={`mx-auto w-full flex-1 px-5 py-10 sm:py-16 ${
+          useWideAtardecerLayout ? "max-w-3xl" : "max-w-md"
+        }`}
+      >
+        <div
+          className={
+            useWideAtardecerLayout ? "mx-auto w-full max-w-md" : undefined
+          }
+        >
+          {/* Avatar / Logo */}
+          <div className="flex flex-col items-center">
+            {logoUrl ? (
+              <div className="relative h-24 w-24 overflow-hidden rounded-2xl shadow-lg ring-1 ring-slate-100">
+                <Image
+                  src={logoUrl}
+                  alt={nombreParaMostrar}
+                  fill
+                  sizes="288px"
+                  quality={100}
+                  unoptimized
+                  className="object-cover"
+                  priority
+                />
+              </div>
+            ) : (
               <div className="site-theme-primary flex h-24 w-24 items-center justify-center rounded-2xl text-3xl font-bold text-white shadow-lg">
-              {nombreParaMostrar.charAt(0).toUpperCase()}
+                {nombreParaMostrar.charAt(0).toUpperCase()}
+              </div>
+            )}
+
+            <h1 className="mt-5 text-center text-xl font-bold text-slate-900">
+              {nombreParaMostrar}
+            </h1>
+
+            {ubicacion && (
+              <p className="mt-1.5 flex items-center gap-1.5 text-sm text-slate-500">
+                <MapPin size={14} className="shrink-0" />
+                <span>{ubicacion}</span>
+              </p>
+            )}
+          </div>
+
+          {/* Social Icons */}
+          {socialLinks.length > 0 && (
+            <div className="mt-6 flex justify-center gap-3">
+              {socialLinks.map(({ id, label, href, Icon }) => (
+                <SocialIconButton
+                  key={id}
+                  href={href}
+                  icon={Icon}
+                  label={label}
+                />
+              ))}
             </div>
-          )}
-
-          <h1 className="mt-5 text-center text-xl font-bold text-slate-900">
-            {nombreParaMostrar}
-          </h1>
-
-          {ubicacion && (
-            <p className="mt-1.5 flex items-center gap-1.5 text-sm text-slate-500">
-              <MapPin size={14} className="shrink-0" />
-              <span>{ubicacion}</span>
-            </p>
           )}
         </div>
 
-        {/* Social Icons */}
-        {socialLinks.length > 0 && (
-          <div className="mt-6 flex justify-center gap-3">
-            {socialLinks.map(({ id, label, href, Icon }) => (
-              <SocialIconButton key={id} href={href} icon={Icon} label={label} />
-            ))}
-          </div>
-        )}
-
         {/* Cabanas Section */}
         <div className="mt-10">
-           <p className="site-theme-accent mb-4 text-center text-[11px] font-semibold uppercase tracking-[0.2em]">
+          <p className="site-theme-accent mb-4 text-center text-[11px] font-semibold uppercase tracking-[0.2em]">
             {sectionLabel}
           </p>
 
-           {cabanasCount > 0 ? (
-             <div className={design.id === "atardecer" ? "grid gap-3 sm:grid-cols-2" : "space-y-3"}>
+          {cabanasCount > 0 ? (
+            <div
+              className={
+                isAtardecer
+                  ? cabanasCount > 1
+                    ? "grid gap-4 sm:grid-cols-2"
+                    : "mx-auto w-full max-w-sm"
+                  : "space-y-3"
+              }
+            >
               {siteData.cabanas.map((c) => (
                 <CabinLinkCard
                   key={c.id}
