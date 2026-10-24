@@ -66,6 +66,11 @@ export interface Mensaje {
   email_turista: string;
   telefono_turista: string;
   contenido: string;
+  adultos?: number | null;
+  ninos?: number | null;
+  mascotas?: boolean | null;
+  mascotas_detalle?: string | null;
+  motivo_viaje?: string | null;
   origen?: MessageOrigen;
   fecha_envio: string;
   leido: boolean;
@@ -83,6 +88,11 @@ export interface Reserva {
   nombre_turista: string;
   email_turista?: string | null;
   telefono_turista?: string | null;
+  adultos?: number | null;
+  ninos?: number | null;
+  mascotas?: boolean | null;
+  mascotas_detalle?: string | null;
+  motivo_viaje?: string | null;
   check_in: string;
   check_out: string;
   estado: "pendiente" | "confirmada" | "cancelada" | "finalizada" | string;

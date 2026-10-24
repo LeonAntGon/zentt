@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { type DateRange, type DayButtonProps } from "react-day-picker";
+import { isValidPhoneNumber } from "react-phone-number-input";
 import api from "@/lib/api";
 import { getMediaUrl } from "@/lib/media";
 import {
@@ -29,10 +30,20 @@ import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { CabinGallery } from "@/components/public/CabinGallery";
 import { CabinVideoEmbeds } from "@/components/public/CabinVideoEmbeds";
 import { PublicSiteFooter } from "@/components/public/PublicSiteFooter";
+import { GuestCounter } from "@/components/public/GuestCounter";
+import { PhoneField } from "@/components/public/PhoneField";
 import { resolveAmenities } from "@/lib/amenities";
 import { toast } from "sonner";
-import { eachDayOfInterval, parseISO, startOfDay } from "date-fns";
+import { eachDayOfInterval, format, parseISO, startOfDay } from "date-fns";
 import { getDesign } from "@/lib/designs";
+
+const MOTIVO_VIAJE_OPTIONS = [
+  { value: "vacaciones", label: "Vacaciones" },
+  { value: "trabajo", label: "Trabajo" },
+  { value: "escapada", label: "Escapada romántica" },
+  { value: "familia", label: "Familia" },
+  { value: "otro", label: "Otro" },
+];
 
 function occupiedMatchers(ranges: FechaOcupada[]) {
   const blocked = new Set<string>();
@@ -96,7 +107,22 @@ export default function CabinDetailPublicPage() {
     email_turista: "",
     telefono_turista: "",
     contenido: "",
+    adultos: 2,
+    ninos: 0,
+    mascotas: false,
+    mascotas_detalle: "",
+    motivo_viaje: "",
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const updateForm = (patch: Partial<typeof formData>) => {
+    setFormData((prev) => ({ ...prev, ...patch }));
+    setErrors((prev) => {
+      const next = { ...prev };
+      Object.keys(patch).forEach((key) => delete next[key]);
+      return next;
+    });
+  };
 
   useEffect(() => {
     const fetchCabanaDetail = async () => {
@@ -112,6 +138,13 @@ export default function CabinDetailPublicPage() {
         ]);
         setCabana(resCabana.data);
         setOcupadas(resOcupadas.data || []);
+        setFormData((prev) => ({
+          ...prev,
+          adultos: Math.max(
+            1,
+            Math.min(prev.adultos, resCabana.data.capacidad || 1)
+          ),
+        }));
       } catch {
         toast.error("No pudimos encontrar este alojamiento.");
       } finally {
@@ -171,6 +204,13 @@ export default function CabinDetailPublicPage() {
     return days.some((d) => isDisabled(d));
   }, [range, isDisabled]);
 
+  const totalHuespedes = formData.adultos + formData.ninos;
+  const capacityError =
+    cabana && totalHuespedes > cabana.capacidad
+      ? `Este alojamiento admite hasta ${cabana.capacidad} personas en total.`
+      : "";
+  const petFriendly = cabana?.amenities?.includes("mascotas") ?? false;
+
   const requireDates = () => {
     if (!range?.from) {
       toast.error("Elegí las noches en el calendario.");
@@ -192,47 +232,120 @@ export default function CabinDetailPublicPage() {
     e.preventDefault();
     if (!cabana || !requireDates()) return;
 
+    const nextErrors: Record<string, string> = {};
+    if (!formData.nombre_turista.trim()) {
+      nextErrors.nombre_turista = "Ingresá tu nombre.";
+    }
+    if (!formData.telefono_turista.trim()) {
+      nextErrors.telefono_turista = "Ingresá tu WhatsApp.";
+    } else if (!isValidPhoneNumber(formData.telefono_turista)) {
+      nextErrors.telefono_turista =
+        "Ingresá un WhatsApp válido con código de país.";
+    }
+    if (capacityError) {
+      nextErrors.adultos = capacityError;
+    }
+    if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors);
+      toast.error("Revisá los datos marcados para continuar.");
+      return;
+    }
+
     const from = range!.from!;
     const to = range!.to ?? from;
     const fechaDesde = toISODate(from);
     const fechaHasta = toExclusiveCheckout(to);
-    const nights = nightsCountInclusive(from, to);
+    const isWhatsApp = cabana.metodo_contacto === "WA";
+    const waNum = cabana.telefono_whatsapp?.replace(/[^0-9]/g, "") || "";
+
+    // Open WhatsApp before the request so mobile browsers don't block it.
+    let waWindow: Window | null = null;
+    if (isWhatsApp && waNum) {
+      waWindow = window.open("", "_blank");
+      if (waWindow) waWindow.opener = null;
+    }
 
     try {
       setSending(true);
-      await api.post(`/public/${slug}/cabana/${cabanaSlug}/mensajes/`, {
-        nombre_turista: formData.nombre_turista,
-        email_turista: formData.email_turista,
+      const { data } = await api.post<{
+        id: number;
+        detail: string;
+        total_estimado: string;
+        noches: number;
+      }>(`/public/${slug}/cabana/${cabanaSlug}/mensajes/`, {
+        nombre_turista: formData.nombre_turista.trim(),
+        email_turista: formData.email_turista.trim(),
         telefono_turista: formData.telefono_turista,
-        contenido: `Consulta por ${cabana.nombre}: ${formData.contenido}`,
+        contenido: formData.contenido.trim(),
+        adultos: formData.adultos,
+        ninos: formData.ninos,
+        mascotas: formData.mascotas,
+        mascotas_detalle: formData.mascotas
+          ? formData.mascotas_detalle.trim()
+          : "",
+        motivo_viaje: formData.motivo_viaje,
         fecha_desde: fechaDesde,
         fecha_hasta: fechaHasta,
         origen: "WEB",
       });
 
-      toast.success("¡Consulta enviada con éxito!");
+      const serverTotal = Number(data.total_estimado || estimado);
+      const nights = data.noches || nightsCountInclusive(from, to);
+      const dateFrom = format(from, "dd/MM/yyyy");
+      const dateTo = format(parseISO(fechaHasta), "dd/MM/yyyy");
+      const adultText = `${formData.adultos} adulto${
+        formData.adultos === 1 ? "" : "s"
+      }`;
+      const childText =
+        formData.ninos > 0
+          ? ` y ${formData.ninos} niño${formData.ninos === 1 ? "" : "s"}`
+          : "";
+      const petText = formData.mascotas
+        ? formData.mascotas_detalle.trim()
+          ? `Llevamos ${formData.mascotas_detalle.trim()}.`
+          : "Llevamos mascota."
+        : "No viajamos con mascotas.";
+      const reason = MOTIVO_VIAJE_OPTIONS.find(
+        (option) => option.value === formData.motivo_viaje
+      );
+      const text = [
+        `Hola, mi nombre es ${formData.nombre_turista.trim()}.`,
+        `Me interesa reservar la "${cabana.nombre}" desde el ${dateFrom} hasta el ${dateTo} (${nights} ${
+          nights === 1 ? "noche" : "noches"
+        }).`,
+        `Somos ${adultText}${childText}.`,
+        petText,
+        reason ? `Motivo: ${reason.label.toLowerCase()}.` : null,
+        serverTotal > 0
+          ? `Vi que el total estimado es ${formatMoneyARS(serverTotal)} ARS.`
+          : null,
+        "¿Tienen disponibilidad y cómo es el método de pago?",
+        formData.contenido.trim()
+          ? `Consulta: ${formData.contenido.trim()}`
+          : null,
+      ]
+        .filter(Boolean)
+        .join("\n");
 
-      if (cabana.metodo_contacto === "WA") {
-        const waNum = cabana.telefono_whatsapp?.replace(/[^0-9]/g, "") || "";
-        if (waNum) {
-          const text = [
-            `Hola! Vi el alojamiento *${cabana.nombre}*.`,
-            ``,
-            `Soy *${formData.nombre_turista}*.`,
-            `📅 ${fechaDesde} a ${toISODate(to)} (${nights} ${nights === 1 ? "noche" : "noches"})`,
-            estimado > 0 ? `💰 ${formatMoneyARS(estimado)} estimado` : null,
-            ``,
-            formData.contenido,
-          ].filter(Boolean).join("\n");
-          window.open(
-            `https://wa.me/${waNum}?text=${encodeURIComponent(text)}`,
-            "_blank"
-          );
+      const waHref = `https://wa.me/${waNum}?text=${encodeURIComponent(text)}`;
+
+      if (isWhatsApp && waNum) {
+        if (waWindow && !waWindow.closed) {
+          waWindow.location.href = waHref;
+          toast.success("¡Consulta enviada con éxito!");
         } else {
-          toast.message(
-            "Consulta enviada. El anfitrión aún no configuró WhatsApp."
-          );
+          toast.success("¡Consulta enviada con éxito!", {
+            action: {
+              label: "Abrir WhatsApp",
+              onClick: () => window.open(waHref, "_blank"),
+            },
+            duration: 12000,
+          });
         }
+      } else if (isWhatsApp) {
+        toast.message("Consulta enviada. El anfitrión aún no configuró WhatsApp.");
+      } else {
+        toast.success("¡Consulta enviada con éxito!");
       }
 
       setFormData({
@@ -240,10 +353,20 @@ export default function CabinDetailPublicPage() {
         email_turista: "",
         telefono_turista: "",
         contenido: "",
+        adultos: Math.max(1, Math.min(2, cabana.capacidad || 1)),
+        ninos: 0,
+        mascotas: false,
+        mascotas_detalle: "",
+        motivo_viaje: "",
       });
+      setErrors({});
       setRange(undefined);
-    } catch {
-      toast.error("Error al enviar. Inténtalo de nuevo.");
+    } catch (error) {
+      if (waWindow && !waWindow.closed) waWindow.close();
+      const detail = (
+        error as { response?: { data?: { detail?: string } } }
+      ).response?.data?.detail;
+      toast.error(detail || "Error al enviar. Inténtalo de nuevo.");
     } finally {
       setSending(false);
     }
@@ -431,60 +554,175 @@ export default function CabinDetailPublicPage() {
                     {formatMoneyARS(estimado)}
                   </p>
                   <p className="text-[11px] text-slate-400">
-                    Estimado según tarifa. El anfitrión confirma.
+                    Estimado según tarifa. No incluye cargos extra por
+                    huéspedes o mascotas; el anfitrión confirma.
                   </p>
                 </div>
               )}
 
               {/* Form */}
               <form onSubmit={handleSubmitConsulta} className="space-y-3">
-                <input
-                  type="text"
-                  placeholder="Tu nombre"
-                  required
-                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                  value={formData.nombre_turista}
-                  onChange={(e) =>
-                    setFormData({ ...formData, nombre_turista: e.target.value })
-                  }
+                <div className="grid grid-cols-2 gap-2">
+                  <GuestCounter
+                    label="Adultos"
+                    hint="Mayores"
+                    value={formData.adultos}
+                    min={1}
+                    max={Math.max(1, cabana.capacidad - formData.ninos)}
+                    onChange={(value) => updateForm({ adultos: value })}
+                  />
+                  <GuestCounter
+                    label="Niños"
+                    hint="Menores"
+                    value={formData.ninos}
+                    min={0}
+                    max={Math.max(0, cabana.capacidad - formData.adultos)}
+                    onChange={(value) => updateForm({ ninos: value })}
+                  />
+                </div>
+                <p className="px-1 text-[11px] text-slate-400">
+                  Máximo {cabana.capacidad} personas en total.
+                </p>
+                {capacityError && (
+                  <div className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-xs text-red-700">
+                    <AlertCircle
+                      size={15}
+                      className="mt-0.5 shrink-0 text-red-500"
+                    />
+                    <span>{capacityError}</span>
+                  </div>
+                )}
+
+                <div>
+                  <input
+                    type="text"
+                    placeholder="Nombre y apellido"
+                    required
+                    aria-label="Nombre y apellido"
+                    aria-invalid={Boolean(errors.nombre_turista)}
+                    className={`w-full rounded-xl border bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-1 ${
+                      errors.nombre_turista
+                        ? "border-red-300 focus:border-red-400 focus:ring-red-300"
+                        : "border-slate-200 focus:border-primary focus:ring-primary"
+                    }`}
+                    value={formData.nombre_turista}
+                    onChange={(e) =>
+                      updateForm({ nombre_turista: e.target.value })
+                    }
+                  />
+                  {errors.nombre_turista && (
+                    <p className="mt-1.5 text-xs text-red-600">
+                      {errors.nombre_turista}
+                    </p>
+                  )}
+                </div>
+
+                <PhoneField
+                  value={formData.telefono_turista}
+                  onChange={(value) => updateForm({ telefono_turista: value })}
+                  error={errors.telefono_turista}
                 />
+
                 <input
                   type="email"
-                  placeholder="Tu email"
-                  required
+                  placeholder="Tu email (opcional)"
+                  aria-label="Email opcional"
                   className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   value={formData.email_turista}
                   onChange={(e) =>
-                    setFormData({ ...formData, email_turista: e.target.value })
+                    updateForm({ email_turista: e.target.value })
                   }
                 />
-                <input
-                  type="tel"
-                  placeholder={isWhatsApp ? "Tu WhatsApp" : "Tu teléfono"}
-                  required
-                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                  value={formData.telefono_turista}
+
+                <div className="rounded-xl border border-slate-200 bg-white px-3.5 py-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-semibold text-slate-800">
+                        ¿Viajás con mascotas?
+                      </p>
+                      <p className="text-[11px] text-slate-400">
+                        Nos ayuda a calificar tu consulta.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={formData.mascotas}
+                      aria-label="Viajo con mascotas"
+                      onClick={() =>
+                        updateForm({
+                          mascotas: !formData.mascotas,
+                          mascotas_detalle: formData.mascotas
+                            ? ""
+                            : formData.mascotas_detalle,
+                        })
+                      }
+                      className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${
+                        formData.mascotas ? "bg-primary" : "bg-slate-200"
+                      }`}
+                    >
+                      <span
+                        className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
+                          formData.mascotas
+                            ? "translate-x-5"
+                            : "translate-x-0.5"
+                        }`}
+                      />
+                    </button>
+                  </div>
+                  {formData.mascotas && (
+                    <input
+                      type="text"
+                      placeholder="¿Qué mascota llevás? (opcional)"
+                      aria-label="Detalle de la mascota"
+                      maxLength={150}
+                      className="mt-3 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                      value={formData.mascotas_detalle}
+                      onChange={(e) =>
+                        updateForm({ mascotas_detalle: e.target.value })
+                      }
+                    />
+                  )}
+                  {!petFriendly && (
+                    <p className="mt-2 text-[11px] text-amber-600">
+                      Este alojamiento no figura como pet friendly. Igual podés
+                      consultar; el anfitrión confirma.
+                    </p>
+                  )}
+                </div>
+
+                <select
+                  aria-label="Motivo del viaje"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  value={formData.motivo_viaje}
                   onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      telefono_turista: e.target.value,
-                    })
+                    updateForm({ motivo_viaje: e.target.value })
                   }
-                />
+                >
+                  <option value="">Motivo del viaje (opcional)</option>
+                  {MOTIVO_VIAJE_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+
                 <textarea
-                  placeholder="Mensaje o consulta adicional"
+                  placeholder="Pedidos especiales o consulta (opcional)"
+                  aria-label="Pedidos especiales o consulta"
                   rows={2}
-                  required
                   className="w-full resize-none rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   value={formData.contenido}
                   onChange={(e) =>
-                    setFormData({ ...formData, contenido: e.target.value })
+                    updateForm({ contenido: e.target.value })
                   }
                 />
 
                 <button
                   type="submit"
-                  disabled={sending || rangeHasConflict}
+                  disabled={
+                    sending || rangeHasConflict || Boolean(capacityError)
+                  }
                   className={`flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-semibold transition-all disabled:opacity-50 ${
                     isWhatsApp
                       ? "bg-whatsapp text-white hover:bg-whatsapp/90"
@@ -496,7 +734,7 @@ export default function CabinDetailPublicPage() {
                   ) : isWhatsApp ? (
                     <>
                       <WhatsAppIcon className="h-4 w-4" />
-                      Consultar por WhatsApp
+                      Enviar consulta por WhatsApp
                     </>
                   ) : (
                     <>

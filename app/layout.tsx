@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import "react-phone-number-input/style.css";
 import { Providers } from "@/components/providers";
 import { fontVariables } from "@/lib/fonts";
 

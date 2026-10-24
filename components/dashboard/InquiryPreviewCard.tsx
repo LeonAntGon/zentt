@@ -21,8 +21,20 @@ type InquiryPreviewCardProps = {
   fechaDesde?: string | null;
   fechaHasta?: string | null;
   totalEstimado?: string | number | null;
+  adultos?: number | null;
+  ninos?: number | null;
+  mascotas?: boolean | null;
+  motivoViaje?: string | null;
   fechaEnvio: string;
   whatsappHref?: string | null;
+};
+
+const MOTIVO_LABEL: Record<string, string> = {
+  vacaciones: "Vacaciones",
+  trabajo: "Trabajo",
+  escapada: "Escapada romántica",
+  familia: "Familia",
+  otro: "Otro",
 };
 
 const CHANNEL_LABEL: Record<string, string> = {
@@ -55,6 +67,25 @@ function stayMeta(fechaDesde?: string | null, fechaHasta?: string | null) {
   return `${range} · ${noches} ${noches === 1 ? "noche" : "noches"}`;
 }
 
+function guestMeta(
+  adultos?: number | null,
+  ninos?: number | null,
+  mascotas?: boolean | null,
+  motivoViaje?: string | null
+) {
+  const parts: string[] = [];
+  if (adultos) {
+    parts.push(`${adultos} adulto${adultos === 1 ? "" : "s"}`);
+  }
+  if (ninos) {
+    parts.push(`${ninos} niño${ninos === 1 ? "" : "s"}`);
+  }
+  if (mascotas === true) parts.push("Con mascota");
+  if (mascotas === false) parts.push("Sin mascotas");
+  if (motivoViaje) parts.push(MOTIVO_LABEL[motivoViaje] || motivoViaje);
+  return parts.join(" · ");
+}
+
 function relativeShort(value: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "";
@@ -76,11 +107,16 @@ export function InquiryPreviewCard({
   fechaDesde,
   fechaHasta,
   totalEstimado,
+  adultos,
+  ninos,
+  mascotas,
+  motivoViaje,
   fechaEnvio,
   whatsappHref,
 }: InquiryPreviewCardProps) {
   const channel = CHANNEL_LABEL[normalizeOrigen(origen)] || "WEB";
   const stay = stayMeta(fechaDesde, fechaHasta);
+  const guests = guestMeta(adultos, ninos, mascotas, motivoViaje);
   const estimado = Number(totalEstimado || 0);
   const meta = [propertyLabel, stay].filter(Boolean).join(" · ");
 
@@ -108,6 +144,11 @@ export function InquiryPreviewCard({
       </div>
 
       <p className="mt-2 truncate text-xs text-slate-500">{meta}</p>
+      {guests ? (
+        <p className="mt-1 truncate text-[11px] font-medium text-slate-400">
+          {guests}
+        </p>
+      ) : null}
 
       {preview ? (
         <p className="mt-1 truncate text-sm text-slate-600">{preview}</p>

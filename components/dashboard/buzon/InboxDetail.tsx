@@ -3,19 +3,23 @@
 import { useState } from "react";
 import {
   ArrowLeft,
+  Briefcase,
   CalendarDays,
   CheckCircle2,
   Clock3,
   Mail,
   MailOpen,
+  PawPrint,
   Phone,
   Trash2,
+  Users,
   XCircle,
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { MessageChannelBadge } from "@/components/dashboard/MessageChannelBadge";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
+import { formatCurrencyCompact } from "@/lib/planLimits";
 import { formatFullDateTime } from "@/lib/relative-time";
 import {
   InboxMessage,
@@ -24,6 +28,32 @@ import {
   messagePhone,
   messageText,
 } from "@/components/dashboard/buzon/types";
+
+const MOTIVO_LABEL: Record<string, string> = {
+  vacaciones: "Vacaciones",
+  trabajo: "Trabajo",
+  escapada: "Escapada romántica",
+  familia: "Familia",
+  otro: "Otro",
+};
+
+function guestLabel(adultos?: number | null, ninos?: number | null) {
+  const parts: string[] = [];
+  if (adultos) {
+    parts.push(`${adultos} adulto${adultos === 1 ? "" : "s"}`);
+  }
+  if (ninos) {
+    parts.push(`${ninos} niño${ninos === 1 ? "" : "s"}`);
+  }
+  return parts.join(" y ");
+}
+
+function petLabel(mascotas?: boolean | null, detalle?: string | null) {
+  if (mascotas === null || mascotas === undefined) return "";
+  if (!mascotas) return "Sin mascotas";
+  const detail = (detalle || "").trim();
+  return detail ? `Con mascota: ${detail}` : "Con mascota";
+}
 
 function initials(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -80,6 +110,20 @@ export function InboxDetail({
           { locale: es }
         )}`
       : null;
+  const guests =
+    message._tipo === "cabanas"
+      ? guestLabel(message.adultos, message.ninos)
+      : "";
+  const pets =
+    message._tipo === "cabanas"
+      ? petLabel(message.mascotas, message.mascotas_detalle)
+      : "";
+  const reason =
+    message._tipo === "cabanas" && message.motivo_viaje
+      ? MOTIVO_LABEL[message.motivo_viaje] || message.motivo_viaje
+      : "";
+  const estimated =
+    message._tipo === "cabanas" ? Number(message.total_estimado || 0) : 0;
 
   return (
     <section className="flex min-h-0 flex-1 flex-col bg-white">
@@ -106,9 +150,11 @@ export function InboxDetail({
               <span>{formatFullDateTime(message.fecha_envio)}</span>
             </div>
             <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px] text-slate-500">
-              <a href={`mailto:${email}`} className="inline-flex items-center gap-1.5 hover:text-primary">
-                <Mail size={13} /> <span className="truncate">{email}</span>
-              </a>
+              {email && (
+                <a href={`mailto:${email}`} className="inline-flex items-center gap-1.5 hover:text-primary">
+                  <Mail size={13} /> <span className="truncate">{email}</span>
+                </a>
+              )}
               {phone && (
                 <a href={`tel:${phoneHref}`} className="inline-flex items-center gap-1.5 hover:text-primary">
                   <Phone size={13} /> {phone}
@@ -133,7 +179,7 @@ export function InboxDetail({
           Mensaje del huésped
         </p>
         <div className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3.5 text-sm leading-relaxed text-slate-700">
-          {messageText(message)}
+          {messageText(message) || "Sin pedidos especiales."}
         </div>
 
         {stayLabel && (
@@ -141,6 +187,31 @@ export function InboxDetail({
             <CalendarDays size={14} />
             {stayLabel}
             <span className="font-medium text-primary/60">· fechas de estadía</span>
+          </div>
+        )}
+
+        {(guests || pets || reason || estimated > 0) && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {guests && (
+              <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-2.5 py-1.5 text-[11px] font-semibold text-slate-600">
+                <Users size={13} /> {guests}
+              </span>
+            )}
+            {pets && (
+              <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-2.5 py-1.5 text-[11px] font-semibold text-slate-600">
+                <PawPrint size={13} /> {pets}
+              </span>
+            )}
+            {reason && (
+              <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-2.5 py-1.5 text-[11px] font-semibold text-slate-600">
+                <Briefcase size={13} /> {reason}
+              </span>
+            )}
+            {estimated > 0 && (
+              <span className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-2.5 py-1.5 text-[11px] font-bold text-emerald-700">
+                Total estimado: {formatCurrencyCompact(estimated)}
+              </span>
+            )}
           </div>
         )}
 

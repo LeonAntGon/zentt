@@ -42,6 +42,11 @@ interface Mensaje {
   fecha_desde?: string | null;
   fecha_hasta?: string | null;
   total_estimado?: string | number | null;
+  adultos?: number | null;
+  ninos?: number | null;
+  mascotas?: boolean | null;
+  mascotas_detalle?: string | null;
+  motivo_viaje?: string | null;
   _tipo: "cabanas" | "general";
 }
 
@@ -446,6 +451,12 @@ export default function OverviewPage() {
                     fechaDesde={msg.fecha_desde}
                     fechaHasta={msg.fecha_hasta}
                     totalEstimado={msg.total_estimado}
+                    adultos={msg._tipo === "cabanas" ? msg.adultos : null}
+                    ninos={msg._tipo === "cabanas" ? msg.ninos : null}
+                    mascotas={msg._tipo === "cabanas" ? msg.mascotas : null}
+                    motivoViaje={
+                      msg._tipo === "cabanas" ? msg.motivo_viaje : null
+                    }
                     fechaEnvio={msg.fecha_envio}
                     whatsappHref={buildWhatsAppHref(
                       telefono,
