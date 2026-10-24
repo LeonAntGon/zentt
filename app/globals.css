@@ -152,11 +152,11 @@
 
   /* Títulos de página (dashboard + auth) */
   .page-title {
-    @apply font-heading text-2xl font-bold tracking-tight text-foreground sm:text-3xl md:text-4xl;
+    @apply font-heading text-2xl font-bold tracking-tight text-foreground sm:text-3xl;
   }
 
   .page-title-sm {
-    @apply font-heading text-2xl font-bold tracking-tight text-foreground sm:text-3xl;
+    @apply font-heading text-xl font-bold tracking-tight text-foreground sm:text-2xl;
   }
 
   .page-eyebrow {
@@ -164,7 +164,7 @@
   }
 
   .page-subtitle {
-    @apply font-body text-sm font-medium text-muted-foreground;
+    @apply font-body text-sm font-medium leading-relaxed text-muted-foreground;
   }
 
   /* Display marketing — sitios públicos y landing */
@@ -182,16 +182,16 @@
   }
 
   .ui-kicker {
-    @apply font-body text-[10px] font-semibold uppercase tracking-widest text-muted-foreground;
+    @apply font-body text-xs font-semibold uppercase tracking-widest text-muted-foreground;
   }
 
   /* Campos de formulario — mismo look que autenticación (también sitios públicos) */
   .field-auth {
-    @apply h-12 w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-800 placeholder:text-slate-400 outline-none transition-colors focus:border-slate-900 focus:ring-2 focus:ring-slate-900;
+    @apply h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-800 placeholder:text-slate-400 outline-none transition-colors focus:border-slate-900 focus:ring-2 focus:ring-slate-900;
   }
 
   .field-auth-area {
-    @apply w-full rounded-md border border-slate-200 bg-slate-50 px-3 py-3 text-sm font-medium text-slate-800 placeholder:text-slate-400 outline-none transition-colors focus:border-slate-900 focus:ring-2 focus:ring-slate-900 resize-none;
+    @apply w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm font-medium text-slate-800 placeholder:text-slate-400 outline-none transition-colors focus:border-slate-900 focus:ring-2 focus:ring-slate-900 resize-none;
   }
 
   /* Autofill en auth: azul Zentt en lugar del gris/amarillo del browser */

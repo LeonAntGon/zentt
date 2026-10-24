@@ -48,7 +48,7 @@ export function InboxFilters({
           value={search}
           onChange={(event) => onSearchChange(event.target.value)}
           placeholder="Buscar por nombre, mail, teléfono o mensaje"
-          className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-3 text-xs font-medium text-slate-800 outline-none transition-colors placeholder:text-slate-400 focus:border-primary/40 focus:bg-white focus:ring-2 focus:ring-primary/10"
+          className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-3 text-sm font-medium text-slate-800 outline-none transition-colors placeholder:text-slate-400 focus:border-primary/40 focus:bg-white focus:ring-2 focus:ring-primary/10"
         />
       </label>
 
@@ -64,7 +64,7 @@ export function InboxFilters({
             key={id}
             type="button"
             onClick={() => onTabChange(id)}
-            className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-bold transition-colors ${
+            className={`inline-flex h-10 shrink-0 items-center gap-1.5 rounded-lg px-3 text-xs font-bold transition-colors ${
               tab === id
                 ? "bg-primary text-white shadow-sm"
                 : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
@@ -73,7 +73,7 @@ export function InboxFilters({
             {label}
             {id === "sin_leer" && unreadCount > 0 && (
               <span
-                className={`rounded-full px-1.5 py-0.5 text-[9px] ${
+                className={`rounded-full px-1.5 py-0.5 text-[10px] ${
                   tab === id ? "bg-white/15 text-white" : "bg-primary/10 text-primary"
                 }`}
               >
@@ -86,7 +86,7 @@ export function InboxFilters({
           type="button"
           disabled={unreadCount === 0 || markingAllRead}
           onClick={onMarkAllRead}
-          className="ml-auto inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2 py-1.5 text-[10px] font-semibold text-primary transition-colors hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-40"
+          className="ml-auto inline-flex h-10 shrink-0 items-center gap-1.5 rounded-lg px-2.5 text-[11px] font-semibold text-primary transition-colors hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-40"
         >
           <CheckCheck size={13} />
           <span className="hidden xl:inline">Marcar todo leído</span>
@@ -99,7 +99,7 @@ export function InboxFilters({
           <select
             value={channel}
             onChange={(event) => onChannelChange(event.target.value as InboxChannel)}
-            className="h-9 w-full appearance-none rounded-lg border border-slate-200 bg-white px-2.5 pr-7 text-[11px] font-semibold text-slate-600 outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
+            className="h-11 w-full appearance-none rounded-xl border border-slate-200 bg-white px-3 pr-8 text-xs font-semibold text-slate-700 outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
           >
             <option value="all">Todos los canales</option>
             <option value="WEB">Web</option>
@@ -115,7 +115,7 @@ export function InboxFilters({
           <select
             value={cabanaId}
             onChange={(event) => onCabanaChange(event.target.value)}
-            className="h-9 w-full appearance-none rounded-lg border border-slate-200 bg-white px-2.5 pr-7 text-[11px] font-semibold text-slate-600 outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
+            className="h-11 w-full appearance-none rounded-xl border border-slate-200 bg-white px-3 pr-8 text-xs font-semibold text-slate-700 outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/10"
           >
             <option value="all">Todos los alojamientos</option>
             {cabanas.map((cabana) => (

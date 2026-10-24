@@ -232,7 +232,7 @@ const FeaturesSection = () => {
           {cards.map((c) => (
             <article
               key={c.title}
-              className="group relative overflow-hidden rounded-2xl border border-border/60 bg-background p-8 transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-2xl"
+              className="group relative overflow-hidden rounded-2xl border border-border/60 bg-background p-6 transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-2xl sm:p-8"
             >
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/[0.03] to-accent/[0.03] opacity-0 transition-opacity group-hover:opacity-100" />
               <div className="relative">

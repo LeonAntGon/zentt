@@ -238,7 +238,7 @@ export default function BuzonPage() {
 
   if (loading) {
     return (
-      <div className="flex h-full min-h-0 flex-col px-3 py-4 sm:px-6 sm:py-6">
+      <div className="flex h-full min-h-0 flex-col px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
         <header className="mb-4 flex shrink-0 items-start gap-3 sm:mb-5">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white shadow-sm shadow-primary/20">
             <InboxIcon size={20} />
@@ -276,14 +276,14 @@ export default function BuzonPage() {
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col px-3 py-4 sm:px-6 sm:py-6">
+    <div className="flex h-full min-h-0 flex-col px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
       <header className="mb-4 flex shrink-0 items-start gap-3 sm:mb-5">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white shadow-sm shadow-primary/20">
           <InboxIcon size={20} />
         </div>
         <div>
-          <h1 className="page-title text-2xl sm:text-3xl">Buzón</h1>
-          <p className="page-subtitle mt-1 text-xs sm:text-sm">
+          <h1 className="page-title">Buzón</h1>
+          <p className="page-subtitle mt-1">
             Consultas de tu mini-sitio, WhatsApp y Airbnb en un solo lugar.
           </p>
         </div>

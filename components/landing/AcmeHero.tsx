@@ -27,7 +27,7 @@ export function AcmeHero() {
               <span className="text-primary">Cero comisiones.</span>
             </motion.h1>
             <motion.p
-              className="mx-auto max-w-2xl text-md text-muted-foreground sm:text-xl"
+              className="mx-auto max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-xl"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.5 }}

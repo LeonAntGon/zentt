@@ -104,7 +104,7 @@ export function ManualReservationDialog({
             type="button"
             onClick={onClose}
             disabled={saving}
-            className="rounded-xl p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 disabled:opacity-40"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-xl text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 disabled:opacity-40"
           >
             <X size={18} />
           </button>
@@ -112,7 +112,7 @@ export function ManualReservationDialog({
 
         <div className="space-y-4 px-6 py-5">
           <div>
-            <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">
+            <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600">
               Alojamiento
             </label>
             <select
@@ -129,7 +129,7 @@ export function ManualReservationDialog({
           </div>
 
           <div>
-            <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">
+            <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600">
               Nombre del huésped
             </label>
             <input
@@ -141,9 +141,9 @@ export function ManualReservationDialog({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
-              <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600">
                 Email
               </label>
               <input
@@ -155,7 +155,7 @@ export function ManualReservationDialog({
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600">
                 Teléfono
               </label>
               <input
@@ -168,9 +168,9 @@ export function ManualReservationDialog({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
-              <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600">
                 Check-in
               </label>
               <input
@@ -182,7 +182,7 @@ export function ManualReservationDialog({
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600">
                 Check-out
               </label>
               <input
@@ -196,7 +196,7 @@ export function ManualReservationDialog({
           </div>
 
           <div>
-            <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">
+            <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-600">
               Estado inicial
             </label>
             <div className="flex gap-2">
@@ -233,7 +233,7 @@ export function ManualReservationDialog({
             type="button"
             disabled={saving}
             onClick={onClose}
-            className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-50 disabled:opacity-40"
+            className="h-11 flex-1 rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-50 disabled:opacity-40"
           >
             Cancelar
           </button>
@@ -241,7 +241,7 @@ export function ManualReservationDialog({
             type="button"
             disabled={!valid || saving}
             onClick={() => void handleSubmit()}
-            className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-slate-200 transition-all hover:bg-slate-800 disabled:opacity-40"
+            className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 text-sm font-bold text-white shadow-lg shadow-slate-200 transition-all hover:bg-slate-800 disabled:opacity-40"
           >
             {saving ? (
               <Loader2 size={16} className="animate-spin" />

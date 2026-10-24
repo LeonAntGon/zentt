@@ -190,7 +190,7 @@ const PricingSection = () => {
           <span className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold font-heading tracking-wide mb-4">
             PRECIOS
           </span>
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+          <h2 className="mb-4 text-3xl font-bold leading-tight text-foreground md:text-4xl lg:text-5xl">
             Planes simples y transparentes
           </h2>
           <p className="text-muted-foreground text-lg">
@@ -225,9 +225,9 @@ const PricingSection = () => {
             return (
               <div
                 key={plan.id}
-                className={`relative p-6 lg:p-8 rounded-2xl border-2 transition-all duration-300 ${
+                className={`relative rounded-2xl border-2 p-6 transition-all duration-300 lg:p-8 ${
                   plan.popular
-                    ? "border-primary bg-background shadow-2xl scale-[1.02]"
+                    ? "border-primary bg-background shadow-2xl md:scale-[1.02]"
                     : "border-border/50 bg-background hover:shadow-lg"
                 }`}
               >
@@ -240,7 +240,7 @@ const PricingSection = () => {
                 <h3 className="text-xl font-heading font-bold text-foreground mb-1">
                   {plan.name}
                 </h3>
-                <p className="text-muted-foreground text-sm mb-5 min-h-[40px]">
+                <p className="mb-5 min-h-10 text-sm text-muted-foreground">
                   {plan.desc}
                 </p>
 

@@ -47,9 +47,10 @@ export function Navbar() {
         </div>
 
         <button
-          className="md:hidden p-2 text-foreground"
+          className="inline-flex h-11 w-11 items-center justify-center rounded-xl text-foreground transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary md:hidden"
           onClick={() => setMobileOpen(!mobileOpen)}
-          aria-label="Toggle menu"
+          aria-label="Abrir menú"
+          aria-expanded={mobileOpen}
         >
           {mobileOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
@@ -61,17 +62,17 @@ export function Navbar() {
             <a
               key={`m-${link.label}`}
               href={link.href}
-              className="block px-4 py-2 text-sm font-medium text-foreground/70 hover:text-foreground"
+              className="flex min-h-11 items-center rounded-xl px-4 text-sm font-medium text-foreground/70 hover:bg-slate-50 hover:text-foreground"
               onClick={() => setMobileOpen(false)}
             >
               {link.label}
             </a>
           ))}
           <div className="flex flex-col gap-2 pt-2">
-            <Button variant="outline" size="sm" asChild>
+            <Button variant="outline" className="h-11" asChild>
               <Link href="/login">Iniciar Sesión</Link>
             </Button>
-            <Button variant="nav-solid" size="sm" asChild>
+            <Button variant="nav-solid" className="h-11" asChild>
               <Link href="/register">Comenzar Gratis</Link>
             </Button>
           </div>

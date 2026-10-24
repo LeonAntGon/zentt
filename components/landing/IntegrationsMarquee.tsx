@@ -106,7 +106,7 @@ export function IntegrationsMarquee() {
       className="relative w-full max-w-full overflow-hidden bg-background py-8 sm:py-10 md:py-12"
       aria-label="Integraciones compatibles"
     >
-      <p className="px-4 text-center text-[10px] sm:text-[11px] font-heading font-semibold uppercase tracking-[0.18em] sm:tracking-[0.2em] text-muted-foreground mb-5 sm:mb-6">
+      <p className="mb-5 px-4 text-center font-heading text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:mb-6 sm:tracking-[0.2em]">
         Compatible con lo que ya usas
       </p>
 

@@ -439,7 +439,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="min-h-full bg-slate-50 pb-16 md:pb-28">
+    <div className="min-h-full bg-slate-50">
       {!hydrated && !user ? (
         <div className="flex min-h-[40vh] items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -448,9 +448,9 @@ export default function SettingsPage() {
       <form
         id="identidad-negocio-form"
         onSubmit={handleSubmit}
-        className="mx-auto max-w-3xl space-y-5 p-6 md:p-10"
+        className="mx-auto w-full max-w-4xl space-y-5 px-4 py-6 pb-16 sm:px-6 md:pb-28 lg:px-8"
       >
-        <header className="mb-2">
+        <header className="mb-4">
           <p className="page-eyebrow mb-1">Negocio</p>
           <h1 className="page-title">Identidad del Negocio</h1>
           <p className="page-subtitle mt-1">

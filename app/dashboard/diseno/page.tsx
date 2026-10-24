@@ -9,6 +9,7 @@ import { useAuth, type User } from "@/contexts/AuthContext";
 import { getMediaUrl } from "@/lib/media";
 import { getDesign, DESIGNS, type DesignKey } from "@/lib/designs";
 import type { Cabana } from "@/types/cabin";
+import { PageContainer } from "@/components/dashboard/PageContainer";
 
 type PreviewStyle = CSSProperties & Record<`--${string}`, string>;
 
@@ -137,7 +138,7 @@ export default function DesignPage() {
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+    <PageContainer>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="mb-3 flex items-center gap-2 text-xs font-semibold text-slate-400">
@@ -305,13 +306,13 @@ export default function DesignPage() {
             </div>
 
             {!isPublished && (
-              <p className="mt-3 text-center text-xs text-slate-400">
+              <p className="mt-3 text-center text-xs text-slate-500">
                 Los cambios se aplican recién al publicar.
               </p>
             )}
           </div>
         </section>
       </div>
-    </div>
+    </PageContainer>
   );
 }

@@ -6,6 +6,7 @@ import axios from "axios";
 import api from "@/lib/api";
 import { getMediaUrl } from "@/lib/media";
 import { useAuth } from "@/contexts/AuthContext";
+import { PageContainer } from "@/components/dashboard/PageContainer";
 import { Cabana } from "@/types/cabin";
 import { AmenityPicker } from "@/components/dashboard/AmenityPicker";
 import {
@@ -525,7 +526,7 @@ export default function EditCabanaPage() {
   const invalidFieldClass = `${cabanaFieldClass} border-red-300 focus:border-red-500 focus:ring-red-500/20`;
 
   return (
-    <div className="mx-auto max-w-6xl p-6 pb-16 md:p-10 md:pb-28">
+    <PageContainer width="content" className="pb-16 md:pb-28">
       <button
         type="button"
         onClick={() => router.push("/dashboard/cabanas")}
@@ -780,7 +781,7 @@ export default function EditCabanaPage() {
                       alt="Portada"
                       className="h-full w-full object-cover"
                     />
-                    <div className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-primary px-2 py-1 text-[10px] font-bold text-white shadow-sm">
+                    <div className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-primary px-2 py-1 text-[11px] font-bold text-white shadow-sm">
                       <Star size={12} className="fill-white" /> Portada
                     </div>
                     <div className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 transition-opacity group-hover:opacity-100">
@@ -943,6 +944,6 @@ export default function EditCabanaPage() {
         onConfirm={() => imageConfirm?.onConfirm()}
         onClose={() => setImageConfirm(null)}
       />
-    </div>
+    </PageContainer>
   );
 }

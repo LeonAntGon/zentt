@@ -34,6 +34,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { UpgradeBanner } from "@/components/dashboard/UpgradeBanner";
+import { PageContainer } from "@/components/dashboard/PageContainer";
 
 type Granularity = "day" | "month" | "year";
 
@@ -306,17 +307,14 @@ export default function RendimientoWebPage() {
   ];
 
   return (
-    <div className="min-h-full bg-slate-50">
-      <div className="mx-auto max-w-7xl p-4 md:p-6">
-        <header className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="mb-0.5 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-              <Globe size={14} /> Rendimiento web
-            </p>
-            <h1 className="font-heading text-xl font-bold tracking-tight text-slate-900 md:text-2xl">
-              Rendimiento de tu página
-            </h1>
-            <p className="mt-0.5 text-sm text-slate-500">
+    <PageContainer>
+      <header className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <p className="mb-1 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
+            <Globe size={14} /> Rendimiento web
+          </p>
+          <h1 className="page-title-sm">Rendimiento de tu página</h1>
+          <p className="page-subtitle mt-1">
               {isLimited
                 ? "Resumen de visitas de los últimos 7 días"
                 : "Visitas reales de tu sitio y de cada alojamiento"}
@@ -669,7 +667,6 @@ export default function RendimientoWebPage() {
             </p>
           </CardContent>
         </Card>}
-      </div>
-    </div>
+    </PageContainer>
   );
 }

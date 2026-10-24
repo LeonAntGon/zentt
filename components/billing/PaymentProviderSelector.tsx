@@ -163,7 +163,7 @@ export function PaymentProviderSelector({
                 </span>
                 <span
                   className={cn(
-                    "block truncate text-[10px] font-medium",
+                    "block truncate text-[11px] font-medium",
                     active ? "text-white/75" : "text-slate-400"
                   )}
                 >

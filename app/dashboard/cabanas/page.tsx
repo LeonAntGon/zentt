@@ -11,6 +11,7 @@ import { canCreateCabana, getMaxCabanas } from "@/lib/planLimits";
 import { Plus, Home, LayoutGrid } from "lucide-react";
 import { toast } from "sonner";
 import { SkeletonCabanaCard } from "@/components/ui/skeleton";
+import { PageContainer } from "@/components/dashboard/PageContainer";
 
 export default function CabanasPage() {
   const [cabanas, setCabanas] = useState<Cabana[]>([]);
@@ -60,9 +61,9 @@ export default function CabanasPage() {
   };
 
   return (
-    <div className="p-6 md:p-10 max-w-7xl mx-auto animate-in fade-in duration-500">
-      <div className="flex flex-col gap-10">
-        <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+    <PageContainer className="animate-in fade-in duration-500">
+      <div className="flex flex-col gap-8">
+        <header className="flex flex-col justify-between gap-5 md:flex-row md:items-end">
           <div className="space-y-2">
             <p className="page-eyebrow flex items-center gap-2">
               <LayoutGrid size={14} /> Gestión de alojamientos
@@ -81,7 +82,7 @@ export default function CabanasPage() {
 
           <button
             onClick={handleCrearCabana}
-            className="bg-primary hover:bg-primary/90 text-white px-8 py-4 rounded-2xl font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2 shadow-xl shadow-primary/10 transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2"
+            className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-primary px-5 text-sm font-bold text-white shadow-xl shadow-primary/10 transition-all hover:bg-primary/90 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2"
           >
             <Plus size={18} /> Agregar alojamiento
           </button>
@@ -94,7 +95,7 @@ export default function CabanasPage() {
             ))}
           </div>
         ) : cabanas.length === 0 ? (
-          <div className="bg-white border-2 border-dashed border-slate-200 rounded-[3rem] p-20 flex flex-col items-center text-center gap-6">
+          <div className="flex flex-col items-center gap-6 rounded-2xl border-2 border-dashed border-slate-200 bg-white p-8 text-center sm:p-12">
             <div className="h-20 w-20 bg-slate-50 rounded-full flex items-center justify-center text-slate-300">
               <Home size={40} />
             </div>
@@ -136,6 +137,6 @@ export default function CabanasPage() {
         }`}
         body="Para agregar otro alojamiento, pasate a un plan pago. Acceso por 30 días, sin renovación automática: renovás solo si querés."
       />
-    </div>
+    </PageContainer>
   );
 }

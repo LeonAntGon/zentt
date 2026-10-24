@@ -16,6 +16,7 @@ import {
   Percent,
 } from "lucide-react";
 import { Skeleton, SkeletonKpi, SkeletonRow } from "@/components/ui/skeleton";
+import { PageContainer } from "@/components/dashboard/PageContainer";
 import { Cabana } from "@/types/cabin";
 import { toast } from "sonner";
 import {
@@ -294,7 +295,7 @@ export default function OverviewPage() {
 
   if (loading) {
     return (
-      <div className="animate-in fade-in mx-auto max-w-7xl space-y-8 p-6 md:p-10">
+      <PageContainer className="animate-in fade-in space-y-6">
         <div>
           <Skeleton className="mb-3 h-3 w-32" />
           <Skeleton className="mb-3 h-8 w-64" />
@@ -306,7 +307,7 @@ export default function OverviewPage() {
           ))}
         </div>
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+          <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm sm:p-5">
             <Skeleton className="mb-4 h-4 w-40" />
             <div className="space-y-3">
               {Array.from({ length: 3 }).map((_, i) => (
@@ -314,7 +315,7 @@ export default function OverviewPage() {
               ))}
             </div>
           </div>
-          <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+          <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm sm:p-5">
             <Skeleton className="mb-4 h-4 w-40" />
             <div className="space-y-3">
               {Array.from({ length: 3 }).map((_, i) => (
@@ -323,7 +324,7 @@ export default function OverviewPage() {
             </div>
           </div>
         </div>
-      </div>
+      </PageContainer>
     );
   }
 
@@ -359,7 +360,7 @@ export default function OverviewPage() {
   ];
 
   return (
-    <div className="mx-auto max-w-7xl animate-in bg-slate-50 p-6 fade-in duration-700 md:p-10">
+    <PageContainer className="animate-in fade-in duration-700">
       <header className="mb-6">
         <h1 className="page-title-sm flex items-center gap-2 !text-slate-900">
           <LayoutDashboard className="text-primary" size={22} />
@@ -395,24 +396,24 @@ export default function OverviewPage() {
           <Link
             key={item.label}
             href={item.href}
-            className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-md"
+            className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-md sm:p-5"
           >
             <div className="flex items-center justify-between gap-2">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                 {item.label}
               </p>
-              <item.icon size={14} className="shrink-0 text-slate-400" />
+              <item.icon size={14} className="shrink-0 text-slate-500" />
             </div>
             <p className="mt-2 truncate text-2xl font-bold leading-tight text-slate-900">
               {item.value}
             </p>
-            <p className="mt-0.5 text-[11px] text-slate-400">{item.hint}</p>
+            <p className="mt-0.5 text-xs text-slate-500">{item.hint}</p>
           </Link>
         ))}
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm lg:col-span-2 md:p-6">
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5 lg:col-span-2 md:p-6">
           <div className="mb-5 flex items-center justify-between gap-3">
             <h2 className="flex items-center gap-2 font-heading text-lg font-bold text-slate-800">
               <MessageSquare className="text-primary" size={20} />
@@ -471,7 +472,7 @@ export default function OverviewPage() {
                 <p className="text-sm font-medium text-slate-500">
                   Todavía no hay consultas.
                 </p>
-                <p className="mt-1 text-xs text-slate-400">
+                <p className="mt-1 text-xs text-slate-500">
                   Compartí tu link para empezar a recibir mensajes.
                 </p>
               </div>
@@ -480,7 +481,7 @@ export default function OverviewPage() {
         </div>
 
         <div className="space-y-4">
-          <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
             <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-3.5">
               <h3 className="flex items-center gap-2 font-heading text-sm font-bold text-slate-800">
                 <CalendarDays size={16} className="text-primary" />
@@ -505,7 +506,7 @@ export default function OverviewPage() {
                           {r.nombre_turista || "Huésped"}
                         </p>
                         <span
-                          className={`shrink-0 rounded-full px-2.5 py-0.5 text-[10px] font-semibold ${
+                          className={`shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
                             r.estado === "confirmada"
                               ? "bg-emerald-50 text-emerald-700"
                               : "bg-amber-50 text-amber-700"
@@ -516,8 +517,8 @@ export default function OverviewPage() {
                             : "Pendiente"}
                         </span>
                       </div>
-                      <p className="mt-1.5 flex min-w-0 items-center gap-1.5 text-[11px] text-slate-500">
-                        <Home size={12} className="shrink-0 text-slate-400" />
+                      <p className="mt-1.5 flex min-w-0 items-center gap-1.5 text-xs text-slate-500">
+                        <Home size={12} className="shrink-0 text-slate-500" />
                         <span className="truncate">
                           {r.cabana_nombre || "Alojamiento"}
                           {rango ? ` - ${rango}` : ""}
@@ -528,13 +529,13 @@ export default function OverviewPage() {
                 })}
               </ul>
             ) : (
-              <p className="px-4 py-8 text-sm text-slate-400">
+              <p className="px-4 py-8 text-sm text-slate-500">
                 Sin check-ins próximos. Las reservas aparecerán acá.
               </p>
             )}
           </div>
         </div>
       </div>
-    </div>
+    </PageContainer>
   );
 }

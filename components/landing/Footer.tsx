@@ -7,7 +7,7 @@ const Footer = () => (
       <p className="text-sm text-muted-foreground">
         © {new Date().getFullYear()} Zentt. Todos los derechos reservados.
       </p>
-      <div className="flex gap-6 text-sm text-muted-foreground">
+      <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-muted-foreground">
         <Link href="/privacy" className="hover:text-foreground transition-colors">
           Privacidad
         </Link>

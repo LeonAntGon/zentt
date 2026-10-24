@@ -21,6 +21,7 @@ import {
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useEmailVerify } from "@/components/dashboard/EmailVerify";
+import { PageContainer } from "@/components/dashboard/PageContainer";
 
 export default function PerfilPage() {
   const { user, checkCurrentUser, logout } = useAuth();
@@ -186,14 +187,15 @@ export default function PerfilPage() {
   const showSaveBar = isDirty || savingProfile;
 
   return (
-    <div
-      className={`mx-auto max-w-4xl animate-in fade-in p-6 duration-500 md:p-10 md:pb-28 ${
+    <PageContainer
+      width="form"
+      className={`animate-in fade-in duration-500 md:pb-28 ${
         showSaveBar
           ? "pb-[calc(var(--mobile-nav-offset)+9rem)]"
           : "pb-[calc(var(--mobile-nav-offset)+5rem)]"
       }`}
     >
-      <header className="mb-10">
+      <header className="mb-8">
         <p className="page-eyebrow mb-2 flex items-center gap-2">
           <User size={14} /> Cuenta
         </p>
@@ -203,7 +205,7 @@ export default function PerfilPage() {
         </p>
       </header>
 
-      <div className="mb-8 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm md:p-6">
+      <div className="mb-6 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm sm:p-5 md:p-6">
         <div className="flex items-center gap-4">
           <UserAvatar
             firstName={formData.first_name}
@@ -215,13 +217,13 @@ export default function PerfilPage() {
           />
           <div className="min-w-0 flex-1 space-y-1.5">
             <p className="truncate text-sm">
-              <span className="text-[11px] font-semibold text-slate-400">
+              <span className="text-xs font-semibold text-slate-500">
                 Nombre:{" "}
               </span>
               <span className="font-bold text-slate-900">{fullName}</span>
             </p>
             <p className="truncate text-sm">
-              <span className="text-[11px] font-semibold text-slate-400">
+              <span className="text-xs font-semibold text-slate-500">
                 Usuario:{" "}
               </span>
               <span className="font-bold text-slate-900">
@@ -234,7 +236,7 @@ export default function PerfilPage() {
 
       <Link
         href="/dashboard/configuracion"
-        className="mb-8 flex items-center gap-4 rounded-[2rem] border border-slate-100 bg-white p-6 shadow-sm transition-all hover:border-primary/30 hover:shadow-md md:p-8"
+        className="mb-8 flex items-center gap-4 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm transition-all hover:border-primary/30 hover:shadow-md sm:p-6 md:p-8"
       >
         <BusinessAvatar
           fotoPerfil={user?.profile?.foto_perfil}
@@ -243,14 +245,14 @@ export default function PerfilPage() {
           className="h-14 w-14 shrink-0"
         />
         <div className="min-w-0 flex-1">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+          <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500">
             Negocio
           </p>
           <p className="truncate text-base font-bold text-slate-900">
             {user?.profile?.nombre_negocio || "Tu negocio"}
           </p>
           <p className="truncate text-xs text-slate-500">{publicPath}</p>
-          <p className="mt-1 text-[11px] font-semibold text-primary">
+          <p className="mt-1 text-xs font-semibold text-primary">
             Plan {planLabel}
           </p>
         </div>
@@ -263,7 +265,7 @@ export default function PerfilPage() {
       <form
         id="perfil-cuenta-form"
         onSubmit={handleSaveProfile}
-        className="mb-8 space-y-6 rounded-[2rem] border border-slate-100 bg-white p-6 shadow-sm md:p-8"
+        className="mb-8 space-y-6 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm sm:p-6 md:p-8"
       >
         <div className="mb-2 flex items-center gap-2">
           <div className="h-6 w-1.5 rounded-full bg-primary" />
@@ -310,7 +312,7 @@ export default function PerfilPage() {
               @{user?.username}
             </span>
           </div>
-          <p className="ml-1 text-[10px] font-medium text-slate-400">
+          <p className="ml-1 text-[11px] font-medium text-slate-500">
             También es la URL de tu sitio.{" "}
             <Link
               href="/dashboard/configuracion"
@@ -341,7 +343,7 @@ export default function PerfilPage() {
           {emailError ? (
             <p className="ml-1 text-xs font-medium text-red-500">{emailError}</p>
           ) : (
-            <p className="ml-1 text-[10px] font-medium text-slate-400">
+            <p className="ml-1 text-[11px] font-medium text-slate-500">
               Usás este correo para iniciar sesión y recuperar la contraseña.
             </p>
           )}
@@ -350,7 +352,7 @@ export default function PerfilPage() {
 
       <form
         onSubmit={handleChangePassword}
-        className="mb-8 space-y-6 rounded-[2rem] border border-slate-100 bg-white p-6 shadow-sm md:p-8"
+        className="mb-8 space-y-6 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm sm:p-6 md:p-8"
       >
         <div className="mb-2 flex items-center gap-2">
           <div className="h-6 w-1.5 rounded-full bg-slate-300" />
@@ -467,6 +469,6 @@ export default function PerfilPage() {
         saving={savingProfile}
         onSave={persist}
       />
-    </div>
+    </PageContainer>
   );
 }

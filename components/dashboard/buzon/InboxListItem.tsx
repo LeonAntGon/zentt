@@ -37,7 +37,7 @@ function StayLine({ message }: { message: InboxMessage }) {
   if (nights < 1) return null;
 
   return (
-    <div className="mt-2 flex min-w-0 items-center gap-1.5 rounded-md bg-slate-50 px-2 py-1 text-[10px] font-medium text-slate-500">
+    <div className="mt-2 flex min-w-0 items-center gap-1.5 rounded-md bg-slate-50 px-2 py-1 text-[11px] font-medium text-slate-600">
       <CalendarDays size={11} className="shrink-0 text-slate-400" />
       <span className="truncate">
         {formatShortDate(message.fecha_desde)} – {formatShortDate(toISODate(lastNight))} · {nights}{" "}
@@ -75,7 +75,7 @@ export function InboxListItem({ message, selected, onSelect }: InboxListItemProp
     >
       <div className="flex items-start gap-3">
         <div
-          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[11px] font-black ${
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-xs font-black ${
             message.leido ? "bg-primary/10 text-primary" : "bg-primary text-white"
           }`}
           aria-hidden
@@ -87,24 +87,24 @@ export function InboxListItem({ message, selected, onSelect }: InboxListItemProp
             <p className={`truncate text-xs ${message.leido ? "font-semibold" : "font-black"} text-slate-900`}>
               {name}
             </p>
-            <span className="shrink-0 text-[10px] font-medium text-slate-400">
+            <span className="shrink-0 text-[11px] font-medium text-slate-500">
               {formatRelativeTime(message.fecha_envio)}
             </span>
           </div>
           <div className="mt-1 flex min-w-0 items-center gap-1.5">
             <MessageChannelBadge origen={message.origen} variant="pill" />
-            <span className="truncate text-[10px] font-medium text-slate-500">
+            <span className="truncate text-[11px] font-medium text-slate-600">
               {message._tipo === "cabanas"
                 ? message.cabana_nombre || "Alojamiento"
                 : "Consulta general"}
             </span>
           </div>
-          <p className="mt-1.5 truncate text-[11px] leading-relaxed text-slate-500">
+          <p className="mt-1.5 truncate text-xs leading-relaxed text-slate-600">
             {messageText(message)}
           </p>
           <StayLine message={message} />
           {reserved && (
-            <span className="mt-2 inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 ring-1 ring-emerald-100">
+            <span className="mt-2 inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-[11px] font-bold text-emerald-700 ring-1 ring-emerald-100">
               <CheckCircle2 size={10} /> Reservada
             </span>
           )}

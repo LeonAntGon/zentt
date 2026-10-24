@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton, SkeletonKpi } from "@/components/ui/skeleton";
+import { PageContainer } from "@/components/dashboard/PageContainer";
 import {
   Area,
   AreaChart,
@@ -492,7 +493,7 @@ export default function ReportesPage() {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-6xl space-y-8 p-6 md:p-10">
+      <PageContainer className="space-y-6">
         <div>
           <Skeleton className="mb-3 h-3 w-24" />
           <Skeleton className="mb-2 h-8 w-64" />
@@ -503,11 +504,11 @@ export default function ReportesPage() {
             <SkeletonKpi key={i} />
           ))}
         </div>
-        <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+        <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm sm:p-5">
           <Skeleton className="mb-4 h-4 w-40" />
           <Skeleton className="h-64 w-full rounded-xl" />
         </div>
-        <div className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm">
+        <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm sm:p-5">
           <Skeleton className="mb-4 h-4 w-40" />
           <div className="space-y-2">
             {Array.from({ length: 5 }).map((_, i) => (
@@ -515,7 +516,7 @@ export default function ReportesPage() {
             ))}
           </div>
         </div>
-      </div>
+      </PageContainer>
     );
   }
 
@@ -527,33 +528,30 @@ export default function ReportesPage() {
         : TrendingDown;
 
   return (
-    <div className="min-h-full bg-slate-50">
-      <div className="mx-auto max-w-7xl p-4 md:p-6">
-        <header className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="mb-0.5 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-              <BarChart3 size={14} /> Reportes
-            </p>
-            <h1 className="font-heading text-xl font-bold tracking-tight text-slate-900 md:text-2xl">
-              Panel financiero
-            </h1>
-            <p className="mt-0.5 text-sm text-slate-500">
-              {MONTH_LABELS[month.getMonth()]} {month.getFullYear()}
-            </p>
-          </div>
+    <PageContainer>
+      <header className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <p className="mb-1 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
+            <BarChart3 size={14} /> Reportes
+          </p>
+          <h1 className="page-title-sm">Panel financiero</h1>
+          <p className="page-subtitle mt-1">
+            {MONTH_LABELS[month.getMonth()]} {month.getFullYear()}
+          </p>
+        </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={handleExport}
-              disabled={exportRows.length === 0}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-transparent px-3.5 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-white hover:shadow-sm disabled:opacity-50"
-            >
-              <Download size={14} />
-              Descargar CSV
-            </button>
-          </div>
-        </header>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={handleExport}
+            disabled={exportRows.length === 0}
+            className="inline-flex h-11 items-center gap-1.5 rounded-xl border border-slate-200 bg-transparent px-3.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-white hover:shadow-sm disabled:opacity-50"
+          >
+            <Download size={14} />
+            Descargar CSV
+          </button>
+        </div>
+      </header>
 
         {/* KPI cards — alta densidad horizontal */}
         <div className="mb-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -763,7 +761,6 @@ export default function ReportesPage() {
             )}
           </div>
         </div>
-      </div>
-    </div>
+    </PageContainer>
   );
 }

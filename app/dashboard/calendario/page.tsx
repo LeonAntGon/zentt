@@ -16,6 +16,7 @@ import { PropertySelector } from "@/components/dashboard/calendario/PropertySele
 import { MasterCalendar } from "@/components/dashboard/calendario/MasterCalendar";
 import { ActionPanel } from "@/components/dashboard/calendario/ActionPanel";
 import { ManualReservationDialog } from "@/components/dashboard/calendario/ManualReservationDialog";
+import { PageContainer } from "@/components/dashboard/PageContainer";
 
 function nightsInMonth(checkIn: string, checkOut: string, month: Date) {
   const start = parseISO(checkIn);
@@ -415,29 +416,26 @@ export default function CalendarioPage() {
   }
 
   return (
-    <div className="min-h-full bg-slate-50">
-      <div className="mx-auto max-w-7xl p-6 md:p-8">
-        <header className="mb-6 flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <p className="mb-1 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-              <CalendarDays size={14} /> Disponibilidad
-            </p>
-            <h1 className="font-heading text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">
-              Calendario
-            </h1>
-            <p className="mt-1 text-sm text-slate-500">
-              Vista de alta densidad: confirmadas, pendientes y bloqueos iCal.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => setShowManualDialog(true)}
-            className="btn-whatsapp inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-slate-200 transition-all hover:bg-slate-800 active:scale-95"
-          >
-            <PlusCircle size={16} />
-            Nueva reserva
-          </button>
-        </header>
+    <PageContainer>
+      <header className="mb-6 flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p className="mb-1 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
+            <CalendarDays size={14} /> Disponibilidad
+          </p>
+          <h1 className="page-title">Calendario</h1>
+          <p className="page-subtitle mt-1">
+            Vista de alta densidad: confirmadas, pendientes y bloqueos iCal.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setShowManualDialog(true)}
+          className="inline-flex h-11 items-center gap-2 rounded-xl bg-slate-900 px-4 text-sm font-bold text-white shadow-lg shadow-slate-200 transition-all hover:bg-slate-800 active:scale-95"
+        >
+          <PlusCircle size={16} />
+          Nueva reserva
+        </button>
+      </header>
 
         <div className="mb-6">
           <PropertySelector
@@ -493,7 +491,6 @@ export default function CalendarioPage() {
             />
           </div>
         </div>
-      </div>
 
       <ManualReservationDialog
         cabanas={cabanas}
@@ -582,6 +579,6 @@ export default function CalendarioPage() {
           </div>
         </div>
       )}
-    </div>
+    </PageContainer>
   );
 }

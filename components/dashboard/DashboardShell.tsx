@@ -204,7 +204,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     const Icon = item.icon;
     const active = navItemActive(pathname, item);
     const showBuzonBadge = item.href === "/dashboard/buzon" && unreadCount > 0;
-    const className = `relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition-all ${
+    const className = `relative flex min-h-11 items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition-all ${
       active
         ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
         : "text-slate-700 hover:bg-slate-100 hover:text-slate-900"
@@ -246,7 +246,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             <Icon size={22} />
           </span>
           <span
-            className={`mt-1 text-[10px] font-bold leading-none ${
+            className={`mt-1 text-[11px] font-bold leading-none ${
               active ? "text-primary" : "text-slate-700"
             }`}
           >
@@ -270,7 +270,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             <span className="absolute -right-1.5 -top-0.5 h-2 w-2 rounded-full bg-red-500" />
           ) : null}
         </span>
-        <span className="text-[10px] font-bold leading-none">
+        <span className="max-w-full truncate text-[11px] font-bold leading-none">
           {item.label}
         </span>
       </Link>
@@ -294,7 +294,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           className="flex-1 space-y-5 overflow-y-auto px-3 py-4"
         >
           <div>
-            <p className="mb-2 px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
+            <p className="mb-2 px-3 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
               Principal
             </p>
             <div className="space-y-1">
@@ -302,7 +302,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             </div>
           </div>
           <div>
-            <p className="mb-2 px-3 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
+            <p className="mb-2 px-3 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
               Más
             </p>
             <div className="space-y-1">
@@ -331,7 +331,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               <span className="truncate text-xs font-bold text-slate-900 group-hover:text-primary">
                 {user?.username || user?.first_name}
               </span>
-              <span className="truncate text-[10px] text-slate-500">
+              <span className="truncate text-[11px] text-slate-500">
                 {user?.email}
               </span>
             </div>
