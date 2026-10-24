@@ -134,7 +134,7 @@ export default function CabanasPage() {
         title={`Tu plan incluye ${maxCabanas} ${
           maxCabanas === 1 ? "alojamiento" : "alojamientos"
         }`}
-        body="Para agregar otro alojamiento, pasate a un plan pago. Cada pago otorga 30 días de acceso. Al vencer, volvé a pagar para seguir con el plan."
+        body="Para agregar otro alojamiento, pasate a un plan pago. Acceso por 30 días, sin renovación automática: renovás solo si querés."
       />
     </div>
   );

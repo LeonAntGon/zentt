@@ -392,7 +392,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         body={
           currentPlan === "gratis"
             ? undefined
-            : "Pago único por 30 días. Al vencer, volvé a pagar para seguir con el plan."
+            : "Acceso por 30 días, sin contratos ni débitos automáticos. Renovás solo si querés."
         }
       />
     </div>

@@ -14,8 +14,8 @@ export function TrialBanner({ plan }: { dateJoined?: string; plan?: string }) {
         <div>
           <p className="text-sm font-semibold">Plan gratis: 1 alojamiento.</p>
           <p className="text-xs text-slate-600">
-            Pasate a Pro para agregar más alojamientos y ver analytics
-            detalladas.
+            Pasate a Pro para agregar más alojamientos y ver métricas de
+            visitas detalladas.
           </p>
         </div>
       </div>

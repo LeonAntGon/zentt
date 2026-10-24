@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import axios from "axios";
 import { toast } from "sonner";
 import { Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,9 +11,10 @@ import {
   UpgradeProButton,
 } from "@/components/billing/PlanConversionUi";
 import {
-  isPolarCheckoutEnabled,
-  PolarCheckoutButton,
-} from "@/components/billing/PolarCheckoutButton";
+  PaymentProviderSelector,
+  usePaymentProvider,
+} from "@/components/billing/PaymentProviderSelector";
+import { usePlanCheckout } from "@/components/billing/usePlanCheckout";
 import { ConfirmActionModal } from "@/components/dashboard/ConfirmActionModal";
 import { useAuth } from "@/contexts/AuthContext";
 import api from "@/lib/api";
@@ -60,28 +60,28 @@ const plans: {
   {
     id: "pro",
     name: "Pro",
-    desc: "Para administrar y hacer crecer varios alojamientos.",
+    desc: "Para hacer crecer tu alojamiento y cobrar mejor en cada temporada.",
     price: PLAN_LIMITS.pro.priceArs,
     priceLabel: formatPlanPrice(PLAN_LIMITS.pro.priceArs),
     highlight: "Hasta 5 alojamientos",
     features: [
       "Todo lo de Gratis",
-      "Tarifas por fecha y temporada",
-      "Analytics avanzadas",
-      "Soporte prioritario",
+      "Precios dinámicos: cobrá más en temporada alta, feriados y findes largos",
+      "Métricas de visitas: descubrí cuántos ven tu web y cuántos reservan",
+      "Soporte prioritario por email",
     ],
-    cta: "Pagar Pro 1 mes",
+    cta: "Pagar Pro",
     popular: true,
   },
   {
     id: "complejo",
     name: "Complejo",
-    desc: "Para complejos con varios alojamientos en un solo panel.",
+    desc: "Para complejos que necesitan más capacidad y atención directa.",
     price: PLAN_LIMITS.complejo.priceArs,
     priceLabel: formatPlanPrice(PLAN_LIMITS.complejo.priceArs),
     highlight: "Hasta 15 alojamientos",
-    features: ["Todo lo de Pro", "Soporte prioritario"],
-    cta: "Pagar Complejo 1 mes",
+    features: ["Todo lo de Pro", "Soporte directo por WhatsApp"],
+    cta: "Pagar Complejo",
     popular: false,
   },
 ];
@@ -90,8 +90,10 @@ const PricingSection = () => {
   const { isAuthenticated, user, loading, checkCurrentUser, waitForPlan } = useAuth();
   const router = useRouter();
   const [loginModalOpen, setLoginModalOpen] = useState(false);
-  const [checkoutLoading, setCheckoutLoading] = useState<PlanId | null>(null);
   const [polarPrices, setPolarPrices] = useState(POLAR_PRICES_USD);
+  const { provider, setProvider, polarEnabled, ready } = usePaymentProvider();
+  const { loadingPlan, startCheckout } = usePlanCheckout();
+  const selectedProvider = polarEnabled ? provider : "mercadopago";
 
   const currentPlan = user?.profile?.plan || "gratis";
 
@@ -164,47 +166,6 @@ const PricingSection = () => {
     };
   }, [checkCurrentUser, waitForPlan]);
 
-  const startCheckout = async (plan: "pro" | "complejo") => {
-    if (!user?.email_verified) {
-      toast.error(
-        "Verificá tu email desde el panel antes de pagar."
-      );
-      router.push("/dashboard");
-      return;
-    }
-    setCheckoutLoading(plan);
-    try {
-      const { data } = await api.post<{
-        checkout_url?: string;
-        init_point?: string;
-        sandbox_init_point?: string;
-      }>("/payments/create-preference/", { plan });
-      const url =
-        data.checkout_url || data.init_point || data.sandbox_init_point;
-      if (!url) {
-        toast.error("No pudimos iniciar el pago.");
-        return;
-      }
-      window.location.href = url;
-    } catch (err) {
-      if (axios.isAxiosError(err) && err.response?.status === 403) {
-        toast.error(
-          String(
-            err.response.data?.detail ||
-              "Verificá tu email desde el panel antes de pagar."
-          )
-        );
-        router.push("/dashboard");
-      } else if (axios.isAxiosError(err) && err.response?.status === 503) {
-        toast.error("MercadoPago todavía no está configurado.");
-      } else {
-        toast.error("No pudimos iniciar el pago. Probá de nuevo.");
-      }
-    } finally {
-      setCheckoutLoading(null);
-    }
-  };
-
   const handlePlanClick = (planId: PlanId) => {
     if (planId === "gratis") {
       router.push(isAuthenticated ? "/dashboard" : "/register");
@@ -214,7 +175,12 @@ const PricingSection = () => {
       setLoginModalOpen(true);
       return;
     }
-    void startCheckout(planId);
+    if (!user?.email_verified) {
+      toast.error("Verificá tu email desde el panel antes de pagar.");
+      router.push("/dashboard");
+      return;
+    }
+    startCheckout(planId, selectedProvider);
   };
 
   return (
@@ -233,11 +199,28 @@ const PricingSection = () => {
           </p>
         </div>
 
+        {polarEnabled ? (
+          <div className="mx-auto mb-8 max-w-xl">
+            <PaymentProviderSelector
+              provider={provider}
+              onChange={setProvider}
+              disabled={!ready}
+              note="Elegí cómo pagar. Podés cambiarlo antes de continuar."
+            />
+          </div>
+        ) : null}
+
         <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
           {plans.map((plan) => {
             const isCurrent =
               isAuthenticated && !loading && currentPlan === plan.id;
-            const isBusy = checkoutLoading === plan.id;
+            const isBusy = loadingPlan === plan.id;
+            const isPaidPlan = plan.id === "pro" || plan.id === "complejo";
+            const isPolarPrice = isPaidPlan && selectedProvider === "polar";
+            const polarPrice =
+              plan.id === "pro" || plan.id === "complejo"
+                ? polarPrices[plan.id]
+                : 0;
 
             return (
               <div
@@ -269,10 +252,12 @@ const PricingSection = () => {
                   ) : (
                     <>
                       <span className="text-4xl font-heading font-bold text-foreground">
-                        {plan.priceLabel}
+                        {isPolarPrice
+                          ? formatPlanPriceUSD(polarPrice)
+                          : plan.priceLabel}
                       </span>
                       <span className="text-muted-foreground text-sm ml-1">
-                        {PLAN_PRICE_PERIOD}
+                        {isPolarPrice ? "USD / mes" : PLAN_PRICE_PERIOD}
                       </span>
                     </>
                   )}
@@ -303,30 +288,6 @@ const PricingSection = () => {
                   >
                     Tu plan actual
                   </Button>
-                ) : isCurrent && plan.popular ? (
-                  <UpgradeProButton
-                    className="h-12 w-full"
-                    showPulse
-                    loading={isBusy}
-                    disabled={loading || checkoutLoading !== null}
-                    onClick={() => handlePlanClick(plan.id)}
-                  >
-                    {isBusy ? "Procesando..." : "Renovar 1 mes"}
-                  </UpgradeProButton>
-                ) : isCurrent ? (
-                  <Button
-                    variant="hero-outline"
-                    className="w-full"
-                    size="lg"
-                    disabled={loading || checkoutLoading !== null}
-                    onClick={() => handlePlanClick(plan.id)}
-                  >
-                    {isBusy ? (
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                    ) : (
-                      "Renovar 1 mes"
-                    )}
-                  </Button>
                 ) : plan.id === "gratis" && !isAuthenticated && !loading ? (
                   <Button
                     variant="hero-outline"
@@ -336,50 +297,52 @@ const PricingSection = () => {
                   >
                     <Link href="/register">{plan.cta}</Link>
                   </Button>
+                ) : plan.id === "gratis" ? (
+                  <Button
+                    variant="hero-outline"
+                    className="w-full"
+                    size="lg"
+                    disabled
+                  >
+                    Plan base
+                  </Button>
                 ) : plan.popular ? (
                   <UpgradeProButton
                     className="h-12 w-full"
                     showPulse
                     loading={isBusy}
-                    disabled={loading || checkoutLoading !== null}
+                    disabled={loading || loadingPlan !== null}
                     onClick={() => handlePlanClick(plan.id)}
                   >
-                    {plan.cta}
+                    {isBusy
+                      ? "Procesando..."
+                      : isCurrent
+                        ? "Renovar 1 mes"
+                        : plan.cta}
                   </UpgradeProButton>
                 ) : (
                   <Button
                     variant="hero-outline"
                     className="w-full"
                     size="lg"
-                    disabled={loading || checkoutLoading !== null}
+                    disabled={loading || loadingPlan !== null}
                     onClick={() => handlePlanClick(plan.id)}
                   >
                     {isBusy ? (
                       <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : isCurrent ? (
+                      "Renovar 1 mes"
                     ) : (
                       plan.cta
                     )}
                   </Button>
                 )}
-                {isPolarCheckoutEnabled &&
-                (plan.id === "pro" || plan.id === "complejo") &&
-                isAuthenticated &&
-                !loading ? (
-                  <div className="mt-2 space-y-1">
-                    <PolarCheckoutButton
-                      plan={plan.id}
-                      className="h-11 w-full"
-                      disabled={checkoutLoading !== null}
-                      onLoadingChange={(busy) => setCheckoutLoading(busy ? plan.id : null)}
-                    />
-                    <p className="text-center text-xs text-slate-500">
-                      Checkout en USD · {formatPlanPriceUSD(polarPrices[plan.id])}
-                    </p>
-                  </div>
-                ) : null}
                 {plan.price > 0 && (
                   <p className="mt-2 text-center text-xs text-gray-500">
-                    Pago único por 30 días · Mercado Pago en ARS
+                    {selectedProvider === "polar"
+                      ? "Pago en USD vía Polar"
+                      : "Pago en ARS vía Mercado Pago"}{" "}
+                    · 30 días, sin renovación automática.
                   </p>
                 )}
               </div>
@@ -388,8 +351,9 @@ const PricingSection = () => {
         </div>
 
         <p className="text-center text-sm text-muted-foreground mt-8">
-          Pago único por 30 días: Mercado Pago en ARS o checkout internacional
-          en USD con Polar. Al vencer, volvé a pagar para seguir con el plan.
+          {polarEnabled
+            ? "Elegí Mercado Pago en ARS o Polar en USD. Acceso por 30 días, sin renovación automática: renovás solo si querés."
+            : "Acceso por 30 días, sin renovación automática: renovás solo si querés."}
         </p>
 
         <div className="mt-16 text-center">
@@ -405,7 +369,7 @@ const PricingSection = () => {
       <ConfirmActionModal
         open={loginModalOpen}
         title="Primero, iniciemos sesión"
-        body="Para contratar un plan pago necesitás una cuenta. Iniciá sesión y volvé a elegir el plan."
+        body="Para contratar un plan pago necesitás una cuenta. Iniciá sesión y continuá con el pago que elegiste."
         confirmLabel="Iniciar sesión"
         cancelLabel="Cancelar"
         onConfirm={() => {

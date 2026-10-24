@@ -519,7 +519,7 @@ export default function CreateCabanaPage() {
           }`}
           body={
             upgradeRequired.message ||
-            "Para agregar otro alojamiento, pasate a un plan pago. Cada pago otorga 30 días de acceso. Al vencer, volvé a pagar para seguir con el plan."
+            "Para agregar otro alojamiento, pasate a un plan pago. Acceso por 30 días, sin renovación automática: renovás solo si querés."
           }
         />
       ) : (

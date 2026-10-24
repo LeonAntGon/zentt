@@ -1,10 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import axios from "axios";
 import { Check, Loader2, X } from "lucide-react";
-import { toast } from "sonner";
-import api from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   formatPlanPrice,
@@ -15,17 +11,18 @@ import {
   POLAR_PRICES_USD,
 } from "@/lib/planLimits";
 import { ZenttMarkIcon } from "@/components/icons/ZenttMarkIcon";
-import { useEmailVerify } from "@/components/dashboard/EmailVerify";
 import {
   PlanQuotaChip,
   UpgradeProButton,
 } from "@/components/billing/PlanConversionUi";
 import {
-  isPolarCheckoutEnabled,
-  PolarCheckoutButton,
-} from "@/components/billing/PolarCheckoutButton";
-
-type PaidPlan = "pro" | "complejo";
+  PaymentProviderSelector,
+  usePaymentProvider,
+} from "@/components/billing/PaymentProviderSelector";
+import {
+  usePlanCheckout,
+  type PaidPlan,
+} from "@/components/billing/usePlanCheckout";
 
 type UpgradePricingModalProps = {
   open: boolean;
@@ -48,10 +45,10 @@ const PAID_PLANS: {
     highlight: "Hasta 5 alojamientos",
     features: [
       "Todo lo de Gratis",
-      "Tarifas por fecha y temporada",
+      "Precios dinámicos: cobrá más en temporada alta, feriados y findes largos",
       "Sin marca de agua",
-      "Analytics avanzadas",
-      "Soporte prioritario",
+      "Métricas de visitas: descubrí cuántos ven tu web y cuántos reservan",
+      "Soporte prioritario por email",
     ],
   },
   {
@@ -59,7 +56,7 @@ const PAID_PLANS: {
     name: "Complejo",
     price: PLAN_LIMITS.complejo.priceArs,
     highlight: "Hasta 15 alojamientos",
-    features: ["Todo lo de Pro", "Soporte prioritario"],
+    features: ["Todo lo de Pro", "Soporte directo por WhatsApp"],
   },
 ];
 
@@ -67,49 +64,38 @@ export function UpgradePricingModal({
   open,
   onClose,
   title = "Escalá tus reservas con Zentt Pro",
-  body = `Agregá más alojamientos, quitá la marca de agua y sincronizá precios dinámicos. Cada pago otorga 30 días de acceso.`,
+  body = `Agregá más alojamientos, quitá la marca de agua y sincronizá precios dinámicos. Acceso por 30 días, sin renovación automática.`,
 }: UpgradePricingModalProps) {
   const { user } = useAuth();
-  const { requireEmailVerified } = useEmailVerify();
-  const [checkoutLoading, setCheckoutLoading] = useState<PaidPlan | null>(null);
+  const { provider, setProvider, polarEnabled, ready } = usePaymentProvider();
+  const { loadingPlan, startCheckout } = usePlanCheckout();
   const currentPlan = normalizePlan(user?.profile?.plan);
-
-  const startCheckout = async (plan: PaidPlan) => {
-    if (!requireEmailVerified()) return;
-    setCheckoutLoading(plan);
-    try {
-      const { data } = await api.post<{
-        checkout_url?: string;
-        init_point?: string;
-        sandbox_init_point?: string;
-      }>("/payments/create-preference/", { plan });
-      const url =
-        data.checkout_url || data.init_point || data.sandbox_init_point;
-      if (!url) {
-        toast.error("No pudimos iniciar el pago.");
-        return;
-      }
-      window.location.href = url;
-    } catch (err) {
-      if (axios.isAxiosError(err) && err.response?.status === 403) {
-        toast.error(
-          String(err.response.data?.detail || "Verificá tu email para pagar.")
-        );
-        requireEmailVerified();
-      } else if (axios.isAxiosError(err) && err.response?.status === 503) {
-        toast.error("MercadoPago todavía no está configurado.");
-      } else {
-        toast.error("No pudimos iniciar el pago. Probá de nuevo.");
-      }
-    } finally {
-      setCheckoutLoading(null);
-    }
-  };
+  const selectedProvider = polarEnabled ? provider : "mercadopago";
 
   if (!open) return null;
 
   const proPlan = PAID_PLANS.find((p) => p.id === "pro")!;
   const complejoPlan = PAID_PLANS.find((p) => p.id === "complejo")!;
+
+  const renderPrice = (plan: PaidPlan) => (
+    <>
+      {selectedProvider === "polar"
+        ? formatPlanPriceUSD(POLAR_PRICES_USD[plan])
+        : formatPlanPrice(PLAN_LIMITS[plan].priceArs)}
+      <span className="ml-1 text-[10px] font-semibold text-slate-400">
+        {selectedProvider === "polar" ? "USD / mes" : PLAN_PRICE_PERIOD}
+      </span>
+    </>
+  );
+
+  const renderPaymentNote = () => (
+    <p className="mt-2 text-center text-xs text-gray-500">
+      {selectedProvider === "polar"
+        ? "Pago en USD vía Polar"
+        : "Pago en ARS vía Mercado Pago"}{" "}
+      · 30 días, sin renovación automática.
+    </p>
+  );
 
   return (
     <div
@@ -117,7 +103,7 @@ export function UpgradePricingModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="upgrade-pricing-title"
-      onClick={checkoutLoading ? undefined : onClose}
+      onClick={loadingPlan ? undefined : onClose}
     >
       <div
         className="relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-t-3xl border border-slate-100 bg-white p-6 shadow-xl sm:rounded-2xl"
@@ -126,7 +112,7 @@ export function UpgradePricingModal({
         <button
           type="button"
           onClick={onClose}
-          disabled={checkoutLoading !== null}
+          disabled={loadingPlan !== null}
           className="absolute right-3 top-3 rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-50 hover:text-slate-700 disabled:opacity-40"
           aria-label="Cerrar"
         >
@@ -144,12 +130,22 @@ export function UpgradePricingModal({
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-slate-500">{body}</p>
 
+        {polarEnabled ? (
+          <PaymentProviderSelector
+            className="mt-5"
+            provider={provider}
+            onChange={setProvider}
+            disabled={!ready}
+            note="Elegí cómo pagar. Podés cambiarlo antes de continuar."
+          />
+        ) : null}
+
         <div className="mt-5 space-y-3">
           {/* Pro — CTA principal */}
           {(() => {
             const plan = proPlan;
             const isCurrent = currentPlan === plan.id;
-            const isBusy = checkoutLoading === plan.id;
+            const isBusy = loadingPlan === plan.id;
             return (
               <div className="rounded-2xl border border-slate-900/15 bg-slate-50 p-4">
                 <div className="flex items-start justify-between gap-3">
@@ -160,10 +156,7 @@ export function UpgradePricingModal({
                     </PlanQuotaChip>
                   </div>
                   <p className="text-sm font-black text-slate-900">
-                    {formatPlanPrice(plan.price)}
-                    <span className="ml-1 text-[10px] font-semibold text-slate-400">
-                      {PLAN_PRICE_PERIOD}
-                    </span>
+                    {renderPrice(plan.id)}
                   </p>
                 </div>
                 <ul className="mt-3 space-y-1.5">
@@ -179,29 +172,14 @@ export function UpgradePricingModal({
                 </ul>
                 <UpgradeProButton
                   className="mt-3 h-11 w-full"
-                  showPulse
+                  showPulse={!isCurrent}
                   loading={isBusy}
-                  disabled={checkoutLoading !== null}
-                  onClick={() => void startCheckout(plan.id)}
+                  disabled={loadingPlan !== null}
+                  onClick={() => startCheckout(plan.id, selectedProvider)}
                 >
-                  {isCurrent ? "Renovar 1 mes" : "Pagar 1 mes"}
+                  {isBusy ? "Procesando..." : isCurrent ? "Renovar 1 mes" : "Pagar Pro"}
                 </UpgradeProButton>
-                <p className="mt-2 text-center text-xs text-gray-500">
-                  Pago único por 30 días vía Mercado Pago (ARS)
-                </p>
-                {isPolarCheckoutEnabled ? (
-                  <>
-                    <PolarCheckoutButton
-                      plan="pro"
-                      className="mt-2 h-11 w-full"
-                      disabled={checkoutLoading !== null}
-                      onLoadingChange={(busy) => setCheckoutLoading(busy ? "pro" : null)}
-                    />
-                    <p className="mt-1 text-center text-xs text-slate-500">
-                      Checkout en USD · {formatPlanPriceUSD(POLAR_PRICES_USD.pro)}
-                    </p>
-                  </>
-                ) : null}
+                {renderPaymentNote()}
               </div>
             );
           })()}
@@ -210,7 +188,7 @@ export function UpgradePricingModal({
           {(() => {
             const plan = complejoPlan;
             const isCurrent = currentPlan === plan.id;
-            const isBusy = checkoutLoading === plan.id;
+            const isBusy = loadingPlan === plan.id;
             return (
               <div className="rounded-2xl border border-slate-200 bg-white p-4">
                 <div className="flex items-start justify-between gap-3">
@@ -221,10 +199,7 @@ export function UpgradePricingModal({
                     </PlanQuotaChip>
                   </div>
                   <p className="text-sm font-black text-slate-900">
-                    {formatPlanPrice(plan.price)}
-                    <span className="ml-1 text-[10px] font-semibold text-slate-400">
-                      {PLAN_PRICE_PERIOD}
-                    </span>
+                    {renderPrice(plan.id)}
                   </p>
                 </div>
                 <ul className="mt-2 space-y-1">
@@ -240,8 +215,8 @@ export function UpgradePricingModal({
                 </ul>
                 <button
                   type="button"
-                  disabled={checkoutLoading !== null}
-                  onClick={() => void startCheckout(plan.id)}
+                  disabled={loadingPlan !== null}
+                  onClick={() => startCheckout(plan.id, selectedProvider)}
                   className="mt-3 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-slate-900 bg-transparent text-sm font-bold text-slate-900 transition-colors hover:bg-slate-50 disabled:opacity-60"
                 >
                   {isBusy ? (
@@ -251,22 +226,10 @@ export function UpgradePricingModal({
                   ) : currentPlan === "pro" ? (
                     "Pasar a Complejo"
                   ) : (
-                    `Pagar ${plan.name}`
+                    "Pagar Complejo"
                   )}
                 </button>
-                {isPolarCheckoutEnabled ? (
-                  <>
-                    <PolarCheckoutButton
-                      plan="complejo"
-                      className="mt-2 h-11 w-full"
-                      disabled={checkoutLoading !== null}
-                      onLoadingChange={(busy) => setCheckoutLoading(busy ? "complejo" : null)}
-                    />
-                    <p className="mt-1 text-center text-xs text-slate-500">
-                      Checkout en USD · {formatPlanPriceUSD(POLAR_PRICES_USD.complejo)}
-                    </p>
-                  </>
-                ) : null}
+                {renderPaymentNote()}
               </div>
             );
           })()}
