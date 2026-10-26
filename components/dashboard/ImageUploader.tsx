@@ -30,6 +30,14 @@ const aspectClasses = {
 
 const MAX_SIZE_MB_DEFAULT = 10;
 
+export const IMAGE_ACCEPT = "image/jpeg,image/png,image/webp";
+
+function isSupportedImage(file: File): boolean {
+  return ["image/jpeg", "image/jpg", "image/png", "image/webp"].includes(
+    file.type.toLowerCase()
+  );
+}
+
 export function ImageUploader({
   value,
   onChange,
@@ -39,7 +47,7 @@ export function ImageUploader({
   aspect = "square",
   placeholder = "Subir imagen",
   fallbackInitial,
-  accept = "image/*",
+  accept = IMAGE_ACCEPT,
   maxSizeMB = MAX_SIZE_MB_DEFAULT,
   onError,
   className,
@@ -54,8 +62,8 @@ export function ImageUploader({
   const handleFile = (file: File) => {
     if (disabled || uploading) return;
 
-    if (!file.type.startsWith("image/")) {
-      onError?.("Elegí un archivo de imagen válido.");
+    if (!isSupportedImage(file)) {
+      onError?.("Elegí una imagen JPG, PNG o WebP.");
       return;
     }
 
@@ -192,12 +200,12 @@ export function ImageUploadButton({
   onChange,
   uploading = false,
   disabled = false,
-  accept = "image/*",
+  accept = IMAGE_ACCEPT,
   multiple = false,
   children,
   className,
 }: {
-  onChange: (files: FileList) => void | Promise<void>;
+  onChange: (files: File[]) => void | Promise<void>;
   uploading?: boolean;
   disabled?: boolean;
   accept?: string;
@@ -225,9 +233,9 @@ export function ImageUploadButton({
         className="sr-only"
         disabled={disabled || uploading}
         onChange={(e) => {
-          const files = e.target.files;
+          const files = Array.from(e.target.files ?? []);
           e.target.value = "";
-          if (files && files.length > 0) void onChange(files);
+          if (files.length > 0) void onChange(files);
         }}
       />
       {uploading ? (

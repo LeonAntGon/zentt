@@ -97,6 +97,7 @@ export default function PerfilPage() {
         );
         openVerify({
           reason: `Ingresá el código enviado a ${response.pending_email || email}.`,
+          send: false,
         });
         return true;
       }

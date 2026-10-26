@@ -30,6 +30,10 @@ interface UserProfile {
   plan?: "gratis" | "pro" | "complejo";
   plan_expires_at?: string | null;
   mp_subscription_id?: string | null;
+  email_verified_at?: string | null;
+  onboarding_required?: boolean;
+  onboarding_password_changed_at?: string | null;
+  onboarding_completed_at?: string | null;
 }
 
 type PaidPlan = "pro" | "complejo";

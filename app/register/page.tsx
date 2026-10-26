@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { ZenttLogo } from "@/components/landing/ZenttLogo";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { normalizeUsername, normalizeUsernameLive } from "@/lib/username";
+import { PhoneField } from "@/components/public/PhoneField";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -20,10 +21,12 @@ function RegisterForm() {
     lastName: "",
     username: "",
     email: "",
+    telefono: "",
     password: "",
     confirmPassword: "",
   });
   const [error, setError] = useState("");
+  const [telefonoError, setTelefonoError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -37,15 +40,22 @@ function RegisterForm() {
       ...formData,
       [name]: name === "username" ? normalizeUsernameLive(value) : value,
     });
+    if (telefonoError) setTelefonoError("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setTelefonoError("");
 
     const username = normalizeUsername(formData.username);
     if (!username) {
       setError("Ingresá un nombre de usuario válido.");
+      return;
+    }
+
+    if (!formData.telefono) {
+      setTelefonoError("Ingresá tu número de WhatsApp.");
       return;
     }
 
@@ -77,6 +87,7 @@ function RegisterForm() {
         last_name: formData.lastName,
         username,
         email: formData.email,
+        telefono: formData.telefono,
         password: formData.password,
         accept_legal: acceptLegal,
       });
@@ -93,6 +104,9 @@ function RegisterForm() {
         else if (data.last_name) setError(`Apellido: ${data.last_name[0]}`);
         else if (data.accept_legal) setError(String(data.accept_legal[0] || data.accept_legal));
         else if (data.email) setError(`Email: ${data.email[0]}`);
+        else if (data.telefono) {
+          setTelefonoError(String(data.telefono[0] || data.telefono));
+        }
         else if (data.password) setError(`Contraseña: ${data.password[0]}`);
         else if (data.detail) setError(String(data.detail));
         else if (data.error) setError(String(data.error));
@@ -222,6 +236,24 @@ function RegisterForm() {
                 required
                 className={inputClass}
               />
+            </div>
+
+            <div className="space-y-1">
+              <Label htmlFor="telefono" className={labelClass}>
+                Número de WhatsApp
+              </Label>
+              <PhoneField
+                value={formData.telefono}
+                onChange={(value) => {
+                  setFormData((current) => ({ ...current, telefono: value }));
+                  if (telefonoError) setTelefonoError("");
+                }}
+                error={telefonoError}
+              />
+              <p className="text-[10px] leading-tight text-slate-400">
+                Lo usamos para contactarte por tu cuenta y enviarte avisos de
+                reservas.
+              </p>
             </div>
 
             <div className="grid grid-cols-2 gap-3">

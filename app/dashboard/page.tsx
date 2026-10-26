@@ -22,6 +22,7 @@ import { toast } from "sonner";
 import {
   OnboardingStepper,
 } from "@/components/dashboard/OnboardingStepper";
+import { AccountSecurityChecklist } from "@/components/dashboard/AccountSecurityChecklist";
 import { HeroSiteCard } from "@/components/dashboard/HeroSiteCard";
 import { InquiryPreviewCard } from "@/components/dashboard/InquiryPreviewCard";
 import type { MessageOrigen } from "@/types/cabin";
@@ -367,6 +368,8 @@ export default function OverviewPage() {
           Panel de Control
         </h1>
       </header>
+
+      <AccountSecurityChecklist />
 
       <OnboardingStepper
         cabanas={cabanas}

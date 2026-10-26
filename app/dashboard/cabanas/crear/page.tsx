@@ -31,7 +31,7 @@ import {
   cabanaSectionClass,
   cabanaTextareaClass,
 } from "@/components/dashboard/cabana-form-styles";
-import { ImageUploadButton } from "@/components/dashboard/ImageUploader";
+import { ImageUploadButton, IMAGE_ACCEPT } from "@/components/dashboard/ImageUploader";
 import type { Cabana, PrecioPorFecha } from "@/types/cabin";
 import {
   ArrowLeft,
@@ -46,7 +46,9 @@ import { UpgradePricingModal } from "@/components/dashboard/UpgradePricingModal"
 import { canCreateCabana, getMaxCabanas } from "@/lib/planLimits";
 
 function isImageFile(file: File): boolean {
-  return Boolean(file.type && file.type.startsWith("image/"));
+  return ["image/jpeg", "image/jpg", "image/png", "image/webp"].includes(
+    file.type.toLowerCase(),
+  );
 }
 
 const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
@@ -212,7 +214,7 @@ export default function CreateCabanaPage() {
     [errors, formData.nombre, formData.precio, formData.capacidad]
   );
 
-  const handleImageChange = (files: FileList) => {
+  const handleImageChange = (files: File[]) => {
     const filesArray = Array.from(files);
     const accepted: File[] = [];
 
@@ -718,7 +720,7 @@ export default function CreateCabanaPage() {
                 </h2>
                 <ImageUploadButton
                   onChange={handleImageChange}
-                  accept="image/*"
+                  accept={IMAGE_ACCEPT}
                   multiple
                 >
                   <UploadCloud size={16} /> Seleccionar

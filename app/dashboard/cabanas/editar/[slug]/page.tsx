@@ -17,7 +17,7 @@ import {
   cabanaSectionClass,
   cabanaTextareaClass,
 } from "@/components/dashboard/cabana-form-styles";
-import { ImageUploadButton } from "@/components/dashboard/ImageUploader";
+import { ImageUploadButton, IMAGE_ACCEPT } from "@/components/dashboard/ImageUploader";
 import { normalizeAmenities } from "@/lib/amenities";
 import {
   Save,
@@ -328,11 +328,15 @@ export default function EditCabanaPage() {
 
   const MAX_IMAGE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 
-  const handleSubirImagen = async (files: FileList) => {
+  const handleSubirImagen = async (files: File[]) => {
     const file = files[0];
     if (!file || !cabana) return;
 
-    if (!file.type || !file.type.startsWith("image/")) {
+    if (
+      !["image/jpeg", "image/jpg", "image/png", "image/webp"].includes(
+        file.type.toLowerCase(),
+      )
+    ) {
       toast.error(
         `El archivo "${file.name}" no es una imagen compatible. Solo se aceptan JPG, PNG y WebP.`,
       );
@@ -761,7 +765,7 @@ export default function EditCabanaPage() {
                 <ImageUploadButton
                   onChange={handleSubirImagen}
                   uploading={uploadingImage}
-                  accept="image/*"
+                  accept={IMAGE_ACCEPT}
                 >
                   <UploadCloud size={16} /> Subir Foto
                 </ImageUploadButton>

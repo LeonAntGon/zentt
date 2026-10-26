@@ -9,7 +9,10 @@ export const privacySections: LegalSection[] = [
     ],
   },
   {
-    title: "2. Información que recopilamos",
+    title: "2. Recopilación de datos",
+    paragraphs: [
+      "Cuando un usuario es creado por Zentt con una cuenta preliminar, podemos iniciar el alta con un email provisorio o sin email y una contraseña temporal. En esos casos, para completar la cuenta y habilitar el uso pleno de la Plataforma, el usuario deberá informar un correo electrónico definitivo, un número de WhatsApp y reemplazar la contraseña temporal. El email definitivo se considera válido una vez verificado mediante el código enviado a esa dirección; el número de WhatsApp podrá ser utilizado para contactar al usuario, verificar su identidad, coordinar el acceso y enviar notificaciones operativas o de reservas. Mientras la cuenta permanezca pendiente, ciertas funciones podrán estar limitadas y algunos avisos podrán dirigirse al medio de contacto disponible. La contraseña temporal no debe compartirse y deberá ser reemplazada por una contraseña personal y segura. Zentt podrá solicitar información adicional razonable para verificar la identidad del titular y proteger la cuenta, y podrá suspender preventivamente el acceso ante indicios de fraude, uso indebido o riesgo de seguridad.",
+    ],
     bullets: [
       "Datos de cuenta: nombre, apellido, usuario, correo electrónico, teléfono y credenciales necesarias para acceder al servicio.",
       "Datos de clientes del usuario: nombre, correo electrónico, teléfono y contenido de consultas enviadas desde los sitios públicos.",

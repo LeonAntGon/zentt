@@ -21,7 +21,7 @@ import {
 } from "@/components/auth/OtpInput";
 
 type EmailVerifyContextValue = {
-  openVerify: (opts?: { reason?: string }) => void;
+  openVerify: (opts?: { reason?: string; send?: boolean }) => void;
   requireEmailVerified: () => boolean;
 };
 
@@ -85,14 +85,19 @@ export function EmailVerifyProvider({ children }: { children: ReactNode }) {
   }, [startCooldown]);
 
   const openVerify = useCallback(
-    (opts?: { reason?: string }) => {
+    (opts?: { reason?: string; send?: boolean }) => {
       setReason(opts?.reason || null);
       setOpen(true);
       setError("");
       setCode(emptyOtp());
-      void sendCode();
+      if (opts?.send === false) {
+        // The code was just requested by the caller (e.g. PATCH /accounts/me/).
+        startCooldown(60);
+      } else {
+        void sendCode();
+      }
     },
-    [sendCode]
+    [sendCode, startCooldown]
   );
 
   const requireEmailVerified = useCallback(() => {
