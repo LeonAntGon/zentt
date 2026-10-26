@@ -562,7 +562,7 @@ export default function CabinDetailPublicPage() {
 
               {/* Form */}
               <form onSubmit={handleSubmitConsulta} className="space-y-3">
-                <div className="grid grid-cols-2 gap-2">
+                <div className="flex flex-col gap-2">
                   <GuestCounter
                     label="Adultos"
                     hint="Mayores"
