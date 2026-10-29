@@ -19,6 +19,10 @@ import { ConfirmActionModal } from "@/components/dashboard/ConfirmActionModal";
 import { useAuth } from "@/contexts/AuthContext";
 import api from "@/lib/api";
 import {
+  INTERNATIONAL_WHATSAPP_DISPLAY,
+  isWhatsAppInternationalMode,
+} from "@/lib/internationalPayments";
+import {
   formatPlanPrice,
   formatPlanPriceUSD,
   PLAN_LIMITS,
@@ -91,9 +95,9 @@ const PricingSection = () => {
   const router = useRouter();
   const [loginModalOpen, setLoginModalOpen] = useState(false);
   const [polarPrices, setPolarPrices] = useState(POLAR_PRICES_USD);
-  const { provider, setProvider, polarEnabled, ready } = usePaymentProvider();
+  const { provider, setProvider, internationalEnabled, ready } = usePaymentProvider();
   const { loadingPlan, startCheckout } = usePlanCheckout();
-  const selectedProvider = polarEnabled ? provider : "mercadopago";
+  const selectedProvider = internationalEnabled ? provider : "mercadopago";
 
   const currentPlan = user?.profile?.plan || "gratis";
 
@@ -175,12 +179,15 @@ const PricingSection = () => {
       setLoginModalOpen(true);
       return;
     }
-    if (!user?.email_verified) {
+    if (
+      !user?.email_verified &&
+      !(selectedProvider === "polar" && isWhatsAppInternationalMode())
+    ) {
       toast.error("Verificá tu email desde el panel antes de pagar.");
       router.push("/dashboard");
       return;
     }
-    startCheckout(planId, selectedProvider);
+    startCheckout(planId, selectedProvider, { priceUsd: polarPrices[planId] });
   };
 
   return (
@@ -199,7 +206,7 @@ const PricingSection = () => {
           </p>
         </div>
 
-        {polarEnabled ? (
+        {internationalEnabled ? (
           <div className="mx-auto mb-8 max-w-xl">
             <PaymentProviderSelector
               provider={provider}
@@ -340,7 +347,7 @@ const PricingSection = () => {
                 {plan.price > 0 && (
                   <p className="mt-2 text-center text-xs text-gray-500">
                     {selectedProvider === "polar"
-                      ? "Pago en USD vía Polar"
+                      ? `Pago internacional por WhatsApp (${INTERNATIONAL_WHATSAPP_DISPLAY})`
                       : "Pago en ARS vía Mercado Pago"}{" "}
                     · 30 días, sin renovación automática.
                   </p>
@@ -351,8 +358,8 @@ const PricingSection = () => {
         </div>
 
         <p className="text-center text-sm text-muted-foreground mt-8">
-          {polarEnabled
-            ? "Elegí Mercado Pago en ARS o Polar en USD. Acceso por 30 días, sin renovación automática: renovás solo si querés."
+          {internationalEnabled
+            ? "Elegí Mercado Pago en ARS o coordiná el pago internacional por WhatsApp. Acceso por 30 días, sin renovación automática: renovás solo si querés."
             : "Acceso por 30 días, sin renovación automática: renovás solo si querés."}
         </p>
 

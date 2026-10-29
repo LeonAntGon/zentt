@@ -4,10 +4,19 @@ import { useCallback, useState } from "react";
 import axios from "axios";
 import { toast } from "sonner";
 import api from "@/lib/api";
+import {
+  buildInternationalWhatsAppUrl,
+  isWhatsAppInternationalMode,
+} from "@/lib/internationalPayments";
 import { useEmailVerify } from "@/components/dashboard/EmailVerify";
 import type { PaymentProvider } from "@/components/billing/PaymentProviderSelector";
 
 export type PaidPlan = "pro" | "complejo";
+
+const PAID_PLAN_LABELS: Record<PaidPlan, string> = {
+  pro: "Plan Pro",
+  complejo: "Plan Complejo",
+};
 
 type UsePlanCheckoutOptions = {
   onBeforeCheckout?: (continueCheckout: () => void) => void;
@@ -30,8 +39,24 @@ export function usePlanCheckout({
   const { requireEmailVerified } = useEmailVerify();
 
   const startCheckout = useCallback(
-    (plan: PaidPlan, provider: PaymentProvider) => {
+    (
+      plan: PaidPlan,
+      provider: PaymentProvider,
+      options: { priceUsd?: number } = {}
+    ) => {
       const run = async () => {
+        if (provider === "polar" && isWhatsAppInternationalMode()) {
+          // International buyers are routed to WhatsApp: no payment is
+          // processed here, so no verified email/account is required.
+          window.location.assign(
+            buildInternationalWhatsAppUrl({
+              planName: PAID_PLAN_LABELS[plan],
+              priceUsd: options.priceUsd,
+            })
+          );
+          return;
+        }
+
         if (!requireEmailVerified()) return;
 
         setLoadingPlan(plan);

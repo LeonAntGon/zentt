@@ -28,6 +28,7 @@ import {
   usePaymentProvider,
 } from "@/components/billing/PaymentProviderSelector";
 import { usePlanCheckout } from "@/components/billing/usePlanCheckout";
+import { INTERNATIONAL_WHATSAPP_DISPLAY } from "@/lib/internationalPayments";
 import { toast } from "sonner";
 import axios from "axios";
 import type { Cabana } from "@/types/cabin";
@@ -124,7 +125,7 @@ export default function SettingsPage() {
   const unsavedGuardRef = useRef<UnsavedChangesGuardHandle | null>(null);
   const [cabanas, setCabanas] = useState<Cabana[]>([]);
   const [cabanasLoading, setCabanasLoading] = useState(true);
-  const { provider, setProvider, polarEnabled, ready } = usePaymentProvider();
+  const { provider, setProvider, internationalEnabled, ready } = usePaymentProvider();
   const runAfterLeaveGuard = useCallback((continueCheckout: () => void) => {
     if (unsavedGuardRef.current) {
       unsavedGuardRef.current.tryLeave(continueCheckout);
@@ -135,7 +136,7 @@ export default function SettingsPage() {
   const { loadingPlan, startCheckout } = usePlanCheckout({
     onBeforeCheckout: runAfterLeaveGuard,
   });
-  const selectedProvider = polarEnabled ? provider : "mercadopago";
+  const selectedProvider = internationalEnabled ? provider : "mercadopago";
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -782,7 +783,7 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          {polarEnabled ? (
+          {internationalEnabled ? (
             <div className="mb-4">
               <PaymentProviderSelector
                 provider={provider}
@@ -850,7 +851,11 @@ export default function SettingsPage() {
                   showPulse={currentPlan === "gratis"}
                   loading={loadingPlan === primaryPlan}
                   disabled={loadingPlan !== null}
-                  onClick={() => startCheckout(primaryPlan, selectedProvider)}
+                  onClick={() =>
+                    startCheckout(primaryPlan, selectedProvider, {
+                      priceUsd: POLAR_PRICES_USD[primaryPlan],
+                    })
+                  }
                 >
                   {loadingPlan === primaryPlan
                     ? "Procesando..."
@@ -858,7 +863,7 @@ export default function SettingsPage() {
                 </UpgradeProButton>
                 <p className="text-xs text-gray-500 sm:text-right">
                   {selectedProvider === "polar"
-                    ? "Pago en USD vía Polar"
+                    ? `Pago internacional por WhatsApp (${INTERNATIONAL_WHATSAPP_DISPLAY})`
                     : "Pago en ARS vía Mercado Pago"}{" "}
                   · 30 días, sin renovación automática.
                 </p>
@@ -866,7 +871,11 @@ export default function SettingsPage() {
                   <button
                     type="button"
                     disabled={loadingPlan !== null}
-                    onClick={() => startCheckout("complejo", selectedProvider)}
+                    onClick={() =>
+                      startCheckout("complejo", selectedProvider, {
+                        priceUsd: POLAR_PRICES_USD.complejo,
+                      })
+                    }
                     className="text-xs font-medium text-slate-500 underline-offset-2 transition-colors hover:text-slate-800 hover:underline disabled:opacity-60"
                   >
                     ¿Tenés más de 5 alojamientos? Conocé el plan Complejo
@@ -901,8 +910,8 @@ export default function SettingsPage() {
           </div>
 
           <p className="mt-3 text-xs text-slate-400">
-            {polarEnabled
-              ? "Elegí Mercado Pago en ARS o Polar en USD. Acceso por 30 días, sin renovación automática: renovás solo si querés."
+            {internationalEnabled
+              ? "Elegí Mercado Pago en ARS o coordiná el pago internacional por WhatsApp. Acceso por 30 días, sin renovación automática: renovás solo si querés."
               : "Acceso por 30 días, sin renovación automática: renovás solo si querés."}
           </p>
         </section>

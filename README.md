@@ -22,8 +22,8 @@ Abrí [http://localhost:3000/dev/components](http://localhost:3000/dev/component
 ## Pagos
 
 - Mercado Pago conserva el checkout en ARS para Argentina.
-- Polar inicia el checkout en Django mediante `POST /api/payments/create-polar-checkout/`; el navegador nunca recibe el token secreto.
-- El botón Polar solo se muestra si `NEXT_PUBLIC_POLAR_CHECKOUT_ENABLED=true`. Ver `../backend/DEPLOYMENT.md` para configurar sandbox y producción.
+- **Modo temporal:** los pagos internacionales (USD) se coordinan por WhatsApp (`lib/internationalPayments.ts`). Al elegir "Internacional", el botón abre `wa.me/5493813380751` con el plan y el precio precargados; no se llama al backend.
+- Polar sigue implementado como fallback: para reactivarlo, cambiar `INTERNATIONAL_PAYMENT_MODE` a `"polar"` en `lib/internationalPayments.ts` y definir `NEXT_PUBLIC_POLAR_CHECKOUT_ENABLED=true`. El checkout se crea en Django mediante `POST /api/payments/create-polar-checkout/`; el navegador nunca recibe el token secreto.
 
 ## UI compartida con React Native
 

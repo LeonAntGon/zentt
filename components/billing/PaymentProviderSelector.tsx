@@ -3,11 +3,14 @@
 import { useCallback, useEffect, useState } from "react";
 import { CreditCard, Globe2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  isInternationalPaymentsEnabled,
+  isWhatsAppInternationalMode,
+} from "@/lib/internationalPayments";
 
 export type PaymentProvider = "mercadopago" | "polar";
 
-export const isPolarCheckoutEnabled =
-  process.env.NEXT_PUBLIC_POLAR_CHECKOUT_ENABLED === "true";
+const internationalPaymentsEnabled = isInternationalPaymentsEnabled();
 
 const STORAGE_KEY = "zentt.paymentProvider";
 const PROVIDER_EVENT = "zentt:payment-provider";
@@ -22,7 +25,9 @@ const OPTIONS = [
   {
     id: "polar" as const,
     label: "Internacional",
-    detail: "Dólares (USD) · Polar",
+    detail: isWhatsAppInternationalMode()
+      ? "Dólares (USD) · WhatsApp"
+      : "Dólares (USD) · Polar",
     icon: Globe2,
   },
 ];
@@ -35,7 +40,7 @@ function isArgentinaTimeZone(timeZone: string): boolean {
 }
 
 function getDefaultPaymentProvider(): PaymentProvider {
-  if (!isPolarCheckoutEnabled || typeof window === "undefined") {
+  if (!internationalPaymentsEnabled || typeof window === "undefined") {
     return "mercadopago";
   }
 
@@ -70,7 +75,7 @@ export function usePaymentProvider() {
   }, []);
 
   useEffect(() => {
-    if (!isPolarCheckoutEnabled) return;
+    if (!internationalPaymentsEnabled) return;
 
     const sync = (event: Event) => {
       if (
@@ -105,9 +110,9 @@ export function usePaymentProvider() {
   }, []);
 
   return {
-    provider: isPolarCheckoutEnabled ? provider : "mercadopago",
+    provider: internationalPaymentsEnabled ? provider : "mercadopago",
     setProvider,
-    polarEnabled: isPolarCheckoutEnabled,
+    internationalEnabled: internationalPaymentsEnabled,
     ready,
   };
 }
@@ -127,7 +132,7 @@ export function PaymentProviderSelector({
   className,
   note,
 }: PaymentProviderSelectorProps) {
-  if (!isPolarCheckoutEnabled) return null;
+  if (!internationalPaymentsEnabled) return null;
 
   return (
     <div className={cn("w-full", className)}>

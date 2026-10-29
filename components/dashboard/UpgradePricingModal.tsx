@@ -23,6 +23,7 @@ import {
   usePlanCheckout,
   type PaidPlan,
 } from "@/components/billing/usePlanCheckout";
+import { INTERNATIONAL_WHATSAPP_DISPLAY } from "@/lib/internationalPayments";
 
 type UpgradePricingModalProps = {
   open: boolean;
@@ -67,10 +68,10 @@ export function UpgradePricingModal({
   body = `Agregá más alojamientos, quitá la marca de agua y sincronizá precios dinámicos. Acceso por 30 días, sin renovación automática.`,
 }: UpgradePricingModalProps) {
   const { user } = useAuth();
-  const { provider, setProvider, polarEnabled, ready } = usePaymentProvider();
+  const { provider, setProvider, internationalEnabled, ready } = usePaymentProvider();
   const { loadingPlan, startCheckout } = usePlanCheckout();
   const currentPlan = normalizePlan(user?.profile?.plan);
-  const selectedProvider = polarEnabled ? provider : "mercadopago";
+  const selectedProvider = internationalEnabled ? provider : "mercadopago";
 
   if (!open) return null;
 
@@ -91,7 +92,7 @@ export function UpgradePricingModal({
   const renderPaymentNote = () => (
     <p className="mt-2 text-center text-xs text-gray-500">
       {selectedProvider === "polar"
-        ? "Pago en USD vía Polar"
+        ? `Pago internacional por WhatsApp (${INTERNATIONAL_WHATSAPP_DISPLAY})`
         : "Pago en ARS vía Mercado Pago"}{" "}
       · 30 días, sin renovación automática.
     </p>
@@ -130,7 +131,7 @@ export function UpgradePricingModal({
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-slate-500">{body}</p>
 
-        {polarEnabled ? (
+        {internationalEnabled ? (
           <PaymentProviderSelector
             className="mt-5"
             provider={provider}
@@ -175,7 +176,11 @@ export function UpgradePricingModal({
                   showPulse={!isCurrent}
                   loading={isBusy}
                   disabled={loadingPlan !== null}
-                  onClick={() => startCheckout(plan.id, selectedProvider)}
+                  onClick={() =>
+                    startCheckout(plan.id, selectedProvider, {
+                      priceUsd: POLAR_PRICES_USD[plan.id],
+                    })
+                  }
                 >
                   {isBusy ? "Procesando..." : isCurrent ? "Renovar 1 mes" : "Pagar Pro"}
                 </UpgradeProButton>
@@ -216,7 +221,11 @@ export function UpgradePricingModal({
                 <button
                   type="button"
                   disabled={loadingPlan !== null}
-                  onClick={() => startCheckout(plan.id, selectedProvider)}
+                  onClick={() =>
+                    startCheckout(plan.id, selectedProvider, {
+                      priceUsd: POLAR_PRICES_USD[plan.id],
+                    })
+                  }
                   className="mt-3 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-slate-900 bg-transparent text-sm font-bold text-slate-900 transition-colors hover:bg-slate-50 disabled:opacity-60"
                 >
                   {isBusy ? (
