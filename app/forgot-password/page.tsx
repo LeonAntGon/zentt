@@ -6,6 +6,7 @@ import axios from "axios";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { ZenttLogo } from "@/components/landing/ZenttLogo";
 import { Loader2 } from "lucide-react";
@@ -187,11 +188,11 @@ export default function ForgotPasswordPage() {
                   <Label htmlFor="new-password" className="ui-label">
                     Nueva contraseña
                   </Label>
-                  <Input
+                  <PasswordInput
                     id="new-password"
-                    type="password"
                     minLength={8}
                     required
+                    autoFocus
                     autoComplete="new-password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
@@ -202,9 +203,8 @@ export default function ForgotPasswordPage() {
                   <Label htmlFor="confirm-password" className="ui-label">
                     Confirmar contraseña
                   </Label>
-                  <Input
+                  <PasswordInput
                     id="confirm-password"
-                    type="password"
                     minLength={8}
                     required
                     autoComplete="new-password"

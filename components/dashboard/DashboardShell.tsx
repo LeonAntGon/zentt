@@ -137,6 +137,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const fotoPerfil = user?.profile?.foto_perfil;
   const nombreNegocio = user?.profile?.nombre_negocio;
   const currentPlan = normalizePlan(user?.profile?.plan);
+  const hideBilling = Boolean(user?.profile?.hide_billing);
   const planBadgeLabel =
     currentPlan === "complejo"
       ? "Complejo"
@@ -173,8 +174,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     </div>
   );
 
-  const planBadge =
-    currentPlan === "gratis" ? (
+  const planBadge = hideBilling ? null : currentPlan === "gratis" ? (
       <button
         type="button"
         onClick={() => setUpgradeOpen(true)}
@@ -287,7 +287,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           <div className="flex items-start justify-between gap-2">
             {brandBlock}
           </div>
-          <div className="mt-3">{planBadge}</div>
+          {planBadge ? <div className="mt-3">{planBadge}</div> : null}
         </div>
         <nav
           aria-label="Navegación del panel"
@@ -379,22 +379,24 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         </div>
       </nav>
 
-      <UpgradePricingModal
-        open={upgradeOpen}
-        onClose={() => setUpgradeOpen(false)}
-        title={
-          currentPlan === "gratis"
-            ? undefined
-            : currentPlan === "pro"
-              ? "Renovar o subir de plan"
-              : "Renovar Complejo"
-        }
-        body={
-          currentPlan === "gratis"
-            ? undefined
-            : "Acceso por 30 días, sin contratos ni débitos automáticos. Renovás solo si querés."
-        }
-      />
+      {!hideBilling && (
+        <UpgradePricingModal
+          open={upgradeOpen}
+          onClose={() => setUpgradeOpen(false)}
+          title={
+            currentPlan === "gratis"
+              ? undefined
+              : currentPlan === "pro"
+                ? "Renovar o subir de plan"
+                : "Renovar Complejo"
+          }
+          body={
+            currentPlan === "gratis"
+              ? undefined
+              : "Acceso por 30 días, sin contratos ni débitos automáticos. Renovás solo si querés."
+          }
+        />
+      )}
     </div>
   );
 }

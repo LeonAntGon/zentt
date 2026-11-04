@@ -25,6 +25,7 @@ import {
 import { toast } from "sonner";
 
 import api from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 import type { Cabana } from "@/types/cabin";
 import {
   Card,
@@ -186,6 +187,8 @@ function InfoTip({ label, text }: { label: string; text: string }) {
 }
 
 export default function RendimientoWebPage() {
+  const { user } = useAuth();
+  const hideBilling = Boolean(user?.profile?.hide_billing);
   const [cabanas, setCabanas] = useState<Cabana[]>([]);
   const [cabanasLoading, setCabanasLoading] = useState(true);
   const [granularity, setGranularity] = useState<Granularity>("month");
@@ -351,7 +354,7 @@ export default function RendimientoWebPage() {
           )}
         </header>
 
-        {isLimited && (
+        {isLimited && !hideBilling && (
           <UpgradeBanner
             feature="analytics detalladas"
             planRequired="pro"

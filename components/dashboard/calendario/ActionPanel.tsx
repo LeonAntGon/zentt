@@ -254,6 +254,11 @@ export function ActionPanel({
                     <p className="mt-1.5 text-sm font-bold text-slate-800">
                       {formatMoneyARS(Number(r.total_reserva))}
                     </p>
+                    {r.notas ? (
+                      <p className="mt-1 text-[11px] leading-snug text-slate-500">
+                        {r.notas}
+                      </p>
+                    ) : null}
                   </div>
                   <span
                     className={cn(

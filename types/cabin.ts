@@ -105,6 +105,7 @@ export interface Reserva {
   ninos?: number | null;
   mascotas?: boolean | null;
   mascotas_detalle?: string | null;
+  notas?: string | null;
   motivo_viaje?: string | null;
   check_in: string;
   check_out: string;

@@ -119,7 +119,10 @@ export default function CreateCabanaPage() {
       try {
         const { data } = await api.get<Cabana[]>("/cabanas/");
         const plan = user?.profile?.plan;
-        if (!canCreateCabana(plan, data.length)) {
+        if (
+          !user?.profile?.hide_billing &&
+          !canCreateCabana(plan, data.length)
+        ) {
           setPaywallOpen(true);
         }
       } catch {

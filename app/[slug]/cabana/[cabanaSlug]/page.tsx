@@ -250,14 +250,14 @@ function CabinDetailContent() {
       setSending(true);
       const { data } = await api.post<{
         id: number;
-        detail: string;
-        total_estimado: string;
-        noches: number;
-      }>(`/public/${slug}/cabana/${cabanaSlug}/mensajes/`, {
+        estado: string;
+        total_reserva: string;
+        noches?: number;
+      }>(`/public/${slug}/cabana/${cabanaSlug}/reservas/`, {
         nombre_turista: formData.nombre_turista.trim(),
         email_turista: formData.email_turista.trim(),
         telefono_turista: formData.telefono_turista,
-        contenido: formData.contenido.trim(),
+        notas: formData.contenido.trim(),
         adultos: formData.adultos,
         ninos: formData.ninos,
         mascotas: formData.mascotas,
@@ -265,12 +265,11 @@ function CabinDetailContent() {
           ? formData.mascotas_detalle.trim()
           : "",
         motivo_viaje: formData.motivo_viaje,
-        fecha_desde: fechaDesde,
-        fecha_hasta: fechaHasta,
-        origen: "WEB",
+        check_in: fechaDesde,
+        check_out: fechaHasta,
       });
 
-      const serverTotal = Number(data.total_estimado || estimado);
+      const serverTotal = Number(data.total_reserva || estimado);
       const nights = data.noches || nightsCountInclusive(from, to);
       const dateFrom = format(from, "dd/MM/yyyy");
       const dateTo = format(parseISO(fechaHasta), "dd/MM/yyyy");
@@ -313,9 +312,9 @@ function CabinDetailContent() {
       if (isWhatsApp && waNum) {
         if (waWindow && !waWindow.closed) {
           waWindow.location.href = waHref;
-          toast.success("¡Consulta enviada con éxito!");
+          toast.success("¡Reserva enviada con éxito!");
         } else {
-          toast.success("¡Consulta enviada con éxito!", {
+          toast.success("¡Reserva enviada con éxito!", {
             action: {
               label: "Abrir WhatsApp",
               onClick: () => window.open(waHref, "_blank"),
@@ -324,9 +323,9 @@ function CabinDetailContent() {
           });
         }
       } else if (isWhatsApp) {
-        toast.message("Consulta enviada. El anfitrión aún no configuró WhatsApp.");
+        toast.message("Reserva enviada. El anfitrión aún no configuró WhatsApp.");
       } else {
-        toast.success("¡Consulta enviada con éxito!");
+        toast.success("¡Reserva enviada con éxito!");
       }
 
       setFormData({

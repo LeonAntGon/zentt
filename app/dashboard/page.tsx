@@ -27,7 +27,7 @@ import { HeroSiteCard } from "@/components/dashboard/HeroSiteCard";
 import { InquiryPreviewCard } from "@/components/dashboard/InquiryPreviewCard";
 import type { MessageOrigen } from "@/types/cabin";
 import { formatCurrencyCompact, getMaxCabanas } from "@/lib/planLimits";
-import { getPublicSiteUrl } from "@/lib/publicSite";
+import { getPublicDisplayUrl, getPublicSiteUrl } from "@/lib/publicSite";
 
 interface Mensaje {
   id: number;
@@ -168,10 +168,16 @@ export default function OverviewPage() {
   const [visitsLabel, setVisitsLabel] = useState("—");
 
   const slug = user?.profile?.slug;
+  const customDomain = user?.profile?.custom_domain?.display_domain;
+  const hideBilling = Boolean(user?.profile?.hide_billing);
 
   const publicUrl = useMemo(() => {
-    return getPublicSiteUrl(slug);
-  }, [slug]);
+    return getPublicSiteUrl(slug, customDomain);
+  }, [slug, customDomain]);
+
+  const displayUrl = useMemo(() => {
+    return getPublicDisplayUrl(slug, customDomain);
+  }, [slug, customDomain]);
 
   const businessProfile = useMemo(
     () => (user?.profile ? { ...user.profile } : null),
@@ -382,13 +388,9 @@ export default function OverviewPage() {
       <HeroSiteCard
         slug={slug}
         publicUrl={publicUrl}
-        displayUrl={
-          slug
-            ? `${typeof window !== "undefined" ? window.location.host : "zentt.agency"}/${slug}`
-            : ""
-        }
+        displayUrl={displayUrl}
         cabanasCount={stats.totalCabanas}
-        cabanasMax={getMaxCabanas(user?.profile?.plan)}
+        cabanasMax={hideBilling ? null : getMaxCabanas(user?.profile?.plan)}
         visitsLabel={visitsLabel}
         copied={copied}
         onCopy={copyToClipboard}

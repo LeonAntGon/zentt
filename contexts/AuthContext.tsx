@@ -26,9 +26,15 @@ interface UserProfile {
   tiktok_user?: string | null;
   youtube_user?: string | null;
   facebook_user?: string | null;
-  design?: "claro" | "oscuro" | "elegante" | "atardecer";
+  design?: "claro" | "oscuro" | "elegante" | "atardecer" | "lanorita";
   plan?: "gratis" | "pro" | "complejo";
   plan_expires_at?: string | null;
+  hide_billing?: boolean;
+  custom_domain?: {
+    domain: string;
+    display_domain: string;
+    status: string;
+  } | null;
   mp_subscription_id?: string | null;
   email_verified_at?: string | null;
   onboarding_required?: boolean;

@@ -7,7 +7,15 @@ import { toast } from "sonner";
 import api from "@/lib/api";
 import { useAuth, type User } from "@/contexts/AuthContext";
 import { getMediaUrl } from "@/lib/media";
-import { getDesign, DESIGNS, type DesignKey } from "@/lib/designs";
+import {
+  getDesign,
+  getCustomDesignName,
+  getDesignLabel,
+  isCustomDesign,
+  DESIGNS,
+  type DesignKey,
+} from "@/lib/designs";
+import { getPublicSiteUrl } from "@/lib/publicSite";
 import type { Cabana } from "@/types/cabin";
 import { PageContainer } from "@/components/dashboard/PageContainer";
 
@@ -103,7 +111,13 @@ export default function DesignPage() {
 
   const definition = getDesign(selected);
   const isPublished = selected === currentDesign;
-  const publicUrl = user?.profile?.slug ? `/${user.profile.slug}` : "/dashboard/configuracion";
+  const selectedLabel = isCustomDesign(selected)
+    ? `Diseño personalizado — ${getCustomDesignName(selected)}`
+    : definition.name;
+  const publicUrl = getPublicSiteUrl(
+    user?.profile?.slug,
+    user?.profile?.custom_domain?.display_domain
+  ) || "/dashboard/configuracion";
   const businessName = user?.profile?.nombre_negocio || "Tu alojamiento";
   const logo = getMediaUrl(user?.profile?.foto_perfil);
 
@@ -148,7 +162,7 @@ export default function DesignPage() {
           </div>
           <p className="page-eyebrow">Personalizá tu web</p>
           <h1 className="page-title mt-2">Elegí un diseño</h1>
-          <p className="page-subtitle mt-2 max-w-2xl">Probá los cuatro estilos y publicá el que mejor represente tus alojamientos. No necesitás configurar colores ni tipografías.</p>
+          <p className="page-subtitle mt-2 max-w-2xl">Probá los diseños y publicá el que mejor represente tus alojamientos. No necesitás configurar colores ni tipografías.</p>
         </div>
         {user?.profile?.slug ? (
           <Link href={publicUrl} target="_blank" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-primary hover:text-primary">
@@ -162,7 +176,11 @@ export default function DesignPage() {
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-white"><Palette size={19} /></span>
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Diseño publicado</p>
-            <p className="mt-0.5 font-bold text-slate-900">{getDesign(currentDesign).name}</p>
+            <p className="mt-0.5 font-bold text-slate-900">
+              {isCustomDesign(currentDesign)
+                ? `Diseño personalizado — ${getCustomDesignName(currentDesign)}`
+                : getDesignLabel(currentDesign)}
+            </p>
           </div>
         </div>
         <p className="text-sm text-slate-600">El diseño que elijas se aplica recién cuando lo publiques.</p>
@@ -194,7 +212,14 @@ export default function DesignPage() {
                   </div>
                   <div className="flex items-start justify-between gap-3 px-1">
                     <div>
-                      <p className="font-bold text-slate-900">{design.name}</p>
+                      <p className="flex flex-wrap items-center gap-2 font-bold text-slate-900">
+                        {design.name}
+                        {design.custom ? (
+                          <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-primary">
+                            Personalizado
+                          </span>
+                        ) : null}
+                      </p>
                       <p className="mt-1 text-sm leading-5 text-slate-500">{design.description}</p>
                       <p className="mt-2 text-xs font-semibold text-primary">Ideal para: {design.idealFor}</p>
                     </div>
@@ -223,7 +248,7 @@ export default function DesignPage() {
                   id="summary-title"
                   className="mt-1 text-xl font-bold text-slate-900"
                 >
-                  {definition.name}
+                  {selectedLabel}
                 </h2>
               </div>
               <span

@@ -207,11 +207,15 @@ export function EmailVerifyBanner() {
 
   if (!user || user.email_verified) return null;
 
+  const hideBilling = Boolean(user.profile?.hide_billing);
+
   return (
     <div className="border-b border-amber-200 bg-amber-50 px-4 py-2.5 text-amber-950">
       <div className="mx-auto flex max-w-5xl flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm font-medium">
-          Confirmá tu email para suscribirte a un plan pago.
+          {hideBilling
+            ? "Confirmá tu email para asegurar tu cuenta."
+            : "Confirmá tu email para suscribirte a un plan pago."}
         </p>
         <button
           type="button"

@@ -8,6 +8,7 @@ import { UserAvatar } from "@/components/dashboard/UserAvatar";
 import { BusinessAvatar } from "@/components/dashboard/BusinessAvatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { FormStickySaveBar } from "@/components/dashboard/FormStickySaveBar";
 import { UnsavedChangesGuard } from "@/components/dashboard/UnsavedChangesGuard";
@@ -139,11 +140,13 @@ export default function PerfilPage() {
   const plan = user?.profile?.plan || "gratis";
   const planLabel =
     plan === "complejo" ? "Complejo" : plan === "pro" ? "Pro" : "Gratis";
-  const publicPath = user?.profile?.slug
-    ? `zentt.agency/${user.profile.slug}`
-    : user?.username
-      ? `zentt.agency/${user.username}`
-      : "zentt.agency/tu-usuario";
+  const publicPath =
+    user?.profile?.custom_domain?.display_domain ||
+    (user?.profile?.slug
+      ? `zentt.agency/${user.profile.slug}`
+      : user?.username
+        ? `zentt.agency/${user.username}`
+        : "zentt.agency/tu-usuario");
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -253,9 +256,11 @@ export default function PerfilPage() {
             {user?.profile?.nombre_negocio || "Tu negocio"}
           </p>
           <p className="truncate text-xs text-slate-500">{publicPath}</p>
-          <p className="mt-1 text-xs font-semibold text-primary">
-            Plan {planLabel}
-          </p>
+          {!user?.profile?.hide_billing && (
+            <p className="mt-1 text-xs font-semibold text-primary">
+              Plan {planLabel}
+            </p>
+          )}
         </div>
         <span className="inline-flex shrink-0 items-center gap-1 text-sm font-bold text-primary">
           Editar negocio
@@ -369,9 +374,8 @@ export default function PerfilPage() {
           >
             Contraseña actual
           </Label>
-          <Input
+          <PasswordInput
             id="current_password"
-            type="password"
             className="h-14 rounded-2xl border-none bg-slate-50 font-medium"
             value={passwordData.current_password}
             onChange={(e) =>
@@ -392,9 +396,8 @@ export default function PerfilPage() {
             >
               Nueva contraseña
             </Label>
-            <Input
+            <PasswordInput
               id="new_password"
-              type="password"
               className="h-14 rounded-2xl border-none bg-slate-50 font-medium"
               value={passwordData.new_password}
               onChange={(e) =>
@@ -414,9 +417,8 @@ export default function PerfilPage() {
             >
               Confirmar nueva
             </Label>
-            <Input
+            <PasswordInput
               id="confirm_password"
-              type="password"
               className="h-14 rounded-2xl border-none bg-slate-50 font-medium"
               value={passwordData.confirm_password}
               onChange={(e) =>

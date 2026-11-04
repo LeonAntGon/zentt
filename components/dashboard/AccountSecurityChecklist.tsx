@@ -19,6 +19,7 @@ import { useEmailVerify } from "@/components/dashboard/EmailVerify";
 import { PhoneField } from "@/components/public/PhoneField";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 
 type ModalKind = "email" | "password" | null;
@@ -483,9 +484,8 @@ export function AccountSecurityChecklist() {
 
                 <div className="space-y-1.5">
                   <Label htmlFor="onboarding-password">Nueva contraseña</Label>
-                  <Input
+                  <PasswordInput
                     id="onboarding-password"
-                    type="password"
                     value={passwordForm.new_password}
                     onChange={(event) =>
                       setPasswordForm((current) => ({
@@ -495,6 +495,7 @@ export function AccountSecurityChecklist() {
                     }
                     placeholder="••••••••"
                     autoComplete="new-password"
+                    autoFocus
                     required
                   />
                   <p className="text-[10px] leading-tight text-slate-400">
@@ -506,9 +507,8 @@ export function AccountSecurityChecklist() {
                   <Label htmlFor="onboarding-password-confirm">
                     Confirmar contraseña
                   </Label>
-                  <Input
+                  <PasswordInput
                     id="onboarding-password-confirm"
-                    type="password"
                     value={passwordForm.confirm_password}
                     onChange={(event) =>
                       setPasswordForm((current) => ({

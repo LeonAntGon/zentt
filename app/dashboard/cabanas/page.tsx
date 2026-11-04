@@ -20,6 +20,7 @@ export default function CabanasPage() {
   const { user } = useAuth();
   const router = useRouter();
   const plan = user?.profile?.plan;
+  const hideBilling = Boolean(user?.profile?.hide_billing);
   const maxCabanas = getMaxCabanas(plan);
 
   useEffect(() => {
@@ -42,7 +43,7 @@ export default function CabanasPage() {
   };
 
   const handleCrearCabana = () => {
-    if (!canCreateCabana(plan, cabanas.length)) {
+    if (!hideBilling && !canCreateCabana(plan, cabanas.length)) {
       setPaywallOpen(true);
       return;
     }
@@ -76,7 +77,12 @@ export default function CabanasPage() {
               <span className="text-primary font-bold">
                 {user?.profile?.nombre_negocio || "tu complejo"}
               </span>
-              . {cabanas.length} / {maxCabanas} alojamientos en tu plan.
+              .{" "}
+              {hideBilling
+                ? `${cabanas.length} ${
+                    cabanas.length === 1 ? "alojamiento" : "alojamientos"
+                  }.`
+                : `${cabanas.length} / ${maxCabanas} alojamientos en tu plan.`}
             </p>
           </div>
 
@@ -129,14 +135,16 @@ export default function CabanasPage() {
         )}
       </div>
 
-      <UpgradePricingModal
-        open={paywallOpen}
-        onClose={() => setPaywallOpen(false)}
-        title={`Tu plan incluye ${maxCabanas} ${
-          maxCabanas === 1 ? "alojamiento" : "alojamientos"
-        }`}
-        body="Para agregar otro alojamiento, pasate a un plan pago. Acceso por 30 días, sin renovación automática: renovás solo si querés."
-      />
+      {!hideBilling && (
+        <UpgradePricingModal
+          open={paywallOpen}
+          onClose={() => setPaywallOpen(false)}
+          title={`Tu plan incluye ${maxCabanas} ${
+            maxCabanas === 1 ? "alojamiento" : "alojamientos"
+          }`}
+          body="Para agregar otro alojamiento, pasate a un plan pago. Acceso por 30 días, sin renovación automática: renovás solo si querés."
+        />
+      )}
     </PageContainer>
   );
 }

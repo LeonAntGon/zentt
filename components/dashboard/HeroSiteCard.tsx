@@ -8,7 +8,7 @@ type HeroSiteCardProps = {
   publicUrl: string;
   displayUrl: string;
   cabanasCount: number;
-  cabanasMax: number;
+  cabanasMax?: number | null;
   visitsLabel: string;
   copied: boolean;
   onCopy: () => void;
@@ -94,8 +94,13 @@ export function HeroSiteCard({
       <div className="flex items-center gap-4 border-t border-slate-100 px-4 py-3 text-xs font-medium text-slate-500">
         <span className="inline-flex items-center gap-1.5">
           <Home size={14} className="text-slate-400" />
-          {cabanasCount} / {cabanasMax}{" "}
-          {cabanasMax === 1 ? "Alojamiento" : "Alojamientos"}
+          {cabanasMax == null
+            ? `${cabanasCount} ${
+                cabanasCount === 1 ? "Alojamiento" : "Alojamientos"
+              }`
+            : `${cabanasCount} / ${cabanasMax} ${
+                cabanasMax === 1 ? "Alojamiento" : "Alojamientos"
+              }`}
         </span>
         <span className="inline-flex items-center gap-1.5">
           <Eye size={14} className="text-slate-400" />

@@ -3,6 +3,26 @@ const configuredPublicSiteUrl =
 
 export const PUBLIC_SITE_URL = configuredPublicSiteUrl.replace(/\/$/, "");
 
-export function getPublicSiteUrl(slug?: string | null): string {
+export function getPublicSiteUrl(
+  slug?: string | null,
+  customDomain?: string | null
+): string {
+  const domain = (customDomain || "")
+    .trim()
+    .replace(/^https?:\/\//i, "")
+    .replace(/\/+$/, "");
+  if (domain) return `https://${domain}`;
   return slug ? `${PUBLIC_SITE_URL}/${encodeURIComponent(slug)}` : "";
+}
+
+export function getPublicDisplayUrl(
+  slug?: string | null,
+  customDomain?: string | null
+): string {
+  const domain = (customDomain || "")
+    .trim()
+    .replace(/^https?:\/\//i, "")
+    .replace(/\/+$/, "");
+  if (domain) return domain;
+  return slug ? `${PUBLIC_SITE_URL.replace(/^https?:\/\//i, "")}/${slug}` : "";
 }

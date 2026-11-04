@@ -10,6 +10,7 @@ export type DesignDefinition = {
   name: string;
   description: string;
   idealFor: string;
+  custom?: boolean;
   tokens: {
     bg: string;
     text: string;
@@ -97,6 +98,7 @@ export const DESIGNS: DesignDefinition[] = [
     name: "La Norita",
     description: "Arena, bosque y cobre. Cálido, editorial y junto al río.",
     idealFor: "Cabañas y refugios naturales",
+    custom: true,
     tokens: {
       bg: "#f8f5ec",
       text: "#26332b",
@@ -113,6 +115,35 @@ export const DESIGNS: DesignDefinition[] = [
 
 export const DEFAULT_DESIGN: DesignKey = "claro";
 
+/**
+ * Diseños implementados a medida para un cliente. No se ofrecen como parte
+ * del catálogo estándar, pero el panel los reconoce y los muestra como
+ * "Diseño personalizado".
+ *
+ * Para sumar un cliente nuevo, agregá su clave acá y su bloque de estilos en
+ * `globals.css` / `cabin-theme.css`. No hace falta tocar el resto del panel.
+ */
+export const CUSTOM_DESIGNS: Record<
+  string,
+  { name: string; description: string }
+> = {
+  lanorita: {
+    name: "La Norita",
+    description: "Arena, bosque y cobre. Cálido, editorial y junto al río.",
+  },
+};
+
+export function isCustomDesign(value?: string | null): boolean {
+  return Boolean(value && CUSTOM_DESIGNS[value]);
+}
+
+export function getCustomDesignName(value?: string | null): string | null {
+  return value ? CUSTOM_DESIGNS[value]?.name ?? null : null;
+}
+
+export function getDesignLabel(value?: string | null): string {
+  return isCustomDesign(value) ? "Diseño personalizado" : getDesign(value).name;
+}
 
 export function getDesign(value?: string | null): DesignDefinition {
   return DESIGNS.find((design) => design.id === value) || DESIGNS[0];

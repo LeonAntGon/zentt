@@ -46,6 +46,10 @@ import {
 } from "@/lib/username";
 import { normalizeSocialValue } from "@/lib/socialLinks";
 import {
+  getCustomDesignName,
+  getDesignLabel,
+} from "@/lib/designs";
+import {
   UnsavedChangesGuard,
   type UnsavedChangesGuardHandle,
 } from "@/components/dashboard/UnsavedChangesGuard";
@@ -223,6 +227,10 @@ export default function SettingsPage() {
     currentPlan === "complejo" ? "complejo" : "pro";
   const primaryPlanName = primaryPlan === "pro" ? "Pro" : "Complejo";
   const primaryIsRenewal = currentPlan === primaryPlan;
+  const hideBilling = Boolean(user?.profile?.hide_billing);
+  const customDomain = user?.profile?.custom_domain?.display_domain;
+  const designLabel = getDesignLabel(user?.profile?.design);
+  const customDesignName = getCustomDesignName(user?.profile?.design);
 
   useEffect(() => {
     if (!user) return;
@@ -748,15 +756,23 @@ export default function SettingsPage() {
         <section className="rounded-2xl bg-white p-6 shadow-sm">
           <h2 className="section-title mb-2">Diseño de tu web</h2>
           <p className="mb-5 text-sm text-slate-500">
-            Elegí uno de nuestros diseños listos para usar. Todos están optimizados
-            para que tu web se vea bien en cualquier dispositivo.
+            {customDesignName
+              ? "Tu web usa un diseño implementado a medida. Si publicás otro diseño, se reemplaza por uno del catálogo estándar."
+              : "Elegí uno de nuestros diseños listos para usar. Todos están optimizados para que tu web se vea bien en cualquier dispositivo."}
           </p>
           <div className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="font-semibold text-slate-900">
-                Diseño actual: {user?.profile?.design === "oscuro" ? "Oscuro" : user?.profile?.design === "elegante" ? "Elegante" : user?.profile?.design === "atardecer" ? "Atardecer" : "Claro"}
+                Diseño actual: {designLabel}
+                {customDesignName ? ` — ${customDesignName}` : ""}
               </p>
-              <p className="mt-1 text-sm text-slate-500">Podés cambiarlo cuando quieras.</p>
+              <p className="mt-1 text-sm text-slate-500">
+                {customDesignName
+                  ? customDomain
+                    ? `Diseño implementado a medida y conectado a ${customDomain}.`
+                    : "Diseño implementado a medida."
+                  : "Podés cambiarlo cuando quieras."}
+              </p>
             </div>
             <Link
               href="/dashboard/diseno"
@@ -769,7 +785,8 @@ export default function SettingsPage() {
 
         <CustomDomainCard />
 
-        {/* —— Tarjeta 6: Tu Plan —— */}
+        {!hideBilling && (
+        /* —— Tarjeta 6: Tu Plan —— */
         <section id="planes" className="scroll-mt-24 rounded-2xl bg-white p-6 shadow-sm transition-all duration-300 ease-in-out">
           <div className="mb-5 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
@@ -915,6 +932,7 @@ export default function SettingsPage() {
               : "Acceso por 30 días, sin renovación automática: renovás solo si querés."}
           </p>
         </section>
+        )}
 
         {/* Spacer so the sticky save bar does not cover plan copy */}
         <div
