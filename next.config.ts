@@ -23,6 +23,28 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async rewrites() {
+    return [
+      {
+        source: "/embed/:slug/cabana/:cabanaSlug",
+        destination: "/:slug/cabana/:cabanaSlug?embed=1&theme=lanorita",
+      },
+    ];
+  },
+  async headers() {
+    return [
+      {
+        source: "/embed/:path*",
+        headers: [
+          {
+            key: "Content-Security-Policy",
+            value:
+              "frame-ancestors 'self' http://localhost:5173 http://127.0.0.1:5173 https://*.vercel.app https://xn--cabaaslanorita-tnb.com https://www.xn--cabaaslanorita-tnb.com",
+          },
+        ],
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "ui.shadcn.com" },

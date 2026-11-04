@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { type DayButtonProps } from "react-day-picker";
+import { useEffect, useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { formatMoneyARS, toISODate } from "@/lib/pricing";
 import { cn } from "@/lib/utils";
@@ -32,45 +31,7 @@ type MasterCalendarProps = {
   showSyncIcal?: boolean;
   syncingIcal?: boolean;
   onSyncIcal?: () => void;
-  priceForDate?: (date: Date) => number | null;
 };
-
-function compactPrice(value: number) {
-  if (!Number.isFinite(value)) return "";
-  if (value >= 1000000) return `$${Math.round(value / 1000000)}M`;
-  if (value >= 1000) return `$${Math.round(value / 1000)}k`;
-  return `$${Math.round(value)}`;
-}
-
-function MasterPriceDayButton({
-  day,
-  modifiers,
-  getPrice,
-  ...buttonProps
-}: DayButtonProps & { getPrice: (date: Date) => number | null }) {
-  const ref = useRef<HTMLButtonElement>(null);
-  useEffect(() => {
-    if (modifiers.focused) ref.current?.focus();
-  }, [modifiers.focused]);
-  const price = getPrice(day.date);
-
-  return (
-    <button
-      ref={ref}
-      {...buttonProps}
-      className={`${buttonProps.className || ""} relative`}
-    >
-      <span className="flex h-full w-full flex-col items-center justify-center leading-none">
-        <span>{buttonProps.children}</span>
-        {price !== null && (
-          <span className="mt-0.5 max-w-full truncate text-[8px] font-medium text-slate-400">
-            {compactPrice(price)}
-          </span>
-        )}
-      </span>
-    </button>
-  );
-}
 
 function useDualMonth() {
   const [dual, setDual] = useState(false);
@@ -97,17 +58,8 @@ export function MasterCalendar({
   showSyncIcal = false,
   syncingIcal = false,
   onSyncIcal,
-  priceForDate,
 }: MasterCalendarProps) {
   const dualMonth = useDualMonth();
-  const calendarComponents = useMemo(() => {
-    if (!priceForDate) return undefined;
-    const PriceDayButton = (props: DayButtonProps) => (
-      <MasterPriceDayButton {...props} getPrice={priceForDate} />
-    );
-    PriceDayButton.displayName = "MasterPriceDayButton";
-    return { DayButton: PriceDayButton };
-  }, [priceForDate]);
 
   const modifiers = {
     confirmed: (date: Date) => confirmedDates.has(toISODate(date)),
@@ -198,7 +150,6 @@ export function MasterCalendar({
             onSelect={onSelectDay}
             modifiers={modifiers}
             modifiersClassNames={modifiersClassNames}
-            components={calendarComponents}
             className={cn(
               "w-full",
               dualMonth
@@ -214,11 +165,10 @@ export function MasterCalendar({
             )}
           />
 
-          {priceForDate && (
-            <p className="mt-2 px-1 text-[10px] text-slate-400">
-              El valor debajo de cada día es la tarifa vigente del alojamiento seleccionado.
-            </p>
-          )}
+          <p className="mt-2 px-1 text-[10px] text-slate-400">
+            Los colores indican el estado de cada noche. Las tarifas se editan
+            en cada alojamiento.
+          </p>
 
           <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 border-t border-slate-100 pt-4 text-xs text-slate-500">
           <span className="inline-flex items-center gap-1.5">

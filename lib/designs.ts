@@ -1,4 +1,9 @@
-export type DesignKey = "claro" | "oscuro" | "elegante" | "atardecer";
+export type DesignKey =
+  | "claro"
+  | "oscuro"
+  | "elegante"
+  | "atardecer"
+  | "lanorita";
 
 export type DesignDefinition = {
   id: DesignKey;
@@ -87,9 +92,27 @@ export const DESIGNS: DesignDefinition[] = [
       accentText: "#ffffff",
     },
   },
+  {
+    id: "lanorita",
+    name: "La Norita",
+    description: "Arena, bosque y cobre. Cálido, editorial y junto al río.",
+    idealFor: "Cabañas y refugios naturales",
+    tokens: {
+      bg: "#f8f5ec",
+      text: "#26332b",
+      surface: "#fffdf9",
+      border: "#d7d9d2",
+      primary: "#26332b",
+      primaryText: "#fffdf9",
+      muted: "#6f766f",
+      accent: "#b06b45",
+      accentText: "#fffdf9",
+    },
+  },
 ];
 
 export const DEFAULT_DESIGN: DesignKey = "claro";
+
 
 export function getDesign(value?: string | null): DesignDefinition {
   return DESIGNS.find((design) => design.id === value) || DESIGNS[0];

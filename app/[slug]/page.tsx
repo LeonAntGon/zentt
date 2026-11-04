@@ -145,7 +145,10 @@ export default async function LinktreePage({
   const design = getDesign(siteData.design);
   const coverImage =
     getMediaUrl(siteData.cabanas[0]?.imagen_portada) || DEFAULT_COVER_IMAGE;
-  const fontClass = design.id === "elegante" ? "font-serif" : "font-public";
+  const fontClass =
+    design.id === "elegante" || design.id === "lanorita"
+      ? "font-serif"
+      : "font-public";
 
   const igHref = socialHref(siteData.instagram_user, "instagram");
   const fbHref = socialHref(siteData.facebook_user, "facebook");

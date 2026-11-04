@@ -1,26 +1,42 @@
 import type { LucideIcon } from "lucide-react";
 import {
-  Wifi,
-  Car,
-  Waves,
-  Flame,
-  Wind,
-  Thermometer,
-  UtensilsCrossed,
-  Tv,
-  PawPrint,
-  Dumbbell,
-  Bath,
-  Shirt,
-  Refrigerator,
-  Microwave,
-  Coffee,
-  Heater,
-  BedDouble,
-  Droplets,
-  Trees,
-  Croissant,
   Accessibility,
+  Anchor,
+  Armchair,
+  Bath,
+  BedDouble,
+  Car,
+  Coffee,
+  CookingPot,
+  Croissant,
+  Droplets,
+  Dumbbell,
+  Flame,
+  GalleryHorizontal,
+  Heater,
+  Home,
+  Library,
+  LifeBuoy,
+  Microwave,
+  Mountain,
+  PawPrint,
+  Refrigerator,
+  Sailboat,
+  Shirt,
+  Ship,
+  Snowflake,
+  Sofa,
+  Sun,
+  Thermometer,
+  Trees,
+  Tv,
+  Umbrella,
+  Utensils,
+  UtensilsCrossed,
+  Warehouse,
+  Waves,
+  Wifi,
+  Wind,
 } from "lucide-react";
 
 export type AmenityId =
@@ -44,11 +60,35 @@ export type AmenityId =
   | "mascotas"
   | "lavanderia"
   | "desayuno"
-  | "accesibilidad";
+  | "accesibilidad"
+  | "habitaciones"
+  | "bano_completo"
+  | "living"
+  | "comedor"
+  | "cocina_isla"
+  | "biblioteca"
+  | "salamandra"
+  | "horno_barro"
+  | "horno_electrico"
+  | "disco_reposteras"
+  | "freezer"
+  | "vajilla"
+  | "playa_privada"
+  | "muelle_privado"
+  | "kayak"
+  | "canoa"
+  | "deck_rio"
+  | "vista_rio"
+  | "galeria_exterior"
+  | "hamacas"
+  | "equipo_seguridad"
+  | "warehouse";
 
 export type AmenityCategoryId =
   | "basicos"
+  | "ambientes"
   | "cocina"
+  | "rio"
   | "predio"
   | "extras";
 
@@ -57,6 +97,8 @@ export type AmenityOption = {
   label: string;
   icon: LucideIcon;
   category: AmenityCategoryId;
+  /** Palabras extra para el buscador. */
+  keywords?: string[];
 };
 
 export const AMENITY_CATEGORIES: {
@@ -64,7 +106,9 @@ export const AMENITY_CATEGORIES: {
   label: string;
 }[] = [
   { id: "basicos", label: "Básicos" },
+  { id: "ambientes", label: "Ambientes" },
   { id: "cocina", label: "Cocina y electrodomésticos" },
+  { id: "rio", label: "Río y exteriores" },
   { id: "predio", label: "Instalaciones del predio" },
   { id: "extras", label: "Servicios extras y reglas" },
 ];
@@ -93,6 +137,78 @@ export const AMENITY_OPTIONS: AmenityOption[] = [
     icon: Droplets,
     category: "basicos",
   },
+  // Ambientes
+  {
+    id: "habitaciones",
+    label: "Habitaciones separadas",
+    icon: Home,
+    category: "ambientes",
+    keywords: ["cuartos", "dormitorios"],
+  },
+  {
+    id: "bano_completo",
+    label: "Baño completo",
+    icon: Bath,
+    category: "ambientes",
+    keywords: ["baño", "ducha"],
+  },
+  { id: "living", label: "Living", icon: Sofa, category: "ambientes" },
+  { id: "comedor", label: "Comedor", icon: Utensils, category: "ambientes" },
+  {
+    id: "cocina_isla",
+    label: "Cocina en isla",
+    icon: CookingPot,
+    category: "ambientes",
+    keywords: ["isla", "cocina integrada"],
+  },
+  {
+    id: "biblioteca",
+    label: "Biblioteca",
+    icon: Library,
+    category: "ambientes",
+    keywords: ["libros"],
+  },
+  {
+    id: "salamandra",
+    label: "Salamandra",
+    icon: Flame,
+    category: "ambientes",
+    keywords: ["fuego", "leña"],
+  },
+  {
+    id: "horno_barro",
+    label: "Horno de barro",
+    icon: Flame,
+    category: "ambientes",
+    keywords: ["barro", "pizza", "pan"],
+  },
+  {
+    id: "horno_electrico",
+    label: "Horno eléctrico",
+    icon: Microwave,
+    category: "ambientes",
+  },
+  {
+    id: "disco_reposteras",
+    label: "Disco y reposteras",
+    icon: UtensilsCrossed,
+    category: "ambientes",
+    keywords: ["disco", "repostería", "pastelería"],
+  },
+  {
+    id: "freezer",
+    label: "Freezer",
+    icon: Snowflake,
+    category: "ambientes",
+    keywords: ["congelador", "heladera"],
+  },
+  {
+    id: "vajilla",
+    label: "Vajilla y utensilios",
+    icon: Utensils,
+    category: "ambientes",
+    keywords: ["platos", "cubiertos"],
+  },
   // Cocina
   {
     id: "cocina",
@@ -114,6 +230,70 @@ export const AMENITY_OPTIONS: AmenityOption[] = [
     category: "cocina",
   },
   { id: "cafetera", label: "Cafetera", icon: Coffee, category: "cocina" },
+  // Río y exteriores
+  {
+    id: "playa_privada",
+    label: "Playa privada",
+    icon: Umbrella,
+    category: "rio",
+    keywords: ["río", "arena", "costa"],
+  },
+  {
+    id: "muelle_privado",
+    label: "Muelle privado con amarras",
+    icon: Anchor,
+    category: "rio",
+    keywords: ["amarra", "lancha", "embarcadero"],
+  },
+  {
+    id: "kayak",
+    label: "Kayak",
+    icon: Sailboat,
+    category: "rio",
+    keywords: ["remo", "piragua"],
+  },
+  {
+    id: "canoa",
+    label: "Canoa",
+    icon: Ship,
+    category: "rio",
+    keywords: ["remo", "embarcación"],
+  },
+  {
+    id: "deck_rio",
+    label: "Deck con vista al río",
+    icon: Sun,
+    category: "rio",
+    keywords: ["terraza", "deck", "río"],
+  },
+  {
+    id: "vista_rio",
+    label: "Vista al río",
+    icon: Mountain,
+    category: "rio",
+    keywords: ["paisaje", "río"],
+  },
+  {
+    id: "galeria_exterior",
+    label: "Galería / corredor exterior",
+    icon: GalleryHorizontal,
+    category: "rio",
+    keywords: ["corredor", "galería", "porche"],
+  },
+  {
+    id: "hamacas",
+    label: "Hamacas paraguayas",
+    icon: Armchair,
+    category: "rio",
+    keywords: ["hamaca", "descanso"],
+  },
+  {
+    id: "equipo_seguridad",
+    label: "Equipo de seguridad",
+    icon: LifeBuoy,
+    category: "rio",
+    keywords: ["chaleco", "salvavidas"],
+  },
   // Predio
   {
     id: "estacionamiento",
@@ -131,6 +311,12 @@ export const AMENITY_OPTIONS: AmenityOption[] = [
   { id: "gimnasio", label: "Gimnasio", icon: Dumbbell, category: "predio" },
   { id: "jacuzzi", label: "Jacuzzi", icon: Bath, category: "predio" },
   { id: "jardin", label: "Patio o jardín", icon: Trees, category: "predio" },
+  {
+    id: "warehouse",
+    label: "Galpón / depósito",
+    icon: Warehouse,
+    category: "predio",
+  },
   // Extras
   {
     id: "mascotas",
@@ -188,4 +374,19 @@ export function unionAmenities(
     for (const id of normalizeAmenities(list)) set.add(id);
   }
   return AMENITY_OPTIONS.filter((o) => set.has(o.id));
+}
+
+/** Búsqueda simple por label, keywords y categoría. */
+export function filterAmenities(query: string): AmenityOption[] {
+  const q = query.trim().toLowerCase();
+  if (!q) return AMENITY_OPTIONS;
+  return AMENITY_OPTIONS.filter((option) => {
+    const category = AMENITY_CATEGORIES.find((c) => c.id === option.category);
+    return (
+      option.label.toLowerCase().includes(q) ||
+      option.id.includes(q) ||
+      (category?.label.toLowerCase().includes(q) ?? false) ||
+      (option.keywords || []).some((keyword) => keyword.includes(q))
+    );
+  });
 }

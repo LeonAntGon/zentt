@@ -32,7 +32,12 @@ import {
   cabanaTextareaClass,
 } from "@/components/dashboard/cabana-form-styles";
 import { ImageUploadButton, IMAGE_ACCEPT } from "@/components/dashboard/ImageUploader";
-import type { Cabana, PrecioPorFecha } from "@/types/cabin";
+import { OccupancyRateEditor } from "@/components/dashboard/OccupancyRateEditor";
+import type {
+  Cabana,
+  PrecioPorFecha,
+  TarifaOcupacion,
+} from "@/types/cabin";
 import {
   ArrowLeft,
   Image as ImageIcon,
@@ -44,6 +49,7 @@ import {
 import { toast } from "sonner";
 import { UpgradePricingModal } from "@/components/dashboard/UpgradePricingModal";
 import { canCreateCabana, getMaxCabanas } from "@/lib/planLimits";
+import { serializeTarifaOcupacion } from "@/lib/pricing";
 
 function isImageFile(file: File): boolean {
   return ["image/jpeg", "image/jpg", "image/png", "image/webp"].includes(
@@ -88,6 +94,7 @@ export default function CreateCabanaPage() {
   const [imageConfirm, setImageConfirm] = useState<ImageConfirmState>(null);
 
   const [preciosPorFecha, setPreciosPorFecha] = useState<PrecioPorFecha[]>([]);
+  const [tarifas, setTarifas] = useState<TarifaOcupacion[]>([]);
   const [videoUrls, setVideoUrls] = useState<string[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
@@ -206,6 +213,7 @@ export default function CreateCabanaPage() {
       { id: "sec-airbnb", label: "Airbnb (iCal)" },
       { id: "sec-booking", label: "Booking (iCal)" },
       { id: "sec-precios-especiales", label: "Precios especiales" },
+      { id: "sec-tarifas", label: "Tarifas por ocupación" },
       { id: "sec-amenities", label: "Amenities" },
       { id: "sec-galeria", label: "Galería" },
       { id: "sec-precios-dia", label: "Precios por día" },
@@ -403,6 +411,23 @@ export default function CreateCabanaPage() {
           });
         }
       }
+
+      setStatusText("Guardando tarifas por ocupación...");
+      await api.post(`/cabanas/${slug}/actualizar_tarifas/`, {
+        tarifas: tarifas
+          .filter((tarifa) =>
+            [
+              tarifa.precio_noche_semana,
+              tarifa.precio_noche_finde,
+              tarifa.precio_paquete_2_noches,
+              tarifa.precio_paquete_2_noches_finde,
+            ].some(
+              (value) =>
+                value !== null && value !== undefined && value !== ""
+            )
+          )
+          .map(serializeTarifaOcupacion),
+      });
 
       if (selectedFiles.length > 0) {
         const failedImages: string[] = [];
@@ -697,6 +722,14 @@ export default function CreateCabanaPage() {
               onLocalChange={setPreciosPorFecha}
             />
           </section>
+
+          <div id="sec-tarifas" className="scroll-mt-24">
+            <OccupancyRateEditor
+              value={tarifas}
+              onChange={setTarifas}
+              capacidad={formData.capacidad}
+            />
+          </div>
 
           <section id="sec-amenities" className="scroll-mt-24">
             <AmenityPicker

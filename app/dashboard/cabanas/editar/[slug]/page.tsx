@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { PageContainer } from "@/components/dashboard/PageContainer";
 import { Cabana } from "@/types/cabin";
 import { AmenityPicker } from "@/components/dashboard/AmenityPicker";
+import { OccupancyRateEditor } from "@/components/dashboard/OccupancyRateEditor";
 import {
   cabanaFieldClass,
   cabanaLabelClass,
@@ -44,7 +45,8 @@ import {
   type FormSection,
 } from "@/components/dashboard/FormSectionNav";
 import { FormStickySaveBar } from "@/components/dashboard/FormStickySaveBar";
-import type { PrecioPorFecha } from "@/types/cabin";
+import type { PrecioPorFecha, TarifaOcupacion } from "@/types/cabin";
+import { serializeTarifaOcupacion } from "@/lib/pricing";
 import { toast } from "sonner";
 
 type ImageConfirmState = {
@@ -100,6 +102,7 @@ export default function EditCabanaPage() {
   const [preciosEspeciales, setPreciosEspeciales] = useState<
     { dia_semana: number; precio: string }[]
   >([]);
+  const [tarifas, setTarifas] = useState<TarifaOcupacion[]>([]);
   const diasSemana = [
     "Lunes",
     "Martes",
@@ -139,6 +142,7 @@ export default function EditCabanaPage() {
           };
         });
         setPreciosEspeciales(preciosIniciales);
+        setTarifas(response.data.tarifas_ocupacion || []);
       } catch (error) {
         console.error("Error cargando la cabaña", error);
       } finally {
@@ -227,6 +231,21 @@ export default function EditCabanaPage() {
         email_contacto: null,
         ical_url: formData.ical_url.trim() || null,
         ical_url_booking: formData.ical_url_booking.trim() || null,
+      });
+      await api.post(`/cabanas/${slug}/actualizar_tarifas/`, {
+        tarifas: tarifas
+          .filter((tarifa) =>
+            [
+              tarifa.precio_noche_semana,
+              tarifa.precio_noche_finde,
+              tarifa.precio_paquete_2_noches,
+              tarifa.precio_paquete_2_noches_finde,
+            ].some(
+              (value) =>
+                value !== null && value !== undefined && value !== ""
+            )
+          )
+          .map(serializeTarifaOcupacion),
       });
       toast.success("Datos guardados con éxito");
       router.replace("/dashboard/cabanas");
@@ -501,6 +520,7 @@ export default function EditCabanaPage() {
       { id: "sec-airbnb", label: "Airbnb (iCal)" },
       { id: "sec-booking", label: "Booking (iCal)" },
       { id: "sec-precios-especiales", label: "Precios especiales" },
+      { id: "sec-tarifas", label: "Tarifas por ocupación" },
       { id: "sec-amenities", label: "Amenities" },
       { id: "sec-galeria", label: "Galería" },
       { id: "sec-precios-dia", label: "Precios por día" },
@@ -738,6 +758,14 @@ export default function EditCabanaPage() {
                 />
               </section>
             )}
+
+            <div id="sec-tarifas" className="scroll-mt-24">
+              <OccupancyRateEditor
+                value={tarifas}
+                onChange={setTarifas}
+                capacidad={formData.capacidad}
+              />
+            </div>
 
             <section id="sec-amenities" className="scroll-mt-24">
               <AmenityPicker

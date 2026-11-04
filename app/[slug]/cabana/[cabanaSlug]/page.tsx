@@ -1,19 +1,18 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import { type DateRange, type DayButtonProps } from "react-day-picker";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { type DateRange } from "react-day-picker";
 import { isValidPhoneNumber } from "react-phone-number-input";
 import api from "@/lib/api";
 import { getMediaUrl } from "@/lib/media";
 import {
-  estimateStayTotalInclusive,
+  estimateStayTotalForGuests,
   formatMoneyARS,
   nightsCountInclusive,
   toExclusiveCheckout,
   toISODate,
-  effectiveNightPrice,
 } from "@/lib/pricing";
 import { Cabana, FechaOcupada } from "@/types/cabin";
 import { Calendar } from "@/components/ui/calendar";
@@ -60,41 +59,14 @@ function occupiedMatchers(ranges: FechaOcupada[]) {
   return (date: Date) => blocked.has(toISODate(date));
 }
 
-function compactPrice(value: number) {
-  if (!Number.isFinite(value)) return "";
-  if (value >= 1000000) return `$${Math.round(value / 1000000)}M`;
-  if (value >= 1000) return `$${Math.round(value / 1000)}k`;
-  return `$${Math.round(value)}`;
-}
-
-function PublicPriceDayButton({
-  day,
-  modifiers,
-  getPrice,
-  ...buttonProps
-}: DayButtonProps & { getPrice: (date: Date) => number }) {
-  const ref = React.useRef<HTMLButtonElement>(null);
-  React.useEffect(() => {
-    if (modifiers.focused) ref.current?.focus();
-  }, [modifiers.focused]);
-
-  return (
-    <button ref={ref} {...buttonProps} className={`${buttonProps.className || ""} relative`}>
-      <span className="flex h-full w-full flex-col items-center justify-center leading-none">
-        <span>{buttonProps.children}</span>
-        <span className="mt-0.5 max-w-full truncate text-[9px] font-medium text-slate-400">
-          {compactPrice(getPrice(day.date))}
-        </span>
-      </span>
-    </button>
-  );
-}
-
-export default function CabinDetailPublicPage() {
+function CabinDetailContent() {
   const params = useParams<{ slug: string; cabanaSlug: string }>();
   const slug = params.slug;
   const cabanaSlug = params.cabanaSlug;
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isEmbed = searchParams.get("embed") === "1";
+  const themeParam = searchParams.get("theme");
 
   const [cabana, setCabana] = useState<Cabana | null>(null);
   const [loading, setLoading] = useState(true);
@@ -154,42 +126,51 @@ export default function CabinDetailPublicPage() {
     if (slug && cabanaSlug) fetchCabanaDetail();
   }, [slug, cabanaSlug]);
 
-  const isDisabled = useMemo(() => occupiedMatchers(ocupadas), [ocupadas]);
-
-  const getPriceForDay = useMemo(
-    () => (date: Date) =>
-      effectiveNightPrice(
-        date,
-        cabana?.precio || "0",
-        cabana?.precios_especiales || [],
-        cabana?.precios_por_fecha || []
-      ).precio,
-    [cabana]
-  );
-
-  const PriceDayButton = useMemo(
-    () => {
-      const Button = (props: DayButtonProps) => (
-        <PublicPriceDayButton {...props} getPrice={getPriceForDay} />
+  useEffect(() => {
+    if (!isEmbed) return;
+    const notifyHeight = () => {
+      const height = Math.ceil(document.documentElement.scrollHeight);
+      window.parent?.postMessage(
+        { type: "zentt-booking-height", height },
+        "*"
       );
-      Button.displayName = "PublicPriceDayButton";
-      return Button;
-    },
-    [getPriceForDay]
-  );
+    };
+    notifyHeight();
+    const observer = new ResizeObserver(notifyHeight);
+    observer.observe(document.body);
+    window.addEventListener("resize", notifyHeight);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", notifyHeight);
+    };
+  }, [isEmbed]);
+
+  const isDisabled = useMemo(() => occupiedMatchers(ocupadas), [ocupadas]);
 
   const lastNight = range?.from ? (range.to ?? range.from) : undefined;
 
+  const guestCount = formData.adultos + formData.ninos;
+
+  const precioDesde = useMemo(() => {
+    const values = (cabana?.tarifas_ocupacion || [])
+      .map((tarifa) =>
+        Number(tarifa.precio_noche_semana ?? tarifa.precio_noche_finde ?? 0)
+      )
+      .filter((value) => Number.isFinite(value) && value > 0);
+    return values.length > 0
+      ? Math.min(...values)
+      : Number(cabana?.precio || 0);
+  }, [cabana]);
+
   const estimado = useMemo(() => {
     if (!cabana || !range?.from || !lastNight) return 0;
-    return estimateStayTotalInclusive(
-      cabana.precio,
-      cabana.precios_especiales,
-      range.from,
+    return estimateStayTotalForGuests({
+      cabana,
+      from: range.from,
       lastNight,
-      cabana.precios_por_fecha
-    );
-  }, [cabana, range, lastNight]);
+      guests: guestCount,
+    });
+  }, [cabana, range, lastNight, guestCount]);
 
   const noches =
     range?.from && lastNight
@@ -420,32 +401,56 @@ export default function CabinDetailPublicPage() {
     })),
   ];
   const cabinAmenities = resolveAmenities(cabana.amenities);
-  const design = getDesign(cabana.design);
+  const design = getDesign(themeParam || cabana.design);
 
   return (
-    <div data-design={design.id} className={`site-theme flex flex-1 flex-col font-public ${design.id === "elegante" ? "font-serif" : ""}`}>
-      {/* Simplified Navbar */}
-      <nav className="sticky top-0 z-50 border-b border-slate-100 bg-white/95 backdrop-blur-lg">
-        <div className="mx-auto flex h-14 max-w-4xl items-center px-4">
-          <Link
-            href={`/${slug}`}
-            className="flex h-9 w-9 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
-            aria-label="Volver"
-          >
-            <ArrowLeft size={20} />
-          </Link>
-          <span className="min-w-0 flex-1 truncate text-center text-sm font-semibold text-slate-900">
-            {cabana.nombre}
-          </span>
-          <div className="w-9" />
-        </div>
-      </nav>
+    <div
+      data-design={design.id}
+      data-embed={isEmbed ? "1" : undefined}
+      className={`site-theme flex flex-1 flex-col font-public ${
+        design.id === "elegante" || design.id === "lanorita"
+          ? "font-serif"
+          : ""
+      } ${isEmbed ? "min-h-0 bg-transparent" : ""}`}
+    >
+      {!isEmbed && (
+        <nav className="sticky top-0 z-50 border-b border-slate-100 bg-white/95 backdrop-blur-lg">
+          <div className="mx-auto flex h-14 max-w-4xl items-center px-4">
+            <Link
+              href={`/${slug}`}
+              className="flex h-9 w-9 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
+              aria-label="Volver"
+            >
+              <ArrowLeft size={20} />
+            </Link>
+            <span className="min-w-0 flex-1 truncate text-center text-sm font-semibold text-slate-900">
+              {cabana.nombre}
+            </span>
+            <div className="w-9" />
+          </div>
+        </nav>
+      )}
 
-      <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-5 sm:px-6 md:py-8">
-        <CabinGallery images={carouselImages} className="mb-6 md:mb-10" />
+      <main
+        className={
+          isEmbed
+            ? "w-full p-3"
+            : "mx-auto w-full max-w-4xl flex-1 px-4 py-5 sm:px-6 md:py-8"
+        }
+      >
+        {!isEmbed && (
+          <CabinGallery images={carouselImages} className="mb-6 md:mb-10" />
+        )}
 
-        <div className="flex flex-col gap-8 lg:flex-row lg:gap-12">
+        <div
+          className={
+            isEmbed
+              ? "block"
+              : "flex flex-col gap-8 lg:flex-row lg:gap-12"
+          }
+        >
           {/* Left Column - Info */}
+          {!isEmbed && (
           <div className="lg:w-3/5">
             <h1 className="mb-3 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
               {cabana.nombre}
@@ -484,15 +489,23 @@ export default function CabinDetailPublicPage() {
 
             <CabinVideoEmbeds videos={cabana.videos || []} className="mt-10" />
           </div>
+          )}
 
           {/* Right Column - Booking Card */}
-          <div className="lg:w-2/5">
-            <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:sticky lg:top-20">
+          <div className={isEmbed ? "w-full" : "lg:w-2/5"}>
+            <div
+              className={`rounded-2xl border border-slate-200 bg-white p-5 shadow-sm ${
+                isEmbed ? "" : "lg:sticky lg:top-20"
+              }`}
+            >
               {/* Price */}
               <div className="mb-5">
                 <div className="flex items-baseline gap-1.5">
+                  <span className="text-xs font-medium text-slate-400">
+                    Desde
+                  </span>
                   <span className="text-3xl font-bold text-slate-900">
-                    $ {Number(cabana.precio).toLocaleString("es-AR")}
+                    {formatMoneyARS(precioDesde)}
                   </span>
                   <span className="text-sm text-slate-400">/ noche</span>
                 </div>
@@ -513,7 +526,6 @@ export default function CabinDetailPublicPage() {
                     modifiersClassNames={{
                       occupied: "site-occupied-day line-through opacity-80",
                     }}
-                    components={{ DayButton: PriceDayButton }}
                     numberOfMonths={1}
                     className="w-full p-0"
                   />
@@ -528,7 +540,8 @@ export default function CabinDetailPublicPage() {
                   </span>
                 </div>
                 <p className="mt-2 px-1 text-[10px] text-slate-400">
-                  El valor debajo de cada día es la tarifa estimada de esa noche.
+                  Elegí llegada y salida. El total se calcula al final según la
+                  cantidad de huéspedes y la tarifa vigente.
                 </p>
 
                 {rangeHasConflict && (
@@ -546,16 +559,21 @@ export default function CabinDetailPublicPage() {
 
               {/* Estimate */}
               {noches > 0 && (
-                <div className="mb-4 rounded-xl bg-slate-50 px-4 py-3">
+                <div
+                  className="mb-4 rounded-xl bg-slate-50 px-4 py-3"
+                  aria-live="polite"
+                  role="status"
+                >
                   <p className="text-xs font-medium text-slate-500">
-                    Estimado · {noches} {noches === 1 ? "noche" : "noches"}
+                    Estimado · {noches} {noches === 1 ? "noche" : "noches"} ·{" "}
+                    {guestCount} {guestCount === 1 ? "huésped" : "huéspedes"}
                   </p>
                   <p className="text-xl font-bold text-slate-900">
                     {formatMoneyARS(estimado)}
                   </p>
                   <p className="text-[11px] text-slate-400">
-                    Estimado según tarifa. No incluye cargos extra por
-                    huéspedes o mascotas; el anfitrión confirma.
+                    Incluye la tarifa por ocupación y promociones vigentes. El
+                    anfitrión confirma el total final y la forma de pago.
                   </p>
                 </div>
               )}
@@ -753,7 +771,21 @@ export default function CabinDetailPublicPage() {
           </div>
         </div>
       </main>
-      <PublicSiteFooter />
+      {!isEmbed && <PublicSiteFooter />}
     </div>
+  );
+}
+
+export default function CabinDetailPublicPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-white">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      }
+    >
+      <CabinDetailContent />
+    </Suspense>
   );
 }

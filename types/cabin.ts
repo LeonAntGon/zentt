@@ -11,6 +11,18 @@ export interface PrecioPorFecha {
   precio: string | number;
 }
 
+export interface TarifaOcupacion {
+  id?: number;
+  personas_min: number;
+  personas_max: number;
+  precio_noche_semana?: string | number | null;
+  precio_noche_finde?: string | number | null;
+  precio_paquete_2_noches?: string | number | null;
+  precio_paquete_2_noches_finde?: string | number | null;
+  orden?: number;
+  activo?: boolean;
+}
+
 export interface CabanaImagen {
   id: number;
   imagen: string;
@@ -44,6 +56,7 @@ export interface Cabana {
   videos?: CabanaVideo[];
   precios_especiales: PrecioEspecial[];
   precios_por_fecha?: PrecioPorFecha[];
+  tarifas_ocupacion?: TarifaOcupacion[];
   bloqueos_externos?: BloqueoExterno[];
 }
 

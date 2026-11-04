@@ -292,7 +292,8 @@
 
 .site-theme[data-design="oscuro"],
 .site-theme[data-design="elegante"],
-.site-theme[data-design="atardecer"] {
+.site-theme[data-design="atardecer"],
+.site-theme[data-design="lanorita"] {
   background-image: none;
 }
 
@@ -330,6 +331,18 @@
   --site-muted: #765e58;
   --site-accent: #d56b3e;
   --site-accent-text: #ffffff;
+}
+
+.site-theme[data-design="lanorita"] {
+  --site-bg: #f8f5ec;
+  --site-text: #26332b;
+  --site-surface: #fffdf9;
+  --site-border: #d7d9d2;
+  --site-primary: #26332b;
+  --site-primary-text: #fffdf9;
+  --site-muted: #6f766f;
+  --site-accent: #b06b45;
+  --site-accent-text: #fffdf9;
 }
 
 .site-theme .bg-white,
@@ -406,7 +419,10 @@
 
 .site-theme[data-design="elegante"] h1,
 .site-theme[data-design="elegante"] h2,
-.site-theme[data-design="elegante"] h3 {
+.site-theme[data-design="elegante"] h3,
+.site-theme[data-design="lanorita"] h1,
+.site-theme[data-design="lanorita"] h2,
+.site-theme[data-design="lanorita"] h3 {
   font-family: Georgia, "Times New Roman", serif;
   letter-spacing: -0.02em;
 }

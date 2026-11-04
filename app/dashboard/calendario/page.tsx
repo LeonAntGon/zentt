@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import api from "@/lib/api";
 import { Cabana, Mensaje, Reserva } from "@/types/cabin";
-import { effectiveNightPrice, nightsCount, toISODate } from "@/lib/pricing";
+import { nightsCount, toISODate } from "@/lib/pricing";
 import {
   eachDayOfInterval,
   parseISO,
@@ -324,6 +324,10 @@ export default function CalendarioPage() {
       toast.error("Esta consulta no tiene fechas.");
       return;
     }
+    if (msg.reserva) {
+      toast.error("Esta consulta ya tiene una reserva asociada.");
+      return;
+    }
     setBusyId(msg.id);
     try {
       const { data } = await api.post<Reserva>("/booking/gestion-reservas/", {
@@ -331,6 +335,11 @@ export default function CalendarioPage() {
         nombre_turista: msg.nombre_turista,
         email_turista: msg.email_turista,
         telefono_turista: msg.telefono_turista || null,
+        adultos: msg.adultos ?? null,
+        ninos: msg.ninos ?? null,
+        mascotas: msg.mascotas ?? null,
+        mascotas_detalle: msg.mascotas_detalle || "",
+        motivo_viaje: msg.motivo_viaje || "",
         check_in: msg.fecha_desde,
         check_out: msg.fecha_hasta,
         estado: "confirmada",
@@ -463,17 +472,6 @@ export default function CalendarioPage() {
               showSyncIcal={selectedCabanaId !== "all"}
               syncingIcal={syncingIcal}
               onSyncIcal={handleSyncIcal}
-              priceForDate={
-                selectedCabana
-                  ? (date) =>
-                      effectiveNightPrice(
-                        date,
-                        selectedCabana.precio,
-                        selectedCabana.precios_especiales,
-                        selectedCabana.precios_por_fecha
-                      ).precio
-                  : undefined
-              }
             />
           </div>
 
