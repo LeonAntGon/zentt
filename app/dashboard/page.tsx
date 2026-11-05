@@ -61,8 +61,20 @@ interface Reserva {
   cabana?: number;
   cabana_nombre?: string;
   nombre_turista?: string;
+  email_turista?: string | null;
+  telefono_turista?: string | null;
+  adultos?: number | null;
+  ninos?: number | null;
+  mascotas?: boolean | null;
+  mascotas_detalle?: string | null;
+  motivo_viaje?: string | null;
+  notas?: string | null;
   created_at: string;
 }
+
+type AttentionItem =
+  | { kind: "mensaje"; data: Mensaje; sortKey: string }
+  | { kind: "reserva"; data: Reserva; sortKey: string };
 
 function formatShortRange(desde?: string | null, hasta?: string | null) {
   if (!desde || !hasta) return null;
@@ -290,7 +302,7 @@ export default function OverviewPage() {
     return reservas
       .filter(
         (r) =>
-          (r.estado === "confirmada" || r.estado === "pendiente") &&
+          r.estado === "confirmada" &&
           new Date(r.check_in + "T12:00:00") >= now
       )
       .sort(
@@ -299,6 +311,31 @@ export default function OverviewPage() {
       )
       .slice(0, 4);
   }, [reservas]);
+
+  const reservasPendientes = useMemo(
+    () => reservas.filter((r) => r.estado === "pendiente"),
+    [reservas]
+  );
+
+  const atencionReciente = useMemo<AttentionItem[]>(() => {
+    const mensajes: AttentionItem[] = mensajesRecientes.map((m) => ({
+      kind: "mensaje",
+      data: m,
+      sortKey: m.fecha_envio,
+    }));
+    const pendientes: AttentionItem[] = reservasPendientes.map((r) => ({
+      kind: "reserva",
+      data: r,
+      sortKey: r.created_at,
+    }));
+
+    return [...mensajes, ...pendientes]
+      .sort(
+        (a, b) =>
+          new Date(b.sortKey).getTime() - new Date(a.sortKey).getTime()
+      )
+      .slice(0, 6);
+  }, [mensajesRecientes, reservasPendientes]);
 
   if (loading) {
     return (
@@ -419,22 +456,77 @@ export default function OverviewPage() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5 lg:col-span-2 md:p-6">
-          <div className="mb-5 flex items-center justify-between gap-3">
+          <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <h2 className="flex items-center gap-2 font-heading text-lg font-bold text-slate-800">
               <MessageSquare className="text-primary" size={20} />
-              Consultas por responder
+              Consultas y reservas por responder
             </h2>
-            <Link
-              href="/dashboard/buzon"
-              className="flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
-            >
-              Abrir buzón <ArrowRight size={14} />
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link
+                href="/dashboard/buzon"
+                className="flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+              >
+                Abrir buzón <ArrowRight size={14} />
+              </Link>
+              <Link
+                href="/dashboard/calendario"
+                className="flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+              >
+                Ver calendario <ArrowRight size={14} />
+              </Link>
+            </div>
           </div>
 
           <div className="space-y-3">
-            {mensajesRecientes.length > 0 ? (
-              mensajesRecientes.map((msg) => {
+            {atencionReciente.length > 0 ? (
+              atencionReciente.map((item) => {
+                if (item.kind === "reserva") {
+                  const r = item.data;
+                  const rango = formatShortRange(r.check_in, r.check_out);
+
+                  return (
+                    <Link
+                      key={`reserva-${r.id}`}
+                      href="/dashboard/calendario"
+                      className="block rounded-2xl border border-amber-200 bg-amber-50/60 p-4 transition-colors hover:border-amber-300 hover:bg-amber-50"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-slate-900">
+                            {r.nombre_turista || "Huésped"}
+                          </p>
+                          <p className="mt-1 flex min-w-0 items-center gap-1.5 text-xs text-slate-600">
+                            <Home size={12} className="shrink-0" />
+                            <span className="truncate">
+                              {r.cabana_nombre || "Alojamiento"}
+                              {rango ? ` · ${rango}` : ""}
+                            </span>
+                          </p>
+                          {r.notas ? (
+                            <p className="mt-1.5 line-clamp-2 text-xs text-slate-500">
+                              {r.notas}
+                            </p>
+                          ) : null}
+                        </div>
+                        <span className="shrink-0 rounded-full bg-amber-100 px-2.5 py-0.5 text-[11px] font-semibold text-amber-800">
+                          Reserva pendiente
+                        </span>
+                      </div>
+                      <div className="mt-2 flex items-center justify-between gap-2">
+                        <p className="text-sm font-bold text-slate-900">
+                          {formatCurrencyCompact(
+                            Number(r.total_reserva || 0)
+                          )}
+                        </p>
+                        <span className="text-[11px] font-semibold text-primary">
+                          Ver en calendario →
+                        </span>
+                      </div>
+                    </Link>
+                  );
+                }
+
+                const msg = item.data;
                 const nombre =
                   msg._tipo === "cabanas" ? msg.nombre_turista : msg.nombre;
                 const preview =
@@ -475,10 +567,10 @@ export default function OverviewPage() {
             ) : (
               <div className="rounded-2xl bg-slate-50 px-4 py-10 text-center">
                 <p className="text-sm font-medium text-slate-500">
-                  Todavía no hay consultas.
+                  Todavía no hay consultas ni reservas pendientes.
                 </p>
                 <p className="mt-1 text-xs text-slate-500">
-                  Compartí tu link para empezar a recibir mensajes.
+                  Compartí tu link para empezar a recibir mensajes y reservas.
                 </p>
               </div>
             )}
