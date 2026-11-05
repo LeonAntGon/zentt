@@ -162,7 +162,7 @@ export function ActionPanel({
         </div>
       </div>
 
-      <div className="flex-1 space-y-3 overflow-y-auto p-4">
+      <div className="flex-1 space-y-3 overflow-y-auto p-4 pb-[calc(var(--mobile-nav-offset)+1rem)] lg:pb-4">
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center px-4 py-12 text-center">
             <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-slate-50">

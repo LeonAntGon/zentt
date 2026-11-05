@@ -21,7 +21,18 @@ import {
   BarChart3,
   Globe,
   Palette,
+  Settings,
+  User,
 } from "lucide-react";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 type NavItem = {
   href: string;
@@ -362,9 +373,113 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             {panelZenttMark}
           </div>
           {planBadge}
+
+          <Sheet>
+            <SheetTrigger asChild>
+              <button
+                type="button"
+                aria-label="Abrir configuración y cuenta"
+                className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm transition-colors hover:bg-slate-50 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+              >
+                <Settings size={18} />
+              </button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[86vw] max-w-xs p-0">
+              <SheetHeader className="border-b border-slate-100 px-5 pb-4 pr-12 pt-5 text-left">
+                <SheetTitle className="text-base font-bold text-slate-900">
+                  Configuración y cuenta
+                </SheetTitle>
+                <SheetDescription className="text-xs text-slate-500">
+                  Accesos rápidos de tu panel.
+                </SheetDescription>
+              </SheetHeader>
+
+              <div className="flex items-center gap-3 border-b border-slate-100 px-5 py-4">
+                <UserAvatar
+                  firstName={user?.first_name}
+                  lastName={user?.last_name}
+                  email={user?.email}
+                  alt={`${user?.first_name ?? ""} ${user?.last_name ?? ""}`.trim()}
+                  size="sm"
+                  brandTone
+                />
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-bold text-slate-900">
+                    {user?.first_name || user?.username || "Mi cuenta"}
+                  </p>
+                  <p className="truncate text-xs text-slate-500">
+                    {user?.email}
+                  </p>
+                </div>
+              </div>
+
+              <nav className="space-y-4 p-3">
+                <div>
+                  <p className="px-2 pb-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                    Cuenta
+                  </p>
+                  <SheetClose asChild>
+                    <Link
+                      href="/dashboard/perfil"
+                      className="flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 active:scale-[0.99]"
+                    >
+                      <User size={18} className="text-slate-500" />
+                      Perfil
+                    </Link>
+                  </SheetClose>
+                  <SheetClose asChild>
+                    <Link
+                      href="/dashboard/configuracion"
+                      className="flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 active:scale-[0.99]"
+                    >
+                      <Palette size={18} className="text-slate-500" />
+                      Mi web
+                    </Link>
+                  </SheetClose>
+                </div>
+
+                <div>
+                  <p className="px-2 pb-1 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                    Análisis
+                  </p>
+                  <SheetClose asChild>
+                    <Link
+                      href="/dashboard/rendimiento-web"
+                      className="flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 active:scale-[0.99]"
+                    >
+                      <Globe size={18} className="text-slate-500" />
+                      Rendimiento web
+                    </Link>
+                  </SheetClose>
+                  <SheetClose asChild>
+                    <Link
+                      href="/dashboard/reportes"
+                      className="flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 active:scale-[0.99]"
+                    >
+                      <BarChart3 size={18} className="text-slate-500" />
+                      Reportes
+                    </Link>
+                  </SheetClose>
+                </div>
+
+                <div className="border-t border-slate-100 pt-3">
+                  <SheetClose asChild>
+                    <button
+                      type="button"
+                      onClick={handleLogout}
+                      className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-red-500 transition-colors hover:bg-red-50 active:scale-[0.99]"
+                    >
+                      <LogOut size={18} />
+                      Cerrar sesión
+                    </button>
+                  </SheetClose>
+                </div>
+              </nav>
+            </SheetContent>
+          </Sheet>
         </header>
 
-        <main className="min-h-0 flex-1 overflow-y-auto bg-slate-50 pb-[calc(var(--mobile-nav-offset)+0.5rem)] md:pb-0">
+        <main className="min-h-0 flex-1 overflow-y-auto bg-slate-50 pb-[calc(var(--mobile-nav-offset)+1.5rem)] md:pb-0">
           <EmailVerifyBanner />
           {children}
         </main>
