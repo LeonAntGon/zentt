@@ -457,7 +457,7 @@ export default function SettingsPage() {
       <form
         id="identidad-negocio-form"
         onSubmit={handleSubmit}
-        className="mx-auto w-full max-w-4xl space-y-5 px-4 py-6 pb-16 sm:px-6 md:pb-28 lg:px-8"
+        className="mx-auto w-full max-w-4xl space-y-5 px-4 pt-6 pb-[calc(var(--mobile-nav-offset)+1.5rem)] sm:px-6 md:pb-28 lg:px-8"
       >
         <header className="mb-4">
           <p className="page-eyebrow mb-1">Negocio</p>

@@ -28,7 +28,7 @@ export function PageContainer({
   return (
     <div
       className={cn(
-        "mx-auto w-full px-4 py-6 sm:px-6 lg:px-8",
+        "mx-auto w-full px-4 pt-6 pb-[calc(var(--mobile-nav-offset)+1.5rem)] sm:px-6 md:pb-6 lg:px-8",
         widthClass[width],
         className
       )}

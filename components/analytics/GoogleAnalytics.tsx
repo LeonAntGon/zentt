@@ -1,8 +1,14 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Script from "next/script";
+
+import {
+  COOKIE_CONSENT_EVENT,
+  getCookieConsent,
+  type CookieConsentChoice,
+} from "@/lib/cookieConsent";
 
 declare global {
   interface Window {
@@ -15,9 +21,26 @@ declare global {
 export function GoogleAnalytics() {
   const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
   const pathname = usePathname();
+  const [consent, setConsent] = useState<CookieConsentChoice | null>(null);
 
   useEffect(() => {
-    if (!measurementId) return;
+    setConsent(getCookieConsent());
+
+    const onConsent = (event: Event) => {
+      const detail = (event as CustomEvent<CookieConsentChoice>).detail;
+      setConsent(
+        detail === "accepted" || detail === "rejected" ? detail : null
+      );
+    };
+
+    window.addEventListener(COOKIE_CONSENT_EVENT, onConsent);
+    return () => window.removeEventListener(COOKIE_CONSENT_EVENT, onConsent);
+  }, []);
+
+  const hasConsent = consent === "accepted";
+
+  useEffect(() => {
+    if (!measurementId || !hasConsent) return;
 
     window.dataLayer = window.dataLayer || [];
     window.gtag =
@@ -34,9 +57,9 @@ export function GoogleAnalytics() {
       page_location: window.location.href,
       page_title: document.title,
     });
-  }, [measurementId, pathname]);
+  }, [measurementId, pathname, hasConsent]);
 
-  if (!measurementId) return null;
+  if (!measurementId || !hasConsent) return null;
 
   const encodedMeasurementId = JSON.stringify(measurementId);
 

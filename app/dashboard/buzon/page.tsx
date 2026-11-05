@@ -1,7 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Inbox as InboxIcon, MessageSquare } from "lucide-react";
+import {
+  CalendarDays,
+  Inbox as InboxIcon,
+  MessageSquare,
+} from "lucide-react";
 import { Skeleton, SkeletonRow } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import api from "@/lib/api";
@@ -15,6 +19,7 @@ import {
   type InboxTab,
 } from "@/components/dashboard/buzon/InboxFilters";
 import { InboxListItem } from "@/components/dashboard/buzon/InboxListItem";
+import { ReservationsPanel } from "@/components/dashboard/buzon/ReservationsPanel";
 import {
   inboxKey,
   type ContactoGeneral,
@@ -22,6 +27,7 @@ import {
 } from "@/components/dashboard/buzon/types";
 
 type BusyAction = "read" | "confirm" | "reject" | "delete" | null;
+type InboxView = "mensajes" | "reservas";
 
 function sortMessages(messages: InboxMessage[]) {
   return [...messages].sort(
@@ -41,6 +47,7 @@ export default function BuzonPage() {
   const [loading, setLoading] = useState(true);
   const [markingAllRead, setMarkingAllRead] = useState(false);
   const [busyAction, setBusyAction] = useState<BusyAction>(null);
+  const [view, setView] = useState<InboxView>("mensajes");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -238,7 +245,7 @@ export default function BuzonPage() {
 
   if (loading) {
     return (
-      <div className="flex h-full min-h-0 flex-col px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
+      <div className="flex h-full min-h-0 flex-col px-4 pt-4 pb-[calc(var(--mobile-nav-offset)+1rem)] sm:px-6 sm:pt-6 lg:px-8">
         <header className="mb-4 flex shrink-0 items-start gap-3 sm:mb-5">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white shadow-sm shadow-primary/20">
             <InboxIcon size={20} />
@@ -276,19 +283,51 @@ export default function BuzonPage() {
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
-      <header className="mb-4 flex shrink-0 items-start gap-3 sm:mb-5">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white shadow-sm shadow-primary/20">
-          <InboxIcon size={20} />
+    <div className="flex h-full min-h-0 flex-col px-4 pt-4 pb-[calc(var(--mobile-nav-offset)+1rem)] sm:px-6 sm:pt-6 lg:px-8">
+      <header className="mb-4 flex shrink-0 flex-col gap-3 sm:mb-5 sm:flex-row sm:items-start">
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white shadow-sm shadow-primary/20">
+            <InboxIcon size={20} />
+          </div>
+          <div>
+            <h1 className="page-title">Buzón</h1>
+            <p className="page-subtitle mt-1">
+              Consultas de tu mini-sitio, WhatsApp y Airbnb en un solo lugar.
+            </p>
+          </div>
         </div>
-        <div>
-          <h1 className="page-title">Buzón</h1>
-          <p className="page-subtitle mt-1">
-            Consultas de tu mini-sitio, WhatsApp y Airbnb en un solo lugar.
-          </p>
+
+        <div className="flex self-start rounded-xl border border-slate-200 bg-white p-1 shadow-sm sm:ml-auto">
+          <button
+            type="button"
+            onClick={() => setView("mensajes")}
+            className={`inline-flex min-h-10 items-center gap-1.5 rounded-lg px-3 text-xs font-bold transition-colors ${
+              view === "mensajes"
+                ? "bg-primary text-white shadow-sm"
+                : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
+            }`}
+          >
+            <MessageSquare size={14} />
+            Mensajes
+          </button>
+          <button
+            type="button"
+            onClick={() => setView("reservas")}
+            className={`inline-flex min-h-10 items-center gap-1.5 rounded-lg px-3 text-xs font-bold transition-colors ${
+              view === "reservas"
+                ? "bg-primary text-white shadow-sm"
+                : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
+            }`}
+          >
+            <CalendarDays size={14} />
+            Reservas
+          </button>
         </div>
       </header>
 
+      {view === "reservas" ? (
+        <ReservationsPanel />
+      ) : (
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm lg:grid lg:grid-cols-[380px_minmax(0,1fr)]">
         <aside
           className={`min-h-0 flex-col border-slate-100 lg:flex lg:border-r ${
@@ -309,7 +348,7 @@ export default function BuzonPage() {
             onMarkAllRead={() => void handleMarkAllRead()}
             markingAllRead={markingAllRead}
           />
-          <div className="min-h-0 flex-1 overflow-y-auto">
+          <div className="min-h-0 flex-1 overflow-y-auto pb-[calc(var(--mobile-nav-offset)+1rem)]">
             {filteredMessages.length > 0 ? (
               filteredMessages.map((message) => (
                 <InboxListItem
@@ -349,6 +388,7 @@ export default function BuzonPage() {
           </section>
         )}
       </div>
+      )}
     </div>
   );
 }
