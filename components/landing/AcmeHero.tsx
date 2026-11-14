@@ -3,8 +3,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { motion } from "motion/react";
-import { DashboardHeroMockup } from "@/components/landing/DashboardHeroMockup";
-import { PublicSitePhoneMockup } from "@/components/landing/PublicSitePhoneMockup";
+import { SaasVideoShowcase } from "@/components/landing/SaasVideoShowcase";
 
 export function AcmeHero() {
   return (
@@ -77,25 +76,7 @@ export function AcmeHero() {
                 Sin comisión por reserva
               </p>
             </motion.div>
-            <motion.div
-              className="w-full"
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6, duration: 0.8 }}
-            >
-              <div className="relative w-full">
-                <div className="grid items-end gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-6">
-                  <DashboardHeroMockup />
-                  <div className="mx-auto max-w-[280px] lg:-ml-16 lg:z-10">
-                    <PublicSitePhoneMockup />
-                  </div>
-                </div>
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[30%] bg-gradient-to-t from-white to-transparent" />
-              </div>
-              <p className="relative z-10 mt-4 text-center text-xs text-muted-foreground">
-                Así se ve tu panel
-              </p>
-            </motion.div>
+            <SaasVideoShowcase />
           </motion.div>
         </section>
       </main>
