@@ -45,7 +45,7 @@ const ServicePricingSection = () => {
 
             <div className="mt-6 flex flex-wrap items-end gap-x-3 gap-y-1">
               <span className="font-heading text-4xl font-bold text-foreground sm:text-5xl">
-                $290.000
+                $200.000
               </span>
               <span className="pb-1 text-lg font-medium text-muted-foreground line-through">
                 $390.000
