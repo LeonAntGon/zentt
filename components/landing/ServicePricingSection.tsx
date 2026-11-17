@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Check, Landmark, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
@@ -131,22 +130,6 @@ const ServicePricingSection = () => {
               </Button>
             </div>
           </article>
-        </div>
-
-        {/* Self-service, secundario */}
-        <div className="mx-auto mt-8 flex max-w-3xl flex-col items-start gap-3 rounded-2xl border border-dashed border-border px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm text-muted-foreground">
-            <span className="font-semibold text-foreground">
-              ¿Preferís hacerlo vos?
-            </span>{" "}
-            Creá tu página gratis con el plan self-service y cargala en minutos.
-          </p>
-          <Link
-            href="/register"
-            className="inline-flex shrink-0 items-center text-sm font-semibold text-primary underline-offset-4 hover:underline"
-          >
-            Empezá gratis
-          </Link>
         </div>
 
         {/* Cierre */}

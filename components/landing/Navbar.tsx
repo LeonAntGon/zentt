@@ -61,9 +61,6 @@ export function Navbar() {
           <Button variant="nav-ghost" size="sm" asChild>
             <Link href="/login">Iniciar Sesión</Link>
           </Button>
-          <Button variant="nav-solid" size="sm" asChild>
-            <Link href="/register">Comenzar Gratis</Link>
-          </Button>
         </div>
 
         <div className="flex items-center gap-2 md:hidden">
@@ -118,9 +115,6 @@ export function Navbar() {
             </Button>
             <Button variant="outline" className="h-11" asChild>
               <Link href="/login">Iniciar Sesión</Link>
-            </Button>
-            <Button variant="nav-solid" className="h-11" asChild>
-              <Link href="/register">Comenzar Gratis</Link>
             </Button>
           </div>
         </div>

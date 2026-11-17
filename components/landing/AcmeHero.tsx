@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { ArrowRight, MapPin } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "motion/react";
 import { SaasVideoShowcase } from "@/components/landing/SaasVideoShowcase";
@@ -72,13 +71,6 @@ export function AcmeHero() {
                   Pedí tu demo por WhatsApp
                 </a>
               </Button>
-              <Link
-                href="/register"
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground/70 underline-offset-4 transition-colors hover:text-foreground hover:underline"
-              >
-                Empezá gratis
-                <ArrowRight size={14} aria-hidden />
-              </Link>
             </motion.div>
 
             <motion.p

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import type { ReactNode } from "react";
 import { CalendarDays, Check, ChevronRight, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -278,9 +277,6 @@ const FeaturesSection = () => {
               <WhatsAppIcon className="h-5 w-5" title="" />
               Pedí tu demo por WhatsApp
             </a>
-          </Button>
-          <Button variant="hero-outline" className="rounded-xl" size="lg" asChild>
-            <Link href="/register">Empezá gratis</Link>
           </Button>
         </div>
       </div>
