@@ -7,7 +7,7 @@ import { Pause, Play, Volume2, VolumeX } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const VIDEO_SRC =
-  "https://pub-c733a6715f2143e6bde8a8e7d27ba2e7.r2.dev/zentt-launch-1080p60.mp4";
+  "https://pub-c733a6715f2143e6bde8a8e7d27ba2e7.r2.dev/zentt-whatsapp-16x9.mp4";
 const POSTER_SRC = "/assets/zentt-launch-poster.jpg";
 
 /**
