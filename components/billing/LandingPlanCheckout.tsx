@@ -1,5 +1,17 @@
 "use client";
 
+/**
+ * Checkout de planes del SaaS (Gratis / Pro / Complejo, cobro mensual).
+ *
+ * Se conserva sin cambios de lógica porque hoy no se muestra en la landing:
+ * la venta pública es la web personalizada con pago único. El cobro de planes
+ * para usuarios existentes vive en `/dashboard/configuracion#planes`.
+ *
+ * Si más adelante se vuelve a vender el SaaS online, este componente se puede
+ * montar de nuevo tal cual (por ejemplo dentro de la landing o en una ruta
+ * propia) sin reescribir la integración de pagos.
+ */
+
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -90,7 +102,7 @@ const plans: {
   },
 ];
 
-const PricingSection = () => {
+const LandingPlanCheckout = () => {
   const { isAuthenticated, user, loading, checkCurrentUser, waitForPlan } = useAuth();
   const router = useRouter();
   const [loginModalOpen, setLoginModalOpen] = useState(false);
@@ -388,4 +400,4 @@ const PricingSection = () => {
   );
 };
 
-export default PricingSection;
+export default LandingPlanCheckout;

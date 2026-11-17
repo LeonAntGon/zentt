@@ -8,6 +8,7 @@ import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { AirbnbIcon } from "@/components/icons/AirbnbIcon";
 import { BookingIcon } from "@/components/icons/BookingIcon";
 import { PublicSitePhoneMockup } from "@/components/landing/PublicSitePhoneMockup";
+import { WA_MESSAGES, waHref } from "@/components/landing/whatsapp";
 import { formatCurrencyCompact } from "@/lib/planLimits";
 
 function InstagramGlyph({ className }: { className?: string }) {
@@ -123,7 +124,7 @@ function CalendarVisual() {
 
 const flowSteps: { label: string; icon: ReactNode }[] = [
   {
-    label: "Instagram",
+    label: "Link en bio",
     icon: <InstagramGlyph className="h-3.5 w-3.5 text-primary" />,
   },
   {
@@ -151,10 +152,10 @@ const cards = [
         <Link2 size={20} className="text-primary" />
       </div>
     ),
-    title: "Tu página en todas partes",
+    title: "Tu propia página de reservas",
     emphasizeFirst: false,
     points: [
-      "El link de tu Instagram, convertido en página de reservas",
+      "El link de tu bio, convertido en página de reservas",
       "Mostrá alojamientos, disponibilidad y tarifas",
       "El huésped te escribe por WhatsApp",
     ],
@@ -262,9 +263,24 @@ const FeaturesSection = () => {
           ))}
         </div>
 
-        <div className="mt-12 text-center">
-          <Button variant="hero" className="rounded-xl" size="lg" asChild>
-            <Link href="/register">Creá tu página gratis</Link>
+        <div className="mt-12 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <Button
+            variant="whatsapp"
+            className="h-12 rounded-xl px-6 font-heading font-semibold"
+            size="lg"
+            asChild
+          >
+            <a
+              href={waHref(WA_MESSAGES.demo)}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <WhatsAppIcon className="h-5 w-5" title="" />
+              Pedí tu demo por WhatsApp
+            </a>
+          </Button>
+          <Button variant="hero-outline" className="rounded-xl" size="lg" asChild>
+            <Link href="/register">Empezá gratis</Link>
           </Button>
         </div>
       </div>

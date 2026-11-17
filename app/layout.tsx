@@ -6,9 +6,9 @@ import { fontVariables } from "@/lib/fonts";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://zentt.agency"),
-  title: "Zentt — Gestión de alojamientos",
+  title: "Zentt — Páginas de reservas directas para alojamientos",
   description:
-    "Plataforma SaaS para dueños de complejos de alojamientos: sitio público, reservas y mensajes.",
+    "Te armo la página de reservas directas de tu alojamiento, conectada a WhatsApp y lista para la temporada. Pago único, llave en mano. Hecho en Tucumán.",
   icons: {
     icon: [{ url: "/assets/logo-for-ico.png", type: "image/png" }],
     apple: [{ url: "/assets/logo-for-ico.png", type: "image/png" }],
@@ -16,9 +16,9 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "es_AR",
-    title: "Zentt — Gestión de alojamientos",
+    title: "Zentt — Páginas de reservas directas para alojamientos",
     description:
-      "Plataforma SaaS para dueños de complejos de alojamientos: sitio público, reservas y mensajes.",
+      "Dejá de regalarle comisiones a Booking y Airbnb. Tu página de reservas directas, conectada a WhatsApp, llave en mano y con pago único.",
     images: [
       {
         url: "/assets/og-image.jpg",
@@ -31,9 +31,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Zentt — Gestión de alojamientos",
+    title: "Zentt — Páginas de reservas directas para alojamientos",
     description:
-      "Plataforma SaaS para dueños de complejos de alojamientos: sitio público, reservas y mensajes.",
+      "Dejá de regalarle comisiones a Booking y Airbnb. Tu página de reservas directas, conectada a WhatsApp, llave en mano y con pago único.",
     images: ["/assets/og-image.jpg"],
   },
 };

@@ -20,7 +20,7 @@ export function TrialBanner({ plan }: { dateJoined?: string; plan?: string }) {
         </div>
       </div>
       <Link
-        href="/#precios"
+        href="/dashboard/configuracion#planes"
         className="inline-flex items-center gap-1 text-sm font-bold text-primary hover:underline"
       >
         Ver planes <ArrowRight size={14} />
