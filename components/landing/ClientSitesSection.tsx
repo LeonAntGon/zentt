@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { ArrowUpRight } from "lucide-react";
 
 type ClientSite = {
@@ -5,7 +6,7 @@ type ClientSite = {
   niche: string;
   domain: string;
   url: string;
-  initials: string;
+  image: string;
 };
 
 /** Orden intencional: primero las dos cabañas destacadas. */
@@ -15,21 +16,21 @@ const sites: ClientSite[] = [
     niche: "Cabañas",
     domain: "cabanaslanorita.com",
     url: "https://cabanaslanorita.com",
-    initials: "LN",
+    image: "/projects/lanorita.png",
   },
   {
     name: "Guarida del Zorro",
     niche: "Alojamiento",
     domain: "guaridadelzorro.com",
     url: "https://guaridadelzorro.com",
-    initials: "GZ",
+    image: "/projects/zorro.png",
   },
   {
     name: "Inmo Nuevo",
     niche: "Inmobiliaria",
     domain: "inmonuevo.com.ar",
     url: "https://inmonuevo.com.ar",
-    initials: "IN",
+    image: "/projects/inmonuevo.png",
   },
 ];
 
@@ -77,27 +78,24 @@ export function ClientSitesSection() {
                 />
               </div>
 
-              {/* Preview estilizada */}
-              <div className="relative flex h-40 items-center justify-center overflow-hidden bg-gradient-to-br from-primary via-primary to-[#184E77]">
-                <div
-                  aria-hidden
-                  className="absolute inset-0 opacity-[0.12] [background-image:linear-gradient(to_right,white_1px,transparent_1px),linear-gradient(to_bottom,white_1px,transparent_1px)] [background-size:28px_28px]"
+              {/* Captura del sitio */}
+              <div className="relative aspect-[16/10] w-full overflow-hidden bg-white">
+                <Image
+                  src={site.image}
+                  alt={`Sitio web de ${site.name}`}
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 380px"
+                  className="object-contain p-2 transition-transform duration-300 group-hover:scale-[1.02]"
                 />
-                <span className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10 font-heading text-xl font-bold tracking-wide text-white ring-1 ring-white/25 backdrop-blur-sm transition-transform duration-300 group-hover:scale-105">
-                  {site.initials}
-                </span>
-                <span className="absolute bottom-3 left-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/60">
-                  {site.niche}
-                </span>
               </div>
 
-              <div className="flex flex-1 items-end justify-between gap-3 p-5">
+              <div className="flex flex-1 items-end justify-between gap-3 border-t border-border/60 p-5">
                 <div className="min-w-0">
                   <p className="truncate font-heading text-lg font-bold text-foreground">
                     {site.name}
                   </p>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Sitio en producción
+                    {site.niche}
                   </p>
                 </div>
                 <span className="inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-primary">
