@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   robots: isPreviewDeployment ? { index: false, follow: false } : undefined,
   title: "Zentt — Páginas de reservas directas para alojamientos",
   description:
-    "Te armo la página de reservas directas de tu alojamiento, conectada a WhatsApp y lista para la temporada. Pago único, llave en mano. Hecho en Tucumán.",
+    "Te armo la página de reservas directas de tu alojamiento, conectada a WhatsApp y lista para la temporada. Pago único, llave en mano.",
   icons: {
     icon: [{ url: "/assets/logo-for-ico.png", type: "image/png" }],
     apple: [{ url: "/assets/logo-for-ico.png", type: "image/png" }],

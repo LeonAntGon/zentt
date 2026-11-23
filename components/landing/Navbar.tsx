@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ZenttLogo } from "@/components/landing/ZenttLogo";
-import { Menu, X, MapPin } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { WA_MESSAGES, waHref } from "@/components/landing/whatsapp";
@@ -31,10 +31,6 @@ export function Navbar() {
           >
             <ZenttLogo className="h-10 w-auto aspect-[290/130]" />
           </Link>
-          <span className="hidden items-center gap-1.5 rounded-full border border-border/70 px-3 py-1 text-xs font-medium text-foreground/70 lg:inline-flex">
-            <MapPin size={12} className="text-primary" aria-hidden />
-            Hecho en Tucumán
-          </span>
         </div>
 
         <div className="hidden md:flex items-center gap-1">

@@ -1,6 +1,5 @@
 "use client";
 
-import { MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "motion/react";
 import { SaasVideoShowcase } from "@/components/landing/SaasVideoShowcase";
@@ -24,12 +23,7 @@ export function AcmeHero() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1, duration: 0.5 }}
             >
-              <MapPin size={14} className="text-primary" aria-hidden />
-              Hecho en Tucumán
-              <span className="text-muted-foreground/50" aria-hidden>
-                ·
-              </span>
-              Leonardo González
+              Por Leonardo González
             </motion.div>
             <motion.h1
               className="max-w-4xl text-3xl font-heading font-bold tracking-tighter text-foreground sm:text-4xl md:text-5xl lg:text-6xl"
