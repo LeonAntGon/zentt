@@ -1,27 +1,34 @@
-import { Inter, Montserrat, Plus_Jakarta_Sans } from "next/font/google";
+import localFont from "next/font/local";
+
+/**
+ * Fuentes auto-alojadas con next/font/local.
+ *
+ * No usamos next/font/google para que el build no dependa de la red de
+ * Google Fonts. Los archivos viven en app/fonts y se sirven desde el repo.
+ */
 
 /** Cuerpo: UI, formularios, dashboard, datos */
-export const inter = Inter({
-  subsets: ["latin"],
+export const inter = localFont({
+  src: "../app/fonts/inter-latin-wght-normal.woff2",
   variable: "--font-body",
   display: "swap",
-  weight: ["400", "500", "600", "700"],
+  weight: "100 900",
 });
 
 /** Display: títulos de marketing y páginas */
-export const montserrat = Montserrat({
-  subsets: ["latin"],
+export const montserrat = localFont({
+  src: "../app/fonts/montserrat-latin-wght-normal.woff2",
   variable: "--font-heading",
   display: "swap",
-  weight: ["500", "600", "700", "800"],
+  weight: "100 900",
 });
 
 /** Sitios públicos generados para clientes */
-export const plusJakarta = Plus_Jakarta_Sans({
-  subsets: ["latin"],
+export const plusJakarta = localFont({
+  src: "../app/fonts/plus-jakarta-sans-latin-wght-normal.woff2",
   variable: "--font-public",
   display: "swap",
-  weight: ["400", "500", "600", "700", "800"],
+  weight: "200 800",
 });
 
 export const fontVariables = `${inter.variable} ${montserrat.variable} ${plusJakarta.variable}`;
