@@ -1,53 +1,76 @@
 RESUMEN DE SESIÓN — Integración del blog de Zentt
-Fecha: 2026-11-22
+Fecha: 2026-11-23
 Workspace: C:\Users\NISSI\OneDrive\Escritorio\zentt\web-saas
 
 OBJETIVO
-Publicar el blog corporativo de Zentt en https://zentt.agency/blog, con el CMS "Vida Fuerte" como backoffice privado, MongoDB Atlas como base de contenido y SEO correcto.
+Publicar el blog corporativo de Zentt en https://zentt.agency/blog, con un CMS privado independiente, MongoDB Atlas como base de contenido y SEO correcto.
 
-ESTADO GENERAL
-- Frontend público del blog implementado en saas/web/frontend.
-- CMS adaptado a Zentt y asegurado con allowlist de administradores.
-- Build del frontend Zentt: correcto.
-- Typecheck del frontend Zentt: correcto.
-- Build del backend del CMS: correcto.
-- Build del frontend antiguo del CMS: correcto (solo avisos no bloqueantes de browserslist).
-- Cambios sin commitear al momento de escribir este resumen.
-- No se usaron credenciales reales de Google OAuth ni de MongoDB Atlas.
+ESTRUCTURA FINAL
+- Frontend público: saas/web/frontend (repo git "zentt").
+- CMS de Zentt: blog-sistem/zentt-blog-admin (carpeta nueva, proyecto independiente, sin repo propio por ahora).
+- Vida Fuerte: blog-sistem/vida-fuerte--Full-Stack-Blog-Platform (proyecto original, restaurado e intacto en el commit 4b36bcc).
 
 QUÉ SE HIZO
-1. Allowlist fail-closed en NextAuth mediante BLOG_ADMIN_EMAILS.
+1. Seguridad y autenticación
+   - Allowlist fail-closed con BLOG_ADMIN_EMAILS.
    - Si la variable está vacía, nadie puede entrar.
-   - Se valida en authorize y en el callback signIn.
-   - El login muestra errores claros (AccessDenied, Configuration, etc.).
-2. Middleware del CMS corregido.
-   - Protege /, /blogs/:path*, /draft y /setting.
-   - Redirige a /login.
-3. Imagen duplicada corregida.
-   - La primera imagen Markdown se muestra como destacada y se quita del cuerpo.
-4. Manejo de errores de API.
-   - 5xx, red o CMS no configurado -> error boundary (500).
-   - Post inexistente -> 404.
-   - Ya no aparece "Próximamente" cuando la API falla.
-5. Dominio canónico.
-   - www.zentt.agency -> 301 -> zentt.agency.
-   - sitemap.ts y robots.ts usan NEXT_PUBLIC_PUBLIC_SITE_URL.
-6. Noindex.
-   - Previews de Vercel y Cloudflare Pages: X-Robots-Tag noindex, nofollow.
-   - CMS completo: noindex, nofollow.
-7. Rebranding mínimo del CMS.
+   - Validación en authorize y en el callback signIn.
+   - Login con mensajes claros para AccessDenied, Configuration y OAuth.
+   - Middleware del CMS protege /, /blogs/:path*, /draft y /setting.
+   - CMS con X-Robots-Tag noindex, nofollow.
+   - Previews de Vercel/Cloudflare con noindex, nofollow.
+   - API pública sin borradores; respuestas autenticadas con no-store.
+
+2. API y datos
+   - GET /api/blogapi?public=true solo devuelve publicados.
+   - Validación de estados draft/publicado.
+   - Códigos HTTP correctos: 201, 400, 401, 404, 405, 500.
+   - Índices MongoDB para slug, status, categorías y tags.
+   - Conexión a MongoDB cacheada.
+   - Cache pública de 5 minutos con Vary: Cookie.
+   - El CMS tolera el build sin MONGODB_URI y falla cerrado en runtime.
+
+3. UI del panel
    - "ZENTT BLOG" en lugar de "ADMIN".
-   - Sin foto personal ni datos de ejemplo.
-   - Categorías y tags de alojamiento/turismo/reservas.
-8. SEO.
+   - Sin foto personal; avatar de la cuenta o inicial.
+   - Configuración sin datos de ejemplo.
+   - Categorías de alojamiento/turismo.
+   - Tags de reservas, marketing, WhatsApp, temporada, atención y rentabilidad.
+
+4. SEO del sitio público
    - /blog, /blog/[slug], /blog/categoria/[category], /blog/etiqueta/[tag].
-   - Metadata, canonical, Open Graph, JSON-LD Article.
+   - Metadata, canonical, Open Graph y JSON-LD Article.
    - Sitemap y robots.
-   - Enlaces en navbar y footer.
-9. Documentación.
+   - 301 de www.zentt.agency a zentt.agency.
+   - Enlaces al blog en navbar y footer.
+   - Imagen destacada sin duplicarse en el cuerpo.
+
+5. Infraestructura
+   - El CMS se separó de Vida Fuerte y quedó en blog-sistem/zentt-blog-admin.
+   - Vida Fuerte se restauró a su estado original (4b36bcc).
+   - El frontend antiguo de Vida Fuerte no se usa para Zentt.
+   - BLOG_API_URL es server-only y apunta al CMS de Zentt.
+
+6. Documentación
    - documentation/cambios_1.md
    - resumen-sesion.txt
-   - Copia en saas/web/frontend/documentation/.
+   - Copia versionada en saas/web/frontend/documentation/.
+   - README propio del CMS en blog-sistem/zentt-blog-admin/README.md.
+
+CATEGORÍAS DEL CMS
+- cabanas -> Cabañas
+- turismo -> Turismo
+- consejos-para-anfitriones -> Consejos para Anfitriones
+- noticias-zentt -> Noticias Zentt
+- guias -> Guías
+
+TAGS DEL CMS
+- reservas-directas -> Reservas directas
+- marketing -> Marketing
+- whatsapp -> WhatsApp
+- temporada -> Temporada
+- atencion-al-huesped -> Atención al huésped
+- rentabilidad -> Rentabilidad
 
 VARIABLES CLAVE
 Frontend Zentt:
@@ -64,6 +87,12 @@ CMS:
   DEMO_ADMIN_EMAIL= (opcional)
   DEMO_ADMIN_PASSWORD= (opcional)
 
+CÓMO SE CONECTA CON ZENTT.AGENCY
+1. El editor publica en el CMS de Zentt.
+2. El post se guarda en MongoDB Atlas.
+3. El frontend público consulta ${BLOG_API_URL}/api/blogapi?public=true.
+4. El contenido aparece en https://zentt.agency/blog.
+
 PENDIENTES
 - Cargar credenciales reales en los entornos.
 - Crear cluster MongoDB Atlas, usuario y Network Access.
@@ -72,16 +101,18 @@ PENDIENTES
 - Verificar el 301 de www y los headers noindex en producción.
 - Enviar sitemap a Google Search Console.
 - Revisar limitaciones del renderer Markdown (sin tablas GFM, listas anidadas ni HTML).
-- Decidir si se elimina el frontend antiguo del CMS.
+- Decidir si se crea un repo propio para blog-sistem/zentt-blog-admin.
 
 BUILDS
-- Frontend Zentt: node .\node_modules\next\dist\bin\next build -> OK (25 rutas).
-- Frontend Zentt: node .\node_modules\typescript\bin\tsc --noEmit --pretty false -> OK.
-- CMS backend: node .\node_modules\next\dist\bin\next build -> OK (10 rutas).
-- CMS frontend antiguo: npm ci + node .\node_modules\next\dist\bin\next build -> OK (6 rutas; avisos no bloqueantes de browserslist).
+- Frontend Zentt: next build -> OK (25 rutas).
+- Frontend Zentt: tsc --noEmit -> OK.
+- CMS Zentt: next build -> OK (10 rutas).
+- Frontend antiguo del CMS: npm ci + next build -> OK (6 rutas; avisos no bloqueantes de browserslist).
 
 NOTAS
-- El root web-saas no es un repositorio Git. Los commits se hacen en:
-  - saas/web/frontend
-  - blog-sistem/vida-fuerte--Full-Stack-Blog-Platform
+- El root web-saas no es un repositorio Git.
+- Repos Git existentes:
+  - saas/web/frontend -> github.com/LeonAntGon/zentt
+  - blog-sistem/vida-fuerte--Full-Stack-Blog-Platform -> github.com/LeonAntGon/vida-fuerte--Full-Stack-Blog-Platform
+- blog-sistem/zentt-blog-admin todavía no tiene repo Git propio.
 - El PDF BLOG_ZENTT_CLOUDFLARE_MONGODB.pdf está en la raíz y describe la arquitectura Cloudflare + MongoDB Atlas.
