@@ -32,7 +32,14 @@ const nextConfig: NextConfig = {
     ];
   },
   async headers() {
-    return [
+    const isPreview =
+      process.env.VERCEL_ENV === "preview" ||
+      (process.env.CF_PAGES === "1" && process.env.CF_PAGES_BRANCH !== "main");
+
+    const headers: {
+      source: string;
+      headers: { key: string; value: string }[];
+    }[] = [
       {
         source: "/embed/:path*",
         headers: [
@@ -44,6 +51,15 @@ const nextConfig: NextConfig = {
         ],
       },
     ];
+
+    if (isPreview) {
+      headers.push({
+        source: "/:path*",
+        headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
+      });
+    }
+
+    return headers;
   },
   images: {
     remotePatterns: [

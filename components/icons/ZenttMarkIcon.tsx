@@ -10,7 +10,6 @@ type ZenttMarkIconProps = {
  */
 export function ZenttMarkIcon({ className, size = 18 }: ZenttMarkIconProps) {
   return (
-    // eslint-disable-next-line @next/next/no-img-element
     <img
       src="/assets/t-logotipo.png"
       alt=""

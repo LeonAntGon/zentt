@@ -4,8 +4,13 @@ import "react-phone-number-input/style.css";
 import { Providers } from "@/components/providers";
 import { fontVariables } from "@/lib/fonts";
 
+const isPreviewDeployment =
+  process.env.VERCEL_ENV === "preview" ||
+  (process.env.CF_PAGES === "1" && process.env.CF_PAGES_BRANCH !== "main");
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://zentt.agency"),
+  robots: isPreviewDeployment ? { index: false, follow: false } : undefined,
   title: "Zentt — Páginas de reservas directas para alojamientos",
   description:
     "Te armo la página de reservas directas de tu alojamiento, conectada a WhatsApp y lista para la temporada. Pago único, llave en mano. Hecho en Tucumán.",

@@ -9,9 +9,10 @@ import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { WA_MESSAGES, waHref } from "@/components/landing/whatsapp";
 
 const navLinks = [
-  { label: "Clientes", href: "#casos" },
-  { label: "Funcionalidades", href: "#funcionalidades" },
-  { label: "Precios", href: "#precios" },
+  { label: "Clientes", href: "/#casos" },
+  { label: "Funcionalidades", href: "/#funcionalidades" },
+  { label: "Precios", href: "/#precios" },
+  { label: "Blog", href: "/blog" },
 ];
 
 const demoWhatsAppUrl = waHref(WA_MESSAGES.demo);

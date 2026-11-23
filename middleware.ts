@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
+const CANONICAL_HOST = "zentt.agency";
 const CANONICAL_HOSTS = new Set([
-  "zentt.agency",
-  "www.zentt.agency",
+  CANONICAL_HOST,
   "localhost",
   "127.0.0.1",
 ]);
@@ -16,6 +16,13 @@ function hostnameWithoutPort(request: NextRequest) {
 export async function middleware(request: NextRequest) {
   const hostname = hostnameWithoutPort(request);
   const pathname = request.nextUrl.pathname;
+
+  if (hostname === "www.zentt.agency") {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.protocol = "https:";
+    redirectUrl.host = CANONICAL_HOST;
+    return NextResponse.redirect(redirectUrl, 301);
+  }
 
   if (
     CANONICAL_HOSTS.has(hostname) ||

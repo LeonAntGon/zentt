@@ -27,6 +27,9 @@ const Footer = () => (
         <Link href="/terms" className="hover:text-foreground transition-colors">
           Términos
         </Link>
+        <Link href="/blog" className="hover:text-foreground transition-colors">
+          Blog
+        </Link>
         <a
           href="mailto:leonarddevweb@gmail.com"
           className="hover:text-foreground transition-colors"
