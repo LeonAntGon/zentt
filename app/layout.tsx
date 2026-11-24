@@ -14,6 +14,11 @@ export const metadata: Metadata = {
   title: "Zentt — Páginas de reservas directas para alojamientos",
   description:
     "Te armo la página de reservas directas de tu alojamiento, conectada a WhatsApp y lista para la temporada. Pago único, llave en mano.",
+  alternates: {
+    types: {
+      "application/rss+xml": "/feed.xml",
+    },
+  },
   icons: {
     icon: [{ url: "/assets/logo-for-ico.png", type: "image/png" }],
     apple: [{ url: "/assets/logo-for-ico.png", type: "image/png" }],
@@ -47,6 +52,31 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
+const siteJsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://zentt.agency/#organization",
+      name: "Zentt",
+      url: "https://zentt.agency",
+      logo: {
+        "@type": "ImageObject",
+        url: "https://zentt.agency/assets/logo-for-ico.png",
+      },
+      sameAs: ["https://www.instagram.com/somoszentt/"],
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://zentt.agency/#website",
+      name: "Zentt",
+      url: "https://zentt.agency",
+      inLanguage: "es-AR",
+      publisher: { "@id": "https://zentt.agency/#organization" },
+    },
+  ],
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -56,6 +86,10 @@ export default function RootLayout({
     <html lang="es" className={fontVariables} suppressHydrationWarning>
       <body className="font-body antialiased">
         <Providers>{children}</Providers>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd) }}
+        />
       </body>
     </html>
   );

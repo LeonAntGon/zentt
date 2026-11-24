@@ -1,16 +1,16 @@
 import Link from "next/link";
 import { CalendarDays, Clock3 } from "lucide-react";
 import {
+  getBlogCoverImage,
   getBlogExcerpt,
   getBlogUrl,
   getCategoryLabel,
-  getFirstMarkdownImage,
   getTagLabel,
 } from "@/lib/blog";
 import type { BlogPost } from "@/lib/blog";
 
 export function BlogCard({ post }: { post: BlogPost }) {
-  const image = getFirstMarkdownImage(post.description);
+  const image = getBlogCoverImage(post);
   const category = post.blogcategory?.[0];
   const tag = post.tags?.[0];
 
@@ -23,6 +23,7 @@ export function BlogCard({ post }: { post: BlogPost }) {
             alt={post.title}
             className="aspect-[16/9] w-full object-cover transition-transform duration-500 group-hover:scale-105"
             loading="lazy"
+            decoding="async"
           />
         ) : (
           <div className="flex aspect-[16/9] items-center justify-center bg-gradient-to-br from-primary to-sky-700 px-6 text-center text-2xl font-bold text-white">

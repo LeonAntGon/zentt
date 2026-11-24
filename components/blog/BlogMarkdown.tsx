@@ -8,7 +8,7 @@ function inlineMarkdown(value: string, keyPrefix: string): ReactNode[] {
   let index = 0;
   while ((match = tokens.exec(value))) {
     if (match.index > cursor) result.push(value.slice(cursor, match.index));
-    if (match[1]) result.push(<img key={`${keyPrefix}-img-${index}`} src={match[3]} alt={match[2] || "Imagen del artículo"} loading="lazy" />);
+    if (match[1]) result.push(<img key={`${keyPrefix}-img-${index}`} src={match[3]} alt={match[2] || "Imagen del artículo"} loading="lazy" decoding="async" />);
     else if (match[4]) {
       const external = /^https?:\/\//i.test(match[5]);
       result.push(<a key={`${keyPrefix}-link-${index}`} href={match[5]} target={external ? "_blank" : undefined} rel={external ? "noreferrer" : undefined}>{match[4]}</a>);
