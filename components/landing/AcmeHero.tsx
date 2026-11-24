@@ -17,14 +17,6 @@ export function AcmeHero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <motion.div
-              className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-white px-4 py-1.5 text-xs font-medium text-foreground/70 shadow-sm sm:text-sm"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1, duration: 0.5 }}
-            >
-              Por Leonardo González
-            </motion.div>
             <motion.h1
               className="max-w-4xl text-3xl font-heading font-bold tracking-tighter text-foreground sm:text-4xl md:text-5xl lg:text-6xl"
               initial={{ opacity: 0, y: 20 }}

@@ -16,8 +16,8 @@ export function waHref(message?: string): string {
 
 /** Mensajes de apertura por tipo de CTA. */
 export const WA_MESSAGES = {
-  demo: "Hola Leonardo, vi la web de Zentt y quiero ver la demo de la página de reservas para mi alojamiento.",
-  cupo: "Hola Leonardo, quiero reservar mi cupo de la web de reservas directas (plan Temporada, pago único).",
+  demo: "Hola, vi la web de Zentt y quiero ver la demo de la página de reservas para mi alojamiento.",
+  cupo: "Hola, quiero reservar mi cupo de la web de reservas directas (plan Temporada, pago único).",
   presupuesto:
-    "Hola Leonardo, tengo un complejo / varias unidades y quiero pedir un presupuesto a medida.",
+    "Hola, tengo un complejo / varias unidades y quiero pedir un presupuesto a medida.",
 } as const;

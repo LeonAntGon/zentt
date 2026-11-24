@@ -14,10 +14,6 @@ const Footer = () => (
         <p className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
           <MapPin size={12} className="text-primary" aria-hidden />
           Hecho en Tucumán
-          <span className="text-muted-foreground/50" aria-hidden>
-            ·
-          </span>
-          Leonardo González
         </p>
       </div>
       <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-muted-foreground">
