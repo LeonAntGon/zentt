@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   CalendarDays,
   Inbox as InboxIcon,
@@ -9,6 +9,7 @@ import {
 import { Skeleton, SkeletonRow } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import api from "@/lib/api";
+import { fetchPage, unwrapList, type Paginated } from "@/lib/paginated";
 import type { Cabana, Mensaje } from "@/types/cabin";
 import {
   InboxDetail,
@@ -28,6 +29,17 @@ import {
 
 type BusyAction = "read" | "confirm" | "reject" | "delete" | null;
 type InboxView = "mensajes" | "reservas";
+
+const toCabinMessages = (items: Mensaje[]): InboxMessage[] =>
+  items.map((message) => ({ ...message, _tipo: "cabanas" as const }));
+const toGeneralMessages = (items: ContactoGeneral[]): InboxMessage[] =>
+  items.map((message) => ({ ...message, _tipo: "general" as const }));
+
+/** Agrega mensajes nuevos sin duplicar (por clave tipo+id). */
+function mergeMessages(current: InboxMessage[], incoming: InboxMessage[]) {
+  const seen = new Set(current.map(inboxKey));
+  return sortMessages([...current, ...incoming.filter((m) => !seen.has(inboxKey(m)))]);
+}
 
 function sortMessages(messages: InboxMessage[]) {
   return [...messages].sort(
@@ -49,27 +61,34 @@ export default function BuzonPage() {
   const [busyAction, setBusyAction] = useState<BusyAction>(null);
   const [view, setView] = useState<InboxView>("mensajes");
 
+  // Paginación del servidor: 25 por página de cada fuente. `null` = no hay más.
+  const [nextMensajesPage, setNextMensajesPage] = useState<number | null>(null);
+  const [nextContactosPage, setNextContactosPage] = useState<number | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
+  // Total real de no leídos (de todo el buzón, no solo de lo cargado).
+  const [unreadCount, setUnreadCount] = useState(0);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [messagesResponse, contactsResponse, cabanasResponse] =
+        const [mensajesPage, contactosPage, cabanasResponse, unreadMensajes, unreadContactos] =
           await Promise.all([
-            api.get<Mensaje[]>("/mensajes/"),
-            api.get<ContactoGeneral[]>("/contacto/"),
+            fetchPage<Mensaje>("/mensajes/"),
+            fetchPage<ContactoGeneral>("/contacto/"),
             api.get<Cabana[]>("/cabanas/"),
+            fetchPage<Mensaje>("/mensajes/", { leido: false, page_size: 1 }),
+            fetchPage<ContactoGeneral>("/contacto/", { leido: false, page_size: 1 }),
           ]);
 
-        const cabinMessages: InboxMessage[] = messagesResponse.data.map((message) => ({
-          ...message,
-          _tipo: "cabanas" as const,
-        }));
-        const generalMessages: InboxMessage[] = contactsResponse.data.map((message) => ({
-          ...message,
-          _tipo: "general" as const,
-        }));
-        const nextMessages = sortMessages([...cabinMessages, ...generalMessages]);
+        const nextMessages = sortMessages([
+          ...toCabinMessages(mensajesPage.results),
+          ...toGeneralMessages(contactosPage.results),
+        ]);
 
         setMessages(nextMessages);
+        setNextMensajesPage(mensajesPage.next ? 2 : null);
+        setNextContactosPage(contactosPage.next ? 2 : null);
+        setUnreadCount(unreadMensajes.count + unreadContactos.count);
         setCabanas(cabanasResponse.data || []);
         setSelectedKey(nextMessages[0] ? inboxKey(nextMessages[0]) : null);
       } catch (error) {
@@ -83,10 +102,34 @@ export default function BuzonPage() {
     void fetchData();
   }, []);
 
-  const unreadCount = useMemo(
-    () => messages.filter((message) => !message.leido).length,
-    [messages]
-  );
+  const hasMore = nextMensajesPage !== null || nextContactosPage !== null;
+
+  const loadMore = useCallback(async () => {
+    if (!hasMore || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const [mensajesPage, contactosPage] = await Promise.all([
+        nextMensajesPage
+          ? fetchPage<Mensaje>("/mensajes/", { page: nextMensajesPage })
+          : Promise.resolve<Paginated<Mensaje> | null>(null),
+        nextContactosPage
+          ? fetchPage<ContactoGeneral>("/contacto/", { page: nextContactosPage })
+          : Promise.resolve<Paginated<ContactoGeneral> | null>(null),
+      ]);
+      setMessages((current) =>
+        mergeMessages(current, [
+          ...toCabinMessages(unwrapList(mensajesPage)),
+          ...toGeneralMessages(unwrapList(contactosPage)),
+        ])
+      );
+      if (mensajesPage) setNextMensajesPage(mensajesPage.next ? (nextMensajesPage ?? 1) + 1 : null);
+      if (contactosPage) setNextContactosPage(contactosPage.next ? (nextContactosPage ?? 1) + 1 : null);
+    } catch {
+      toast.error("No pudimos cargar más consultas.");
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [hasMore, loadingMore, nextMensajesPage, nextContactosPage]);
 
   const filteredMessages = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
@@ -140,6 +183,10 @@ export default function BuzonPage() {
   );
 
   const updateMessage = (key: string, patch: Partial<InboxMessage>) => {
+    const target = messages.find((message) => inboxKey(message) === key);
+    if (target && patch.leido !== undefined && patch.leido !== target.leido) {
+      setUnreadCount((count) => Math.max(0, count + (patch.leido ? -1 : 1)));
+    }
     setMessages((current) =>
       current.map((message) =>
         inboxKey(message) === key ? ({ ...message, ...patch } as InboxMessage) : message
@@ -174,6 +221,7 @@ export default function BuzonPage() {
         api.post("/contacto/marcar_todos_leidos/"),
       ]);
       setMessages((current) => current.map((message) => ({ ...message, leido: true })));
+      setUnreadCount(0);
       toast.success("Todo el buzón quedó marcado como leído.");
     } catch {
       toast.error("No se pudo marcar todo como leído.");
@@ -233,6 +281,7 @@ export default function BuzonPage() {
           ? `/mensajes/${selectedMessage.id}/`
           : `/contacto/${selectedMessage.id}/`;
       await api.delete(endpoint);
+      if (!selectedMessage.leido) setUnreadCount((count) => Math.max(0, count - 1));
       setMessages((current) => current.filter((message) => inboxKey(message) !== key));
       setSelectedKey(null);
       toast.success("Consulta eliminada.");
@@ -362,7 +411,21 @@ export default function BuzonPage() {
               <div className="flex min-h-[280px] flex-col items-center justify-center px-6 text-center">
                 <MessageSquare size={26} className="mb-3 text-slate-200" />
                 <p className="text-sm font-bold text-slate-400">No hay consultas</p>
-                <p className="mt-1 text-xs text-slate-400">Probá cambiar los filtros.</p>
+                <p className="mt-1 text-xs text-slate-400">
+                  {hasMore ? "Puede haber más en consultas anteriores." : "Probá cambiar los filtros."}
+                </p>
+              </div>
+            )}
+            {hasMore && (
+              <div className="flex justify-center p-4">
+                <button
+                  type="button"
+                  onClick={() => void loadMore()}
+                  disabled={loadingMore}
+                  className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-600 transition-colors hover:bg-slate-50 disabled:opacity-50"
+                >
+                  {loadingMore ? "Cargando…" : "Cargar consultas anteriores"}
+                </button>
               </div>
             )}
           </div>

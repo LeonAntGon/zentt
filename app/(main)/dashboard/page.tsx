@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import api, { dedupedGet } from "@/lib/api";
+import { fetchAllPages } from "@/lib/paginated";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   Home,
@@ -199,23 +200,22 @@ export default function OverviewPage() {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const [resCabanas, resMensajes, resGeneral, resReservas] =
+        const [resCabanas, listaMensajes, listaGeneral, listaReservas] =
           await Promise.all([
             dedupedGet<Cabana[]>("/cabanas/"),
-            dedupedGet<Mensaje[]>("/mensajes/"),
-            dedupedGet<Mensaje[]>("/contacto/"),
-            dedupedGet<Reserva[]>("/booking/gestion-reservas/").catch(() => ({
-              data: [] as Reserva[],
-            })),
+            fetchAllPages<Mensaje>("/mensajes/"),
+            fetchAllPages<Mensaje>("/contacto/"),
+            fetchAllPages<Reserva>("/booking/gestion-reservas/").catch(
+              () => [] as Reserva[]
+            ),
           ]);
 
         const listaCabanas = resCabanas.data;
-        const listaReservas = resReservas.data || [];
-        const mensajes = resMensajes.data.map((m) => ({
+        const mensajes = listaMensajes.map((m) => ({
           ...m,
           _tipo: "cabanas" as const,
         }));
-        const generales = resGeneral.data.map((m) => ({
+        const generales = listaGeneral.map((m) => ({
           ...m,
           _tipo: "general" as const,
         }));

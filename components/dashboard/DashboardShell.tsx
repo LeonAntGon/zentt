@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { dedupedGet } from "@/lib/api";
+import { fetchPage } from "@/lib/paginated";
 import { BusinessAvatar } from "@/components/dashboard/BusinessAvatar";
 import { UserAvatar } from "@/components/dashboard/UserAvatar";
 import { UpgradePricingModal } from "@/components/dashboard/UpgradePricingModal";
@@ -130,14 +130,12 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const loadUnread = async () => {
       try {
+        // Solo el total de no leídos (page_size=1), no las listas completas.
         const [mensajes, contacto] = await Promise.all([
-          dedupedGet<{ leido: boolean }[]>("/mensajes/"),
-          dedupedGet<{ leido: boolean }[]>("/contacto/"),
+          fetchPage("/mensajes/", { leido: false, page_size: 1 }),
+          fetchPage("/contacto/", { leido: false, page_size: 1 }),
         ]);
-        const count = [...(mensajes.data || []), ...(contacto.data || [])].filter(
-          (m) => !m.leido
-        ).length;
-        setUnreadCount(count);
+        setUnreadCount(mensajes.count + contacto.count);
       } catch {
         // Keep last known count
       }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { parseISO } from "date-fns";
 import {
   CalendarDays,
@@ -16,11 +16,18 @@ import {
 import { toast } from "sonner";
 
 import api from "@/lib/api";
+import { fetchPage } from "@/lib/paginated";
 import type { Reserva } from "@/types/cabin";
 import { formatMoneyARS } from "@/lib/pricing";
 import { ConfirmActionModal } from "@/components/dashboard/ConfirmActionModal";
 
 type ReservationFilter = "pendientes" | "confirmadas" | "todas";
+
+const ESTADO_PARAM: Record<ReservationFilter, string | undefined> = {
+  pendientes: "pendiente",
+  confirmadas: "confirmada",
+  todas: undefined,
+};
 
 function formatRange(from: string, to: string) {
   const opts: Intl.DateTimeFormatOptions = { day: "numeric", month: "short" };
@@ -78,67 +85,97 @@ export function ReservationsPanel() {
   const [busyId, setBusyId] = useState<number | null>(null);
   const [cancelTarget, setCancelTarget] = useState<Reserva | null>(null);
 
-  const load = async () => {
+  // Filtro y búsqueda se resuelven en el servidor; de a 25 con "Cargar más".
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [nextPage, setNextPage] = useState<number | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [counts, setCounts] = useState<Record<ReservationFilter, number>>({
+    pendientes: 0,
+    confirmadas: 0,
+    todas: 0,
+  });
+
+  useEffect(() => {
+    const id = window.setTimeout(() => setDebouncedSearch(search.trim()), 300);
+    return () => window.clearTimeout(id);
+  }, [search]);
+
+  const params = useMemo(
+    () => ({ estado: ESTADO_PARAM[filter], search: debouncedSearch || undefined }),
+    [filter, debouncedSearch]
+  );
+
+  const loadCounts = useCallback(async () => {
+    const search = debouncedSearch || undefined;
+    const [pend, conf, all] = await Promise.all([
+      fetchPage<Reserva>("/booking/gestion-reservas/", { estado: "pendiente", search, page_size: 1 }),
+      fetchPage<Reserva>("/booking/gestion-reservas/", { estado: "confirmada", search, page_size: 1 }),
+      fetchPage<Reserva>("/booking/gestion-reservas/", { search, page_size: 1 }),
+    ]);
+    setCounts({ pendientes: pend.count, confirmadas: conf.count, todas: all.count });
+  }, [debouncedSearch]);
+
+  const load = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
-      const { data } = await api.get<Reserva[]>(
-        "/booking/gestion-reservas/"
-      );
-      setReservas(data || []);
+      const [page] = await Promise.all([
+        fetchPage<Reserva>("/booking/gestion-reservas/", params),
+        loadCounts(),
+      ]);
+      setReservas(page.results);
+      setNextPage(page.next ? 2 : null);
     } catch {
       setError("No pudimos cargar las reservas.");
     } finally {
       setLoading(false);
     }
-  };
+  }, [params, loadCounts]);
 
   useEffect(() => {
     void load();
-  }, []);
+  }, [load]);
 
-  const filtered = useMemo(() => {
-    const term = search.trim().toLowerCase();
-
-    return reservas
-      .filter((reserva) => {
-        if (filter === "pendientes") return reserva.estado === "pendiente";
-        if (filter === "confirmadas") return reserva.estado === "confirmada";
-        return true;
-      })
-      .filter((reserva) => {
-        if (!term) return true;
-        return [
-          reserva.nombre_turista,
-          reserva.cabana_nombre,
-          reserva.email_turista,
-          reserva.telefono_turista,
-          reserva.notas,
-        ]
-          .filter(Boolean)
-          .join(" ")
-          .toLowerCase()
-          .includes(term);
-      })
-      .sort((a, b) => {
-        const pending =
-          Number(b.estado === "pendiente") -
-          Number(a.estado === "pendiente");
-        if (pending !== 0) return pending;
-        return (
-          new Date(b.created_at).getTime() -
-          new Date(a.created_at).getTime()
-        );
+  const loadMore = async () => {
+    if (!nextPage || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const page = await fetchPage<Reserva>("/booking/gestion-reservas/", {
+        ...params,
+        page: nextPage,
       });
-  }, [reservas, filter, search]);
+      setReservas((current) => {
+        const seen = new Set(current.map((r) => r.id));
+        return [...current, ...page.results.filter((r) => !seen.has(r.id))];
+      });
+      setNextPage(page.next ? nextPage + 1 : null);
+    } catch {
+      toast.error("No pudimos cargar más reservas.");
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
-  const counts = useMemo(
-    () => ({
-      pendientes: reservas.filter((r) => r.estado === "pendiente").length,
-      confirmadas: reservas.filter((r) => r.estado === "confirmada").length,
-      todas: reservas.length,
-    }),
-    [reservas]
+  const filtered = useMemo(
+    () =>
+      // El servidor ya filtró por estado y búsqueda; se ocultan las que
+      // cambiaron de estado localmente (p. ej. una pendiente confirmada).
+      reservas
+        .filter((reserva) => {
+          const estado = ESTADO_PARAM[filter];
+          return !estado || reserva.estado === estado;
+        })
+        .sort((a, b) => {
+          const pending =
+            Number(b.estado === "pendiente") -
+            Number(a.estado === "pendiente");
+          if (pending !== 0) return pending;
+          return (
+            new Date(b.created_at).getTime() -
+            new Date(a.created_at).getTime()
+          );
+        }),
+    [reservas, filter]
   );
 
   const updateReserva = (updated: Reserva) => {
@@ -160,6 +197,7 @@ export function ReservationsPanel() {
         { estado }
       );
       updateReserva(data);
+      void loadCounts();
       toast.success(
         estado === "confirmada"
           ? "Reserva confirmada. Fechas bloqueadas."
@@ -181,6 +219,7 @@ export function ReservationsPanel() {
         `/booking/gestion-reservas/${reserva.id}/cancelar/`
       );
       updateReserva(data);
+      void loadCounts();
       setCancelTarget(null);
       toast.success("Reserva cancelada. Fechas liberadas.");
     } catch (err) {
@@ -384,6 +423,18 @@ export function ReservationsPanel() {
                 </article>
               );
             })}
+            {nextPage !== null && (
+              <div className="flex justify-center pt-2">
+                <button
+                  type="button"
+                  onClick={() => void loadMore()}
+                  disabled={loadingMore}
+                  className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-600 transition-colors hover:bg-slate-50 disabled:opacity-50"
+                >
+                  {loadingMore ? "Cargando…" : "Cargar más reservas"}
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

@@ -2,7 +2,8 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import api from "@/lib/api";
-import { Cabana, Mensaje, Reserva } from "@/types/cabin";
+import { useMonthWindowData } from "@/lib/useMonthWindowData";
+import { Cabana, Reserva } from "@/types/cabin";
 import { formatMoneyARS, nightsCount } from "@/lib/pricing";
 import {
   endOfMonth,
@@ -294,34 +295,37 @@ function IncomeAreaChart({
 
 export default function ReportesPage() {
   const [cabanas, setCabanas] = useState<Cabana[]>([]);
-  const [reservas, setReservas] = useState<Reserva[]>([]);
-  const [mensajes, setMensajes] = useState<Mensaje[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [cabanasLoading, setCabanasLoading] = useState(true);
   const [month, setMonth] = useState(() => startOfMonth(new Date()));
   const [cabanaId, setCabanaId] = useState<number | "all">("all");
+
+  // Reservas y consultas: solo la ventana de meses alrededor del mes visible
+  // (filtrada en el servidor). Las cabañas se cargan una vez.
+  const {
+    reservas,
+    mensajes,
+    loading: windowLoading,
+    error: windowError,
+  } = useMonthWindowData(month, { monthsBefore: 3, monthsAfter: 1 });
+  const loading =
+    cabanasLoading || (windowLoading && reservas.length === 0 && mensajes.length === 0);
+
+  useEffect(() => {
+    if (windowError) toast.error("No pudimos cargar los reportes");
+  }, [windowError]);
 
   useEffect(() => {
     const load = async () => {
       try {
-        const [resCabanas, resReservas, resMensajes] = await Promise.all([
-          api.get<Cabana[]>("/cabanas/"),
-          api.get<Reserva[]>("/booking/gestion-reservas/").catch(() => ({
-            data: [] as Reserva[],
-          })),
-          api.get<Mensaje[]>("/mensajes/").catch(() => ({
-            data: [] as Mensaje[],
-          })),
-        ]);
+        const resCabanas = await api.get<Cabana[]>("/cabanas/");
         setCabanas(resCabanas.data || []);
-        setReservas(resReservas.data || []);
-        setMensajes(resMensajes.data || []);
         if ((resCabanas.data || []).length === 1) {
           setCabanaId(resCabanas.data[0].id);
         }
       } catch {
         toast.error("No pudimos cargar los reportes");
       } finally {
-        setLoading(false);
+        setCabanasLoading(false);
       }
     };
     load();

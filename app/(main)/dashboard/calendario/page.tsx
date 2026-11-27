@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import api from "@/lib/api";
+import { useMonthWindowData } from "@/lib/useMonthWindowData";
 import { Cabana, Mensaje, Reserva } from "@/types/cabin";
 import { nightsCount, toISODate } from "@/lib/pricing";
 import {
@@ -40,42 +41,47 @@ function overlapsMonth(checkIn: string, checkOut: string, month: Date) {
 
 export default function CalendarioPage() {
   const [cabanas, setCabanas] = useState<Cabana[]>([]);
-  const [reservas, setReservas] = useState<Reserva[]>([]);
-  const [mensajes, setMensajes] = useState<Mensaje[]>([]);
   const [selectedCabanaId, setSelectedCabanaId] = useState<number | "all">(
     "all"
   );
   const [month, setMonth] = useState<Date>(startOfMonth(new Date()));
   const [selectedDay, setSelectedDay] = useState<Date | undefined>();
-  const [loading, setLoading] = useState(true);
+  const [cabanasLoading, setCabanasLoading] = useState(true);
   const [busyId, setBusyId] = useState<number | null>(null);
   const [deleteConsultaId, setDeleteConsultaId] = useState<number | null>(null);
   const [syncingIcal, setSyncingIcal] = useState(false);
   const [showManualDialog, setShowManualDialog] = useState(false);
   const [cancelTarget, setCancelTarget] = useState<number | null>(null);
 
+  // Reservas y consultas: solo la ventana de meses alrededor del mes visible
+  // (filtrada en el servidor). Las cabañas se cargan una vez.
+  const {
+    reservas,
+    setReservas,
+    mensajes,
+    setMensajes,
+    loading: windowLoading,
+    error: windowError,
+  } = useMonthWindowData(month, { monthsBefore: 3, monthsAfter: 3 });
+  const loading =
+    cabanasLoading || (windowLoading && reservas.length === 0 && mensajes.length === 0);
+
+  useEffect(() => {
+    if (windowError) toast.error("No pudimos cargar el calendario");
+  }, [windowError]);
+
   useEffect(() => {
     const load = async () => {
       try {
-        const [resCabanas, resReservas, resMensajes] = await Promise.all([
-          api.get<Cabana[]>("/cabanas/"),
-          api.get<Reserva[]>("/booking/gestion-reservas/").catch(() => ({
-            data: [] as Reserva[],
-          })),
-          api.get<Mensaje[]>("/mensajes/").catch(() => ({
-            data: [] as Mensaje[],
-          })),
-        ]);
+        const resCabanas = await api.get<Cabana[]>("/cabanas/");
         setCabanas(resCabanas.data);
-        setReservas(resReservas.data || []);
-        setMensajes(resMensajes.data || []);
         if (resCabanas.data.length === 1) {
           setSelectedCabanaId(resCabanas.data[0].id);
         }
       } catch {
         toast.error("No pudimos cargar el calendario");
       } finally {
-        setLoading(false);
+        setCabanasLoading(false);
       }
     };
     load();
