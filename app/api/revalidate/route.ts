@@ -22,8 +22,8 @@ export async function POST(request: NextRequest) {
   }
 
   revalidatePath("/blog");
-  revalidatePath("/blog/categoria/[category]", "page");
-  revalidatePath("/blog/etiqueta/[tag]", "page");
+  revalidatePath("/(main)/blog/categoria/[category]", "page");
+  revalidatePath("/(main)/blog/etiqueta/[tag]", "page");
   revalidatePath("/sitemap.xml");
   revalidatePath("/feed.xml");
   if (slug) revalidatePath(`/blog/${slug}`);

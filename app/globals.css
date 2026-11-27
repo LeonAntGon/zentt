@@ -136,6 +136,14 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  /* Fallbacks: cada layout ((main) y [slug]) redefine estas variables con
+     las fuentes que carga. Sin esto, una var indefinida invalida font-family. */
+  :root {
+    --font-body: system-ui, sans-serif;
+    --font-heading: system-ui, sans-serif;
+    --font-public: system-ui, sans-serif;
+  }
+
   body {
     @apply bg-background text-foreground font-body antialiased;
     font-feature-settings: "kern" 1, "liga" 1, "calt" 1;

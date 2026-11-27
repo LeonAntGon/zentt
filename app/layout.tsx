@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import "react-phone-number-input/style.css";
 import { Providers } from "@/components/providers";
-import { fontVariables } from "@/lib/fonts";
 
 const isPreviewDeployment =
   process.env.VERCEL_ENV === "preview" ||
@@ -83,7 +82,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className={fontVariables} suppressHydrationWarning>
+    <html lang="es" suppressHydrationWarning>
       <body className="font-body antialiased">
         <Providers>{children}</Providers>
         <script
