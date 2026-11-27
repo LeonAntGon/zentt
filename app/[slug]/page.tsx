@@ -3,18 +3,30 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { getMediaUrl } from "@/lib/media";
 import { Cabana } from "@/types/cabin";
-import { MapPin, Building2, CloudOff } from "lucide-react";
+import { MapPin, Building2 } from "lucide-react";
 import { CabinLinkCard } from "@/components/public/CabinLinkCard";
 import { SocialIconButton } from "@/components/public/SocialIconButton";
 import { TikTokIcon } from "@/components/icons/TikTokIcon";
 import { YouTubeIcon } from "@/components/icons/YouTubeIcon";
 import { FacebookIcon } from "@/components/icons/FacebookIcon";
 import { PublicSiteFooter } from "@/components/public/PublicSiteFooter";
-import { RetryButton } from "@/components/public/RetryButton";
+import { fetchPublic } from "@/lib/publicApi";
 import { socialHref } from "@/lib/socialLinks";
 import { getDesign, type DesignKey } from "@/lib/designs";
 
-export const dynamic = "force-dynamic";
+/**
+ * ISR: el HTML se regenera como mucho cada 60 s, o al instante cuando el
+ * backend revalida el tag `site-<slug>` (POST /api/revalidate).
+ */
+export const revalidate = 60;
+
+/**
+ * Sin pre-render en el build: cada sitio se genera en su primera visita y
+ * queda en caché (ISR). Sin esto Next trata la ruta como 100% dinámica.
+ */
+export async function generateStaticParams(): Promise<{ slug: string }[]> {
+  return [];
+}
 
 const DEFAULT_COVER_IMAGE =
   "https://images.unsplash.com/photo-1542718610-a1d656d1884c?w=1200&q=85";
@@ -59,12 +71,10 @@ function SitePanel({
   icon,
   title,
   message,
-  showRetry,
 }: {
   icon: ReactNode;
   title: string;
   message: string;
-  showRetry?: boolean;
 }) {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-slate-50 to-white px-6 text-center">
@@ -84,9 +94,6 @@ function SitePanel({
           >
             Volver a Zentt
           </Link>
-          {showRetry && (
-            <RetryButton />
-          )}
         </div>
       </div>
     </div>
@@ -100,40 +107,17 @@ export default async function LinktreePage({
 }) {
   const { slug } = await params;
 
-  const apiUrl =
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+  // 404 -> panel "Sitio no encontrado". Cualquier otro fallo lanza y lo
+  // atiende app/[slug]/error.tsx (y en revalidaciones se conserva la versión
+  // anterior en caché en vez de cachear un error).
+  const siteData = await fetchPublic<PublicWebsiteData>(`/public/${slug}/`, slug);
 
-  let siteData: PublicWebsiteData | null = null;
-  let status = 0;
-  try {
-    const response = await fetch(`${apiUrl}/public/${slug}/`, {
-      cache: "no-store",
-    });
-    status = response.status;
-    if (response.ok) {
-      siteData = (await response.json()) as PublicWebsiteData;
-    }
-  } catch {
-    // Error de red o de parseo; se muestra un panel genérico abajo.
-  }
-
-  if (status === 404) {
+  if (!siteData) {
     return (
       <SitePanel
         icon={<Building2 size={56} className="mb-6 text-slate-200" />}
         title="Sitio no encontrado"
         message="La página web que buscás no existe o fue dada de baja. Revisá la dirección o volvé más tarde."
-      />
-    );
-  }
-
-  if (!siteData) {
-    return (
-      <SitePanel
-        icon={<CloudOff size={56} className="mb-6 text-slate-200" />}
-        title="No pudimos cargar el sitio"
-        message="Estamos teniendo problemas para contactar al servidor. Esto suele durar unos segundos."
-        showRetry
       />
     );
   }
