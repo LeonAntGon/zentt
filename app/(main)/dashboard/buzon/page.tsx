@@ -10,6 +10,7 @@ import { Skeleton, SkeletonRow } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import api from "@/lib/api";
 import { fetchPage, unwrapList, type Paginated } from "@/lib/paginated";
+import { useDashboardData } from "@/contexts/DashboardDataContext";
 import type { Cabana, Mensaje } from "@/types/cabin";
 import {
   InboxDetail,
@@ -67,6 +68,8 @@ export default function BuzonPage() {
   const [loadingMore, setLoadingMore] = useState(false);
   // Total real de no leídos (de todo el buzón, no solo de lo cargado).
   const [unreadCount, setUnreadCount] = useState(0);
+  // Para que el badge del shell refleje enseguida lo que se lee acá.
+  const { refreshCounts } = useDashboardData();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -186,6 +189,7 @@ export default function BuzonPage() {
     const target = messages.find((message) => inboxKey(message) === key);
     if (target && patch.leido !== undefined && patch.leido !== target.leido) {
       setUnreadCount((count) => Math.max(0, count + (patch.leido ? -1 : 1)));
+      void refreshCounts();
     }
     setMessages((current) =>
       current.map((message) =>
@@ -222,6 +226,7 @@ export default function BuzonPage() {
       ]);
       setMessages((current) => current.map((message) => ({ ...message, leido: true })));
       setUnreadCount(0);
+      void refreshCounts();
       toast.success("Todo el buzón quedó marcado como leído.");
     } catch {
       toast.error("No se pudo marcar todo como leído.");
@@ -281,7 +286,10 @@ export default function BuzonPage() {
           ? `/mensajes/${selectedMessage.id}/`
           : `/contacto/${selectedMessage.id}/`;
       await api.delete(endpoint);
-      if (!selectedMessage.leido) setUnreadCount((count) => Math.max(0, count - 1));
+      if (!selectedMessage.leido) {
+        setUnreadCount((count) => Math.max(0, count - 1));
+        void refreshCounts();
+      }
       setMessages((current) => current.filter((message) => inboxKey(message) !== key));
       setSelectedKey(null);
       toast.success("Consulta eliminada.");

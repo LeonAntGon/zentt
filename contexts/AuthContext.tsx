@@ -61,12 +61,50 @@ interface AuthContextType {
   loading: boolean;
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
-  checkCurrentUser: () => Promise<User | null>;
+  /**
+   * Pide /accounts/me/. Sin opciones siempre trae datos frescos (se usa
+   * después de cambios). `maxAgeMs` permite reusar la copia cacheada.
+   */
+  checkCurrentUser: (options?: { maxAgeMs?: number }) => Promise<User | null>;
   waitForPlan: (plan: PaidPlan, attempts?: number) => Promise<boolean>;
   setUser: (user: User | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
+
+/** /accounts/me/ se reusa hasta 30 s (recargas, montajes repetidos). */
+export const ME_CACHE_TTL_MS = 30_000;
+const ME_CACHE_KEY = "zentt_me_cache";
+
+type MeCache = { token: string; at: number; user: User };
+
+function readMeCache(token: string, maxAgeMs: number): User | null {
+  if (maxAgeMs <= 0) return null;
+  try {
+    const raw = sessionStorage.getItem(ME_CACHE_KEY);
+    if (!raw) return null;
+    const cached = JSON.parse(raw) as MeCache;
+    if (cached.token !== token || Date.now() - cached.at > maxAgeMs) return null;
+    return cached.user;
+  } catch {
+    return null;
+  }
+}
+
+/** Guarda el usuario actual (p. ej. el que trae /dashboard/bootstrap/). */
+export function writeMeCache(user: User | null) {
+  try {
+    const token = localStorage.getItem("access_token");
+    if (!user || !token) {
+      sessionStorage.removeItem(ME_CACHE_KEY);
+      return;
+    }
+    const entry: MeCache = { token, at: Date.now(), user };
+    sessionStorage.setItem(ME_CACHE_KEY, JSON.stringify(entry));
+  } catch {
+    // Storage bloqueado (modo privado, etc.): se sigue sin caché.
+  }
+}
 
 export const useAuth = () => {
   const ctx = useContext(AuthContext);
@@ -80,10 +118,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const isHarnessRouteRef = useRef(isHarnessRoute);
   isHarnessRouteRef.current = isHarnessRoute;
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUserState] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const checkCurrentUser = useCallback(async (): Promise<User | null> => {
+  // Toda actualización del usuario (PATCH en configuración, diseño, etc.)
+  // refresca también la caché de 30 s.
+  const setUser = useCallback((next: User | null) => {
+    setUserState(next);
+    writeMeCache(next);
+  }, []);
+
+  const checkCurrentUser = useCallback(async (
+    { maxAgeMs = 0 }: { maxAgeMs?: number } = {}
+  ): Promise<User | null> => {
     if (isHarnessRouteRef.current) {
       setLoading(false);
       setIsAuthenticated(false);
@@ -97,6 +144,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsAuthenticated(false);
       setUser(null);
       return null;
+    }
+
+    const cached = readMeCache(token, maxAgeMs);
+    if (cached) {
+      setUserState(cached);
+      setIsAuthenticated(true);
+      setLoading(false);
+      return cached;
     }
 
     try {
@@ -113,7 +168,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [setUser]);
 
   const waitForPlan = useCallback(
     async (plan: PaidPlan, attempts = 15): Promise<boolean> => {
@@ -140,7 +195,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(null);
       return;
     }
-    void checkCurrentUser();
+    void checkCurrentUser({ maxAgeMs: ME_CACHE_TTL_MS });
   }, [checkCurrentUser, isHarnessRoute]);
 
   const login = useCallback(
@@ -161,7 +216,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.removeItem("refresh_token");
     setUser(null);
     setIsAuthenticated(false);
-  }, []);
+  }, [setUser]);
 
   return (
     <AuthContext.Provider

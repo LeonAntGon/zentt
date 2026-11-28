@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
-import api, { dedupedGet } from "@/lib/api";
-import { fetchAllPages } from "@/lib/paginated";
+import api from "@/lib/api";
+import { useDashboardData } from "@/contexts/DashboardDataContext";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   Home,
@@ -18,7 +18,6 @@ import {
 } from "lucide-react";
 import { Skeleton, SkeletonKpi, SkeletonRow } from "@/components/ui/skeleton";
 import { PageContainer } from "@/components/dashboard/PageContainer";
-import { Cabana } from "@/types/cabin";
 import { toast } from "sonner";
 import {
   OnboardingStepper,
@@ -98,85 +97,30 @@ function buildWhatsAppHref(
   return `https://wa.me/${digits}?text=${encodeURIComponent(text)}`;
 }
 
-function nightsBetween(start: Date, end: Date) {
-  const ms = end.getTime() - start.getTime();
-  return Math.max(0, Math.round(ms / (1000 * 60 * 60 * 24)));
-}
-
-function sumIngresosDelMes(reservas: Reserva[]) {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
-
-  return reservas.reduce((sum, r) => {
-    if (r.estado !== "confirmada") return sum;
-    const checkIn = new Date(r.check_in + "T12:00:00");
-    if (checkIn.getFullYear() !== year || checkIn.getMonth() !== month) {
-      return sum;
-    }
-    return sum + Number(r.total_reserva || 0);
-  }, 0);
-}
-
-function sumIngresosPendientes(reservas: Reserva[]) {
-  return reservas.reduce((sum, r) => {
-    if (r.estado !== "pendiente") return sum;
-    return sum + Number(r.total_reserva || 0);
-  }, 0);
-}
-
-function countProximosCheckIns(reservas: Reserva[]) {
-  const now = new Date();
-  now.setHours(0, 0, 0, 0);
-  const limit = new Date(now);
-  limit.setDate(limit.getDate() + 7);
-
-  return reservas.filter((r) => {
-    if (r.estado !== "confirmada") return false;
-    const checkIn = new Date(r.check_in + "T12:00:00");
-    return checkIn >= now && checkIn <= limit;
-  }).length;
-}
-
-function ocupacionDelMes(reservas: Reserva[], cabanasCount: number) {
-  if (cabanasCount === 0) return 0;
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
-  const monthStart = new Date(year, month, 1);
-  const monthEnd = new Date(year, month + 1, 1);
-  const daysInMonth = nightsBetween(monthStart, monthEnd);
-  const capacityNights = daysInMonth * cabanasCount;
-
-  let occupied = 0;
-  for (const r of reservas) {
-    if (r.estado !== "confirmada") continue;
-    const start = new Date(r.check_in + "T12:00:00");
-    const end = new Date(r.check_out + "T12:00:00");
-    const overlapStart = start > monthStart ? start : monthStart;
-    const overlapEnd = end < monthEnd ? end : monthEnd;
-    occupied += nightsBetween(overlapStart, overlapEnd);
-  }
-
-  return Math.min(100, Math.round((occupied / capacityNights) * 100));
-}
-
 export default function OverviewPage() {
   const { user } = useAuth();
 
-  const [cabanas, setCabanas] = useState<Cabana[]>([]);
-  const [reservas, setReservas] = useState<Reserva[]>([]);
-  const [stats, setStats] = useState({
-    totalCabanas: 0,
-    ingresosDelMes: 0,
-    consultasSinLeer: 0,
-    ingresosPendientes: 0,
-    proximosCheckIns: 0,
-    ocupacionPct: 0,
-  });
+  // Todo sale de /dashboard/bootstrap/ (un request, compartido con el shell).
+  const { data, loading: bootstrapLoading, error: bootstrapError, unread } =
+    useDashboardData();
+  const loading = bootstrapLoading && !data;
+  const stats = {
+    totalCabanas: data?.stats.total_cabanas ?? 0,
+    ingresosDelMes: Number(data?.stats.ingresos_del_mes ?? 0),
+    consultasSinLeer: unread.total,
+    ingresosPendientes: Number(data?.stats.ingresos_pendientes ?? 0),
+    proximosCheckIns: data?.stats.proximos_check_ins ?? 0,
+    ocupacionPct: data?.stats.ocupacion_pct ?? 0,
+  };
+  const mensajesRecientes: Mensaje[] = useMemo(
+    () => data?.ultimos_mensajes ?? [],
+    [data]
+  );
 
-  const [mensajesRecientes, setMensajesRecientes] = useState<Mensaje[]>([]);
-  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    if (bootstrapError) toast.error("Error al sincronizar con el servidor");
+  }, [bootstrapError]);
+
   const [copied, setCopied] = useState(false);
   const [visitsLabel, setVisitsLabel] = useState("—");
 
@@ -197,61 +141,6 @@ export default function OverviewPage() {
     [user]
   );
 
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        const [resCabanas, listaMensajes, listaGeneral, listaReservas] =
-          await Promise.all([
-            dedupedGet<Cabana[]>("/cabanas/"),
-            fetchAllPages<Mensaje>("/mensajes/"),
-            fetchAllPages<Mensaje>("/contacto/"),
-            fetchAllPages<Reserva>("/booking/gestion-reservas/").catch(
-              () => [] as Reserva[]
-            ),
-          ]);
-
-        const listaCabanas = resCabanas.data;
-        const mensajes = listaMensajes.map((m) => ({
-          ...m,
-          _tipo: "cabanas" as const,
-        }));
-        const generales = listaGeneral.map((m) => ({
-          ...m,
-          _tipo: "general" as const,
-        }));
-
-        const todosLosMensajes = [...mensajes, ...generales];
-        const consultasSinLeer = todosLosMensajes.filter((m) => !m.leido).length;
-
-        const recientes = todosLosMensajes
-          .sort(
-            (a, b) =>
-              new Date(b.fecha_envio).getTime() -
-              new Date(a.fecha_envio).getTime()
-          )
-          .slice(0, 5);
-
-        setCabanas(listaCabanas);
-        setReservas(listaReservas);
-        setStats({
-          totalCabanas: listaCabanas.length,
-          ingresosDelMes: sumIngresosDelMes(listaReservas),
-          consultasSinLeer,
-          ingresosPendientes: sumIngresosPendientes(listaReservas),
-          proximosCheckIns: countProximosCheckIns(listaReservas),
-          ocupacionPct: ocupacionDelMes(listaReservas, listaCabanas.length),
-        });
-        setMensajesRecientes(recientes);
-      } catch (error) {
-        console.error("Error cargando dashboard", error);
-        toast.error("Error al sincronizar con el servidor");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDashboardData();
-  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -296,25 +185,14 @@ export default function OverviewPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const proximasReservas = useMemo(() => {
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-    return reservas
-      .filter(
-        (r) =>
-          r.estado === "confirmada" &&
-          new Date(r.check_in + "T12:00:00") >= now
-      )
-      .sort(
-        (a, b) =>
-          new Date(a.check_in).getTime() - new Date(b.check_in).getTime()
-      )
-      .slice(0, 4);
-  }, [reservas]);
+  const proximasReservas: Reserva[] = useMemo(
+    () => (data?.proximas_reservas ?? []).slice(0, 4),
+    [data]
+  );
 
-  const reservasPendientes = useMemo(
-    () => reservas.filter((r) => r.estado === "pendiente"),
-    [reservas]
+  const reservasPendientes: Reserva[] = useMemo(
+    () => data?.reservas_pendientes ?? [],
+    [data]
   );
 
   const atencionReciente = useMemo<AttentionItem[]>(() => {
@@ -415,7 +293,7 @@ export default function OverviewPage() {
       <AccountSecurityChecklist />
 
       <OnboardingStepper
-        cabanas={cabanas}
+        cabanasCount={stats.totalCabanas}
         profile={businessProfile}
         accountEmail={user?.email}
         publicUrl={publicUrl}

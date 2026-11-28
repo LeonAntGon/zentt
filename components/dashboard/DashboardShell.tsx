@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { fetchPage } from "@/lib/paginated";
+import { useDashboardData } from "@/contexts/DashboardDataContext";
 import { BusinessAvatar } from "@/components/dashboard/BusinessAvatar";
 import { UserAvatar } from "@/components/dashboard/UserAvatar";
 import { UpgradePricingModal } from "@/components/dashboard/UpgradePricingModal";
@@ -106,7 +106,10 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { logout, user } = useAuth();
-  const [unreadCount, setUnreadCount] = useState(0);
+  // Contador de no leídos del bootstrap (no se vuelve a pedir en cada cambio
+  // de ruta; se refresca cada 60 s o al volver el foco a la pestaña).
+  const { unread } = useDashboardData();
+  const unreadCount = unread.total;
   const [upgradeOpen, setUpgradeOpen] = useState(false);
 
   const handleLogout = () => {
@@ -127,21 +130,6 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  useEffect(() => {
-    const loadUnread = async () => {
-      try {
-        // Solo el total de no leídos (page_size=1), no las listas completas.
-        const [mensajes, contacto] = await Promise.all([
-          fetchPage("/mensajes/", { leido: false, page_size: 1 }),
-          fetchPage("/contacto/", { leido: false, page_size: 1 }),
-        ]);
-        setUnreadCount(mensajes.count + contacto.count);
-      } catch {
-        // Keep last known count
-      }
-    };
-    void loadUnread();
-  }, [pathname]);
 
   const fotoPerfil = user?.profile?.foto_perfil;
   const nombreNegocio = user?.profile?.nombre_negocio;

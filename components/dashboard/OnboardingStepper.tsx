@@ -10,7 +10,6 @@ import {
   Rocket,
   ArrowRight,
 } from "lucide-react";
-import type { Cabana } from "@/types/cabin";
 
 export type BusinessProfile = {
   metodo_contacto?: "WA" | "MAIL" | string | null;
@@ -51,11 +50,11 @@ export function isContactoCompleto(
 }
 
 export function evaluateOnboarding(
-  cabanas: Cabana[],
+  cabanasCount: number,
   profile?: BusinessProfile | null,
   accountEmail?: string | null
 ): OnboardingProgress {
-  const alojamiento = cabanas.length > 0;
+  const alojamiento = cabanasCount > 0;
   const contacto = isContactoCompleto(profile, accountEmail);
   const logo = Boolean(profile?.foto_perfil);
 
@@ -96,7 +95,7 @@ const STEPS: StepDef[] = [
 ];
 
 type OnboardingStepperProps = {
-  cabanas: Cabana[];
+  cabanasCount: number;
   profile?: BusinessProfile | null;
   accountEmail?: string | null;
   publicUrl?: string;
@@ -104,13 +103,13 @@ type OnboardingStepperProps = {
 };
 
 export function OnboardingStepper({
-  cabanas,
+  cabanasCount,
   profile,
   accountEmail,
   publicUrl = "",
   hasSlug = false,
 }: OnboardingStepperProps) {
-  const progress = evaluateOnboarding(cabanas, profile, accountEmail);
+  const progress = evaluateOnboarding(cabanasCount, profile, accountEmail);
   const completedCount = STEPS.filter((s) => progress[s.id]).length;
   const totalSteps = STEPS.length;
   const percent = Math.round((completedCount / totalSteps) * 100);
