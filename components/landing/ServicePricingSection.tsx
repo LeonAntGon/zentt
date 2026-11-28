@@ -9,7 +9,7 @@ const included = [
   "Dominio y puesta en producción",
 ];
 
-const bfWhatsAppUrl = waHref(WA_MESSAGES.cupo);
+const promoWhatsAppUrl = waHref(WA_MESSAGES.cupo);
 const customWhatsAppUrl = waHref(WA_MESSAGES.presupuesto);
 
 const ServicePricingSection = () => {
@@ -33,7 +33,7 @@ const ServicePricingSection = () => {
           {/* Plan destacado */}
           <article className="relative rounded-2xl border-2 border-primary bg-background p-6 shadow-2xl lg:p-8">
             <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-primary px-5 py-1 font-heading text-xs font-semibold text-primary-foreground shadow-md">
-              BLACK FRIDAY · HASTA EL 27/11
+              PRECIO PROMOCIONAL · HASTA EL 31/12
             </span>
 
             <h3 className="font-heading text-xl font-bold text-foreground">
@@ -52,7 +52,7 @@ const ServicePricingSection = () => {
               </span>
             </div>
             <p className="mt-1 text-sm font-semibold text-primary">
-              Precio Black Friday, válido hasta el 27/11
+              Precio promocional, válido hasta el 31/12/2026
             </p>
 
             <ul className="mt-6 space-y-3">
@@ -83,7 +83,7 @@ const ServicePricingSection = () => {
               className="mt-6 h-12 w-full font-heading font-semibold"
               asChild
             >
-              <a href={bfWhatsAppUrl} target="_blank" rel="noopener noreferrer">
+              <a href={promoWhatsAppUrl} target="_blank" rel="noopener noreferrer">
                 <WhatsAppIcon className="h-5 w-5" title="" />
                 Reservá tu cupo por WhatsApp
               </a>
